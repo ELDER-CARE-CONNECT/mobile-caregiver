@@ -1,0 +1,18 @@
+.hightlight {
+    color: #900;
+    background-color: #9C0;
+}
+.hang {
+    cursor: pointer;
+}
+table {
+    width: 100%; /* Bảng chiếm toàn bộ chiều ngang */
+    border-collapse: collapse; /* Gộp viền */
+    font-size: 16px; /* Tăng cỡ chữ */
+  }
+
+th, td {
+    padding: 10px; /* Tăng khoảng cách bên trong ô */
+    text-align: center;
+    border: 1px solid #ccc;
+}
