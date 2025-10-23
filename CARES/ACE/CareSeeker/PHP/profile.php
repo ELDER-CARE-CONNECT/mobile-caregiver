@@ -202,7 +202,7 @@ input[type="text"], input[type="number"], input[type="file"], select, textarea{w
         <div class="field-inline">
           <label><input type="radio" name="gioi_tinh" value="Nam" <?php echo (isset($profile['gioi_tinh']) && $profile['gioi_tinh']==='Nam')? 'checked':''; ?>> Nam</label>
           <label><input type="radio" name="gioi_tinh" value="Nữ" <?php echo (isset($profile['gioi_tinh']) && $profile['gioi_tinh']==='Nu')? 'checked':''; ?>> Nữ</label>
-          <label><input type="radio" name="gioi_tinh" value="Khac" <?php echo (isset($profile['gioi_tinh']) && $profile['gioi_tinh']==='Khac')? 'checked':''; ?>> Khac</label>
+          <label><input type="radio" name="gioi_tinh" value="Khac" <?php echo (isset($profile['gioi_tinh']) && $profile['gioi_tinh']==='Khac')? 'checked':''; ?>> Khác</label>
         </div>
       </div>
 
@@ -291,3 +291,4 @@ form.addEventListener('submit', function(e){
 </script>
 </body>
 </html>
+
