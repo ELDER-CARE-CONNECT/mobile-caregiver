@@ -1,0 +1,197 @@
+/* Căn giữa nội dung */
+
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* Khung tổng */
+.wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Hộp chứa form (TĂNG KÍCH THƯỚC) */
+.form-container {
+    text-align: center;
+    width: 500px; /* Tăng kích thước form */
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+}
+
+/* Logo */
+.logo {
+    width: 70px;
+    margin-bottom: 15px;
+}
+
+/* Tiêu đề */
+h2 {
+    font-size: 24px; /* To hơn */
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Đăng nhập bằng MXH */
+.social-login {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.social-login button {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* Thanh kẻ ngang "hoặc" */
+.separator {
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+}
+
+.separator::before, .separator::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+}
+
+.separator::before {
+    margin-right: 15px;
+}
+
+.separator::after {
+    margin-left: 15px;
+}
+
+/* Form đăng nhập */
+input {
+    width: 100%;
+    padding: 12px;  /* Tăng padding để dễ nhìn hơn */
+    margin: 5px 0; /* Khoảng cách giữa các ô */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box; /* Đảm bảo padding không làm thay đổi kích thước */
+}
+
+form {
+    width: 100%;
+    max-width: 400px; /* Giới hạn chiều rộng của form */
+    margin: auto; /* Căn giữa */
+}
+.register-btn {
+    width: 100%; /* Chiều rộng 100% để vừa với form */
+    padding: 16px; /* Tăng padding để nút nhìn lớn hơn */
+    font-size: 18px;
+    text-align: center;
+}
+
+/* Căn lề trái cho checkbox và văn bản */
+.checkbox-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start; /* Căn tất cả các phần tử về bên trái */
+}
+
+/* Nhóm checkbox */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Tạo khoảng cách giữa checkbox và chữ */
+    flex-wrap: nowrap; /* Đảm bảo không xuống dòng */
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0; /* Đảm bảo không có margin thừa */
+    vertical-align: middle; /* Căn giữa checkbox */
+}
+
+.checkbox-group label {
+    font-size: 14px;
+    color: #000; /* Đưa về màu mặc định */
+    line-height: 1.5;
+    white-space: normal; /* Cho phép xuống dòng nếu cần */
+}
+
+/* Nút đăng ký (TO HƠN) */
+.register-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;margin-top: 15px;
+    transition: 0.3s;
+}
+
+.register-btn:hover {
+    background-color: darkred;
+}
+
+/* Văn bản và liên kết */
+p {
+    margin-top: 15px;
+    font-size: 16px;
+}
+
+a {
+    color: red;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* 🎯 Responsive (TỰ ĐỘNG CO DÃN) */
+@media (max-width: 768px) {
+    .form-container {
+        width: 90%;
+    }
+    
+    .logo {
+        width: 60px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-container {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .logo {
+        width: 50px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    input {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .register-btn {
+        padding: 12px;
+        font-size: 16px;
+    }
+}
