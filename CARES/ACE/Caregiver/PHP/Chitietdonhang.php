@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Lịch sử đơn hàng</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="css/lich-su-don-hang.css" />
+</head>
+<body>
+  <header class="tieu-de">
+    <h1>Lịch sử đơn hàng</h1>
+    <p class="mo-ta">Xem, lọc, tìm kiếm và xem chi tiết các đơn đã đặt.</p>
+  </header>
+
+  <section class="thanh-cong-cu">
+    <div class="nhom">
+      <label for="timKiem">Tìm kiếm</label>
+      <input id="timKiem" type="text" placeholder="Tìm theo mã đơn, tên khách, tên người chăm sóc..." />
+    </div>
+
+    <div class="nhom">
+      <label for="trangThai">Trạng thái</label>
+      <select id="trangThai">
+        <option value="">Tất cả</option>
+        <option value="hoan_thanh">Hoàn thành</option>
+        <option value="da_huy">Đã hủy</option>
+        <option value="dang_xu_ly">Đang xử lý</option>
+      </select>
+    </div>
+
+    <div class="nhom">
+      <label>Từ ngày</label>
+      <input id="tuNgay" type="date" />
+    </div>
+
+    <div class="nhom">
+      <label>Đến ngày</label>
+      <input id="denNgay" type="date" />
+    </div>
+
+    <div class="nhom nut">
+      <button id="lamMoi" type="button">Làm mới</button>
+    </div>
+  </section>
+
+  <section class="thong-ke-nhanh">
+    <span>Tổng đơn: <strong id="tongDon">0</strong></span>
+    <span>Tổng tiền: <strong id="tongTien">0₫</strong></span>
+  </section>
+
+  <main class="bang-vung">
+    <table class="bang">
+      <thead>
+        <tr>
+          <th>Mã đơn</th>
+          <th>Ngày & giờ hẹn</th>
+          <th>Khách hàng</th>
+          <th>Người chăm sóc</th>
+          <th>Giá tiền</th>
+          <th>Thanh toán</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody id="noiDungBang">
+        <!-- JS sẽ render -->
+      </tbody>
+    </table>
+
+    <div class="phan-trang">
+      <button id="truoc" type="button">« Trước</button>
+      <span id="thongTinTrang">Trang 1/1</span>
+      <button id="sau" type="button">Sau »</button>
+    </div>
+  </main>
+
+  <template id="dongMau">
+    <tr>
+      <td class="ma-don"></td>
+      <td class="thoi-gian"></td>
+      <td class="khach-hang"></td>
+      <td class="nguoi-cham-soc"></td>
+      <td class="gia-tien"></td>
+      <td class="thanh-toan"></td>
+      <td class="trang-thai">
+        <span class="nhan"></span>
+      </td>
+      <td class="hanh-dong">
+        <button class="xem-chi-tiet" type="button">Xem chi tiết</button>
+        <button class="dat-lai" type="button">Đặt lại</button>
+      </td>
+    </tr>
+  </template>
+
+  <script src="js/lich-su-don-hang.js"></script>
+</body>
+</html>
+
