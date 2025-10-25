@@ -1,4 +1,3 @@
-
 /* Reset and Base Styles */
 * {
   margin: 0;
@@ -1085,7 +1084,7 @@ body {
   max-width: 100px;
 }
 
-.typing-dots 
+.typing-dots {
   display: flex;
   gap: 0.25rem;
 }
