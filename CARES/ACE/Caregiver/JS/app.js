@@ -74,10 +74,10 @@ const sampleOrders = [
       phone: "0852741963",
       notes: "Hỗ trợ tâm lý cho người cao tuổi"
     }
-  }
-];
-
-// Cấu hình phân trang
+    }
+  ];
+  
+  // Cấu hình phân trang
 const ITEMS_PER_PAGE = 10;
 let currentPage = 1;
 let filteredOrders = [...sampleOrders];
