@@ -28,34 +28,34 @@
       
       <a href="#" class="menu-item">
         <i class="fas fa-users"></i>
-        <span>Hồ sơ bệnh nhân</span>
+        <span>Hồ Sơ Bệnh Nhân</span>
       </a>
       
       <a href="#" class="menu-item active">
         <i class="fas fa-clipboard-list"></i>
-        <span>Lịch sử đặt dịch vụ</span>
+        <span>Lịch Sử Đặt Dịch Vụ</span>
         <span class="badge">5</span>
       </a>
       
       <a href="#" class="menu-item">
         <i class="fas fa-calendar-check"></i>
-        <span>Lịch hẹn</span>
+        <span>Lịch Hẹn</span>
       </a>
       
       <a href="#" class="menu-item">
         <i class="fas fa-chart-line"></i>
-        <span>Báo cáo</span>
+        <span>Báo Cáo</span>
       </a>
       
       <a href="#" class="menu-item">
         <i class="fas fa-bell"></i>
-        <span>Thông báo</span>
+        <span>Thông Báo</span>
         <span class="badge notification">99+</span>
       </a>
       
       <a href="#" class="menu-item">
         <i class="fas fa-cog"></i>
-        <span>Cài đặt</span>
+        <span>Cài Đặt</span>
       </a>
     </nav>
   </aside>
@@ -64,8 +64,8 @@
   <div class="main-content">
     <header class="header">
       <div class="header-left">
-        <h1>Lịch sử đặt dịch vụ</h1>
-        <p>Quản lý và theo dõi các dịch vụ chăm sóc đã đặt</p>
+        <h1>Lịch Sử Đặt Dịch Vụ</h1>
+        <p>Quản Lý Và Theo Dõi Các Dịch Vụ Chăm Sóc Đã Đặt</p>
       </div>
       <div class="header-right">
         <div class="search-box">
@@ -83,7 +83,7 @@
     <div class="breadcrumb">
       <span>Trang chủ</span>
       <i class="fas fa-chevron-right"></i>
-      <span>Lịch sử đặt dịch vụ</span>
+      <span>Lịch Sử Đặt Dịch Vụ</span>
     </div>
 
     <!-- Filter Tabs -->
@@ -285,4 +285,3 @@
   <script src="../JS/app.js"></script>
 </body>
 </html>
-
