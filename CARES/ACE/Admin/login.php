@@ -1,8 +1,9 @@
 <?php
 // Bước 1: Kết nối với CSDL
 include_once("../model/sanpham.php");
-include_once('../model/get_products.php'); // Đảm bảo rằng bạn đã kết nối với CSDL đúng cách
+include_once('../model/get_products.php');
 $conn = connectdb();
+
 // Bước 2: Khởi tạo session
 session_start();
 
@@ -11,42 +12,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $so_dien_thoai = $_POST['phone'];
     $mat_khau = $_POST['password'];
 
-    // Bước 4: Kiểm tra dữ liệu có hợp lệ không
     if (empty($so_dien_thoai) || empty($mat_khau)) {
         $error_message = "Số điện thoại và mật khẩu không được để trống!";
     } else {
-        // Bước 5: Kết nối tới CSDL và kiểm tra thông tin đăng nhập
-        $sql = "SELECT * FROM khach_hang WHERE so_dien_thoai = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $so_dien_thoai);  // Ràng buộc tham số
-
+        // 🔹 1. Kiểm tra trong bảng khach_hang
+        $sql_khach = "SELECT * FROM khach_hang WHERE so_dien_thoai = ? AND mat_khau = ?";
+        $stmt = $conn->prepare($sql_khach);
+        $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
         $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
+        $result_khach = $stmt->get_result();
 
-        // Bước 6: Kiểm tra xem có người dùng hợp lệ không và so sánh mật khẩu trực tiếp
-        if ($user) {
-            // Nếu mật khẩu khớp
-            if ($user['mat_khau'] === $mat_khau) {
-                // Đăng nhập thành công, lưu thông tin vào session
+        if ($result_khach->num_rows > 0) {
+            $user = $result_khach->fetch_assoc();
+
+            // Nếu là Admin (role = 1)
+            if ($user['role'] == 1) {
                 $_SESSION['so_dien_thoai'] = $user['so_dien_thoai'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['ten_khach_hang'] = $user['ten_khach_hang'];
-
-                // Chuyển hướng tới trang index1.php
-                header("Location: tongquan.php");
+                header("Location: ../Admin/tongquan.php");
                 exit();
             } else {
-                // Mật khẩu không khớp
-                $error_message = "Sai số điện thoại hoặc mật khẩu!";
+                // Nếu là khách bình thường thì báo lỗi
+                $error_message = "Tài khoản này không có quyền truy cập trang quản trị!";
             }
         } else {
-            // Người dùng không tồn tại trong cơ sở dữ liệu
-            $error_message = "Sai số điện thoại hoặc mật khẩu!";
+            // 🔹 2. Kiểm tra trong bảng nguoi_cham_soc
+            $sql_ncs = "SELECT * FROM nguoi_cham_soc WHERE so_dien_thoai = ? AND mat_khau = ?";
+            $stmt = $conn->prepare($sql_ncs);
+            $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
+            $stmt->execute();
+            $result_ncs = $stmt->get_result();
+
+            if ($result_ncs->num_rows > 0) {
+                $ncs = $result_ncs->fetch_assoc();
+                $_SESSION['so_dien_thoai'] = $ncs['so_dien_thoai'];
+                $_SESSION['ten_cham_soc'] = $ncs['ho_ten'];
+                header("Location: ../Caregiver/index.php");
+                exit();
+            } else {
+                // Không tìm thấy tài khoản ở cả 2 bảng
+                $error_message = "Sai số điện thoại hoặc mật khẩu!";
+            }
         }
     }
 }
 ?>
+
 
 <!-- Giao diện đăng nhập -->
 <!DOCTYPE html>
