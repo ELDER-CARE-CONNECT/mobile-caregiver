@@ -1,181 +1,277 @@
 <?php
-// Kết nối cơ sở dữ liệu
-include("../../Caregiver/PHP/connect.php");
-
-// Giả định khách hàng đang đăng nhập (thay bằng session nếu có)
-$id_khach_hang = 4;
-
-// Lấy thông tin khách hàng hiện tại
-$sql = "SELECT * FROM khach_hang WHERE id_khach_hang = $id_khach_hang";
-$result = mysqli_query($conn, $sql);
-$user = mysqli_fetch_assoc($result);
-
-// Nếu người dùng bấm nút cập nhật
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $ten = $_POST['ten_khach_hang'];
-    $email = $_POST['email'];
-    $sdt = $_POST['so_dien_thoai'];
-    $diachi = $_POST['dia_chi'];
-    $gioitinh = $_POST['gioi_tinh'];
-    $stk = $_POST['so_tai_khoan'];
-    $nganhang = $_POST['ten_ngan_hang'];
-
-    $update = "UPDATE khach_hang SET 
-                ten_khach_hang='$ten',
-                email='$email',
-                so_dien_thoai='$sdt',
-                dia_chi='$diachi',
-                gioi_tinh='$gioitinh',
-                so_tai_khoan='$stk',
-                ten_ngan_hang='$nganhang'
-               WHERE id_khach_hang=$id_khach_hang";
-
-    if (mysqli_query($conn, $update)) {
-        echo "<script>alert('✅ Cập nhật thông tin thành công!'); window.location.reload();</script>";
-    } else {
-        echo "<script>alert('❌ Lỗi khi cập nhật!');</script>";
-    }
+session_start();
+if (!isset($_SESSION['profile'])) {
+  header('Location: hoso.php');
+  exit;
 }
-
-// Lấy danh sách tất cả hồ sơ khách hàng để hiển thị
-$list = mysqli_query($conn, "SELECT * FROM khach_hang");
+$profile = $_SESSION['profile'];
 ?>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Thông tin cá nhân khách hàng</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trang cá nhân</title>
 <style>
-body {
-    font-family: 'Segoe UI', Arial;
-    background-color: #f2f4f8;
-    margin: 0;
-    padding: 30px;
+:root{
+  --accent:#ff6b81;
+  --bg-left:linear-gradient(135deg,#ffb6b9,#fae3d9,#bbded6,#61c0bf);
+  --bg-right:#fff5f6;
 }
-.container {
-    max-width: 1000px;
-    background: white;
-    margin: auto;
-    padding: 30px 40px;
-    border-radius: 12px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,Arial,sans-serif;
+  background:var(--bg-left);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-h1 {
-    text-align: center;
-    color: #007BFF;
-    margin-bottom: 25px;
+.container{
+  display:flex;
+  width:90%;
+  max-width:1100px;
+  background:#fff;
+  border-radius:24px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.1);
+  overflow:hidden;
 }
-h2 {
-    color: #333;
-    margin-top: 40px;
+.left{
+  flex:1;
+  background:var(--bg-left);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px;
 }
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
+.left img{
+  width:320px;
+  height:320px;
+  border-radius:20px;
+  object-fit:cover;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+  background:#fff;
 }
-table, th, td {
-    border: 1px solid #ccc;
+.right{
+  flex:1.2;
+  background:var(--bg-right);
+  padding:50px 60px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-height:400px;
 }
-th {
-    background: #007BFF;
-    color: white;
-    padding: 10px;
+.right h2{
+  color:#222;
+  font-size:26px;
+  margin-bottom:6px;
 }
-td {
-    padding: 8px;
-    text-align: center;
+.right p{
+  color:#555;
+  margin:6px 0;
+  font-size:16px;
 }
-tr:nth-child(even) {
-    background: #f9f9f9;
+.info-group strong{color:#111;}
+.buttons{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:30px;
 }
-form {
-    margin-top: 40px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px 30px;
+button{
+  padding:12px 20px;
+  font-size:15px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  transition:all 0.2s ease;
+  font-weight:600;
 }
-label {
-    font-weight: bold;
+button:hover{opacity:0.9;transform:translateY(-1px);}
+.btn-edit{background:var(--accent);color:#fff;}
+.btn-complaint{background:#fff;border:2px solid var(--accent);color:var(--accent);}
+.btn-logout{background:#f0f0f0;color:#333;}
+.hidden{display:none}
+
+/* KHIEU NAI SECTION */
+.complaint-section h3{color:var(--accent);margin-bottom:10px}
+.complaint-item{
+  padding:10px;border:1px solid #eee;border-radius:8px;margin-top:10px;background:#fafafa;cursor:pointer;
 }
-input, select {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    width: 100%;
+textarea,select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  margin-top:5px;
+  font-size:15px;
 }
-button {
-    grid-column: 1 / span 2;
-    padding: 12px;
-    background-color: #007BFF;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    margin-top: 20px;
-    cursor: pointer;
+.btn-small{
+  margin-top:12px;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:8px 14px;
+  cursor:pointer;
 }
-button:hover {
-    background-color: #0056b3;
+.btn-back{
+  margin-top:12px;
+  background:#ccc;
+  color:#000;
+  border:none;
+  border-radius:8px;
+  padding:8px 14px;
+  cursor:pointer;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Danh sách hồ sơ khách hàng</h1>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Họ tên</th>
-            <th>Email</th>
-            <th>Số điện thoại</th>
-            <th>Địa chỉ</th>
-            <th>Giới tính</th>
-        </tr>
-        <?php while ($r = mysqli_fetch_assoc($list)) { ?>
-        <tr>
-            <td><?= $r['id_khach_hang'] ?></td>
-            <td><?= htmlspecialchars($r['ten_khach_hang']) ?></td>
-            <td><?= htmlspecialchars($r['email']) ?></td>
-            <td><?= htmlspecialchars($r['so_dien_thoai']) ?></td>
-            <td><?= htmlspecialchars($r['dia_chi']) ?></td>
-            <td><?= htmlspecialchars($r['gioi_tinh']) ?></td>
-        </tr>
-        <?php } ?>
-    </table>
+  <!-- ẢNH TRÁI -->
+  <div class="left">
+    <img src="<?php echo $profile['avatar'] ? $profile['avatar'] : 'uploads/default.png'; ?>" alt="avatar">
+  </div>
 
-    <h1>Chỉnh sửa thông tin cá nhân</h1>
-    <form method="POST">
-        <label>Họ tên:</label>
-        <input type="text" name="ten_khach_hang" value="<?= htmlspecialchars($user['ten_khach_hang']) ?>">
+  <!-- THÔNG TIN / KHIẾU NẠI PHẢI -->
+  <div class="right">
 
-        <label>Email:</label>
-        <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>">
+    <!-- PHẦN THÔNG TIN CÁ NHÂN -->
+    <div id="infoSection">
+      <h2>Xin chào, <?php echo htmlspecialchars($profile['ho_ten']); ?> 👋</h2>
+      <div class="info-group">
+        <p><strong>Địa chỉ:</strong> <?php echo htmlspecialchars($profile['dia_chi']); ?></p>
+        <p><strong>SĐT:</strong> <?php echo htmlspecialchars($profile['so_dt']); ?></p>
+        <p><strong>Tuổi:</strong> <?php echo htmlspecialchars($profile['tuoi']); ?></p>
+        <p><strong>Giới tính:</strong> <?php echo htmlspecialchars($profile['gioi_tinh']); ?></p>
+        <p><strong>Chiều cao:</strong> <?php echo htmlspecialchars($profile['chieu_cao']); ?> cm</p>
+        <p><strong>Cân nặng:</strong> <?php echo htmlspecialchars($profile['can_nang']); ?> kg</p>
+      </div>
 
-        <label>Số điện thoại:</label>
-        <input type="text" name="so_dien_thoai" value="<?= htmlspecialchars($user['so_dien_thoai']) ?>">
+      <div class="buttons">
+        <button class="btn-edit" onclick="window.location.href='hoso.php'">Chỉnh sửa hồ sơ</button>
+        <button class="btn-complaint" id="btnKhieuNai">Khiếu nại</button>
+        <button class="btn-logout" onclick="window.location.href='logout.php'">Đăng xuất</button>
+      </div>
+    </div>
 
-        <label>Địa chỉ:</label>
-        <input type="text" name="dia_chi" value="<?= htmlspecialchars($user['dia_chi']) ?>">
+    <!-- PHẦN KHIẾU NẠI -->
+    <div id="complaintSection" class="hidden complaint-section">
+      <h3>Khiếu nại</h3>
 
-        <label>Giới tính:</label>
-        <select name="gioi_tinh">
-            <option value="Nam" <?= ($user['gioi_tinh'] == 'Nam') ? 'selected' : '' ?>>Nam</option>
-            <option value="Nữ" <?= ($user['gioi_tinh'] == 'Nữ') ? 'selected' : '' ?>>Nữ</option>
+      <div id="complaintList">
+        <div id="complaintItems"></div>
+        <button class="btn-small" id="btnNewComplaint">+ Gửi khiếu nại mới</button>
+        <button class="btn-back" id="backToInfo">← Quay lại</button>
+      </div>
+
+      <div id="newComplaintForm" class="hidden">
+        <label>Chọn đơn hàng</label>
+        <select id="orderSelect">
+          <option value="">-- Chọn đơn hàng --</option>
+          <option>Đơn hàng #1001</option>
+          <option>Đơn hàng #1002</option>
         </select>
 
-        <label>Số tài khoản ngân hàng:</label>
-        <input type="text" name="so_tai_khoan" value="<?= isset($user['so_tai_khoan']) ? htmlspecialchars($user['so_tai_khoan']) : '' ?>">
+        <label>Mô tả khiếu nại</label>
+        <textarea id="complaintText" rows="3" placeholder="Nhập nội dung khiếu nại..."></textarea>
 
-        <label>Tên ngân hàng:</label>
-        <input type="text" name="ten_ngan_hang" value="<?= isset($user['ten_ngan_hang']) ? htmlspecialchars($user['ten_ngan_hang']) : '' ?>">
+        <button class="btn-small" id="sendComplaint">Gửi khiếu nại</button>
+        <button class="btn-back" id="cancelComplaint">Hủy</button>
+      </div>
 
-        <button type="submit">💾 Lưu thay đổi</button>
-    </form>
+      <div id="complaintDetail" class="hidden">
+        <p><strong>Đơn hàng:</strong> <span id="detailOrder"></span></p>
+        <p><strong>Mô tả:</strong> <span id="detailText"></span></p>
+        <p><strong>Phản hồi:</strong> <span id="detailReply"></span></p>
+        <button class="btn-back" id="backList">← Quay lại danh sách</button>
+      </div>
+    </div>
+  </div>
 </div>
 
+<script>
+const btnKhieuNai = document.getElementById('btnKhieuNai');
+const infoSection = document.getElementById('infoSection');
+const complaintSection = document.getElementById('complaintSection');
+const btnBackToInfo = document.getElementById('backToInfo');
+
+btnKhieuNai.onclick = () => {
+  infoSection.classList.add('hidden');
+  complaintSection.classList.remove('hidden');
+};
+btnBackToInfo.onclick = () => {
+  complaintSection.classList.add('hidden');
+  infoSection.classList.remove('hidden');
+};
+
+// Xử lý khiếu nại
+const complaintItems = document.getElementById('complaintItems');
+const newComplaintForm = document.getElementById('newComplaintForm');
+const complaintList = document.getElementById('complaintList');
+const complaintDetail = document.getElementById('complaintDetail');
+
+const btnNewComplaint = document.getElementById('btnNewComplaint');
+const btnCancelComplaint = document.getElementById('cancelComplaint');
+const btnSendComplaint = document.getElementById('sendComplaint');
+const btnBackList = document.getElementById('backList');
+
+let complaints = [];
+
+btnNewComplaint.onclick = () => {
+  complaintList.classList.add('hidden');
+  newComplaintForm.classList.remove('hidden');
+};
+btnCancelComplaint.onclick = () => {
+  newComplaintForm.classList.add('hidden');
+  complaintList.classList.remove('hidden');
+};
+btnSendComplaint.onclick = () => {
+  const order = document.getElementById('orderSelect').value;
+  const text = document.getElementById('complaintText').value.trim();
+  if (!order || !text) {
+    alert("Vui lòng nhập đầy đủ thông tin!");
+    return;
+  }
+  complaints.push({order,text,reply:"Đang chờ phản hồi..."});
+  renderComplaints();
+  document.getElementById('orderSelect').value="";
+  document.getElementById('complaintText').value="";
+  newComplaintForm.classList.add('hidden');
+  complaintList.classList.remove('hidden');
+};
+
+function renderComplaints(){
+  complaintItems.innerHTML = "";
+  if(complaints.length === 0){
+    complaintItems.innerHTML = "<p>Chưa có khiếu nại nào.</p>";
+    return;
+  }
+  complaints.forEach((c,i)=>{
+    const div = document.createElement("div");
+    div.className = "complaint-item";
+    div.innerHTML = `<strong>${c.order}</strong><br>${c.text}`;
+    div.onclick = ()=> showDetail(i);
+    complaintItems.appendChild(div);
+  });
+}
+
+function showDetail(i){
+  complaintList.classList.add('hidden');
+  complaintDetail.classList.remove('hidden');
+  document.getElementById("detailOrder").innerText = complaints[i].order;
+  document.getElementById("detailText").innerText = complaints[i].text;
+  document.getElementById("detailReply").innerText = complaints[i].reply;
+}
+
+btnBackList.onclick = () => {
+  complaintDetail.classList.add('hidden');
+  complaintList.classList.remove('hidden');
+};
+
+renderComplaints();
+</script>
 </body>
 </html>

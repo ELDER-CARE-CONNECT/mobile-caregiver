@@ -2,10 +2,11 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$database = "sanpham";
+$dbname = "sanpham"; // đổi nếu bạn dùng tên khác
 
-$conn = mysqli_connect($servername, $username, $password, $database);
-if (!$conn) {
-    die("Kết nối thất bại: " . mysqli_connect_error());
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Kết nối thất bại: " . $conn->connect_error);
 }
 ?>
