@@ -1,5 +1,4 @@
 <?php
-
 $host = '127.0.0.1';
 $dbname = 'sanpham';
 $username = 'root';
@@ -12,100 +11,102 @@ try {
     die("Kết nối DB thất bại: " . $e->getMessage());
 }
 
-// Lấy id_cham_soc từ GET
 $id_cham_soc = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-if ($id_cham_soc > 0) {
-    $stmt = $pdo->prepare("SELECT ho_ten FROM nguoi_cham_soc WHERE id_cham_soc = :id");
-    $stmt->execute(['id' => $id_cham_soc]);
-    $caregiver = $stmt->fetch(PDO::FETCH_ASSOC);
-} else {
-    $caregiver = null;
-}
-
-if (!$caregiver) {
-    echo "Không tìm thấy người chăm sóc.";
-    exit;
-}
+$stmt = $pdo->prepare("SELECT ho_ten FROM nguoi_cham_soc WHERE id_cham_soc = :id");
+$stmt->execute(['id' => $id_cham_soc]);
+$caregiver = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Với Người Chăm Sóc - Elder Care Connect</title>
+    <title>Chat Với Người Chăm Sóc</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
             margin: 0;
             padding: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            justify-content: center;
+            align-items: center;
         }
         .chat-container {
-            flex: 1;
-            max-width: 800px;
-            margin: 20px auto;
+            width: 100%;
+            max-width: 500px;
+            height: 80vh;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
         }
         .chat-header {
-            background-color: #007bff;
+            background-color: #1a73e8;
             color: white;
-            padding: 10px;
+            padding: 15px;
             text-align: center;
-            font-weight: bold;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            font-size: 1.2em;
         }
         .chat-messages {
             flex: 1;
-            padding: 10px;
+            padding: 15px;
             overflow-y: auto;
+            background-color: #e9ecef;
         }
         .message {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
+            max-width: 70%;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9em;
         }
         .message.user {
-            background-color: #dcf8c6;
+            background-color: #d1e7dd;
             align-self: flex-end;
+            color: #0f5132;
         }
         .message.caregiver {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            align-self: flex-start;
+            color: #333;
         }
         .chat-input {
-            display: flex;
             padding: 10px;
             border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
         }
         .chat-input input {
             flex: 1;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            font-size: 14px;
         }
         .chat-input button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #1a73e8;
             color: white;
             border: none;
             border-radius: 5px;
-            margin-left: 10px;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .chat-input button:hover {
+            background-color: #1557a0;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <div class="chat-header">Chat Với Người Chăm Sóc: <?php echo htmlspecialchars($caregiver['ho_ten']); ?></div>
+        <div class="chat-header">Chat Với Người Chăm Sóc: <?php echo htmlspecialchars($caregiver['ho_ten'] ?? 'N/A'); ?></div>
         <div class="chat-messages" id="chat-messages">
-            <!-- Tin nhắn mẫu, có thể tích hợp DB để lưu tin nhắn thực tế -->
             <div class="message caregiver">Xin chào! Tôi có thể giúp gì cho bạn hôm nay?</div>
             <div class="message user">Chào, ông tôi cần hỗ trợ tắm rửa.</div>
         </div>
@@ -128,7 +129,6 @@ if (!$caregiver) {
                 input.value = '';
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 
-                // Giả lập phản hồi (có thể thay bằng AJAX gửi đến server lưu DB)
                 setTimeout(() => {
                     const reply = document.createElement('div');
                     reply.classList.add('message', 'caregiver');
