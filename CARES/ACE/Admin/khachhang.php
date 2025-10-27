@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lí Khách Hàng</title>
+    <title>Quản lí Khách Hàng</title>
     <link rel="stylesheet" href="fontend/css/khachhang.css">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
