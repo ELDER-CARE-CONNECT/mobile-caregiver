@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 27, 2025 lúc 10:26 AM
+-- Thời gian đã tạo: Th10 27, 2025 lúc 12:00 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -152,6 +152,22 @@ INSERT INTO `khach_hang` (`id_khach_hang`, `ten_khach_hang`, `email`, `so_dien_t
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `khieu_nai`
+--
+
+CREATE TABLE `khieu_nai` (
+  `id_khieu_nai` int(11) NOT NULL,
+  `id_don_hang` int(11) NOT NULL,
+  `id_khach_hang` int(11) NOT NULL,
+  `noi_dung` text NOT NULL,
+  `ngay_gui` datetime DEFAULT current_timestamp(),
+  `trang_thai` enum('Chờ xử lý','Đã giải quyết') DEFAULT 'Chờ xử lý',
+  `phan_hoi` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `nguoi_cham_soc`
 --
 
@@ -218,6 +234,14 @@ ALTER TABLE `khach_hang`
   ADD UNIQUE KEY `so_dien_thoai` (`so_dien_thoai`);
 
 --
+-- Chỉ mục cho bảng `khieu_nai`
+--
+ALTER TABLE `khieu_nai`
+  ADD PRIMARY KEY (`id_khieu_nai`),
+  ADD KEY `id_don_hang` (`id_don_hang`),
+  ADD KEY `id_khach_hang` (`id_khach_hang`);
+
+--
 -- Chỉ mục cho bảng `nguoi_cham_soc`
 --
 ALTER TABLE `nguoi_cham_soc`
@@ -252,6 +276,12 @@ ALTER TABLE `khach_hang`
   MODIFY `id_khach_hang` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
+-- AUTO_INCREMENT cho bảng `khieu_nai`
+--
+ALTER TABLE `khieu_nai`
+  MODIFY `id_khieu_nai` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT cho bảng `nguoi_cham_soc`
 --
 ALTER TABLE `nguoi_cham_soc`
@@ -266,6 +296,13 @@ ALTER TABLE `nguoi_cham_soc`
 --
 ALTER TABLE `don_hang`
   ADD CONSTRAINT `don_hang_ibfk_1` FOREIGN KEY (`id_khach_hang`) REFERENCES `khach_hang` (`id_khach_hang`);
+
+--
+-- Các ràng buộc cho bảng `khieu_nai`
+--
+ALTER TABLE `khieu_nai`
+  ADD CONSTRAINT `khieu_nai_ibfk_1` FOREIGN KEY (`id_don_hang`) REFERENCES `don_hang` (`id_don_hang`),
+  ADD CONSTRAINT `khieu_nai_ibfk_2` FOREIGN KEY (`id_khach_hang`) REFERENCES `khach_hang` (`id_khach_hang`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
