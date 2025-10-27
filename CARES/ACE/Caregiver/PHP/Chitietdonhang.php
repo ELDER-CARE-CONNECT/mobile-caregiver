@@ -186,7 +186,7 @@
       </div>
     </div>
 
-    <!-- Orders Table -->
+    <!-- orders Table -->
     <div class="table-section">
       <div class="table-header">
         <h2>Danh sách đơn hàng</h2>
