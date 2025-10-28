@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
     $stmt_check->execute(['id' => $id_to_cancel]);
     $order_status = $stmt_check->fetchColumn();
 
-    if ($order_status === 'Chờ xác nhận') {
+    if (strtolower($order_status) === 'chờ xác nhận') {
         $stmt_delete = $pdo->prepare("DELETE FROM don_hang WHERE id_don_hang = :id");
         $stmt_delete->execute(['id' => $id_to_cancel]);
         echo "<script>alert('Đơn hàng đã được hủy!'); window.location.href='Chitietdonhang.php';</script>";
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
         .container {
             background-color: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 600px;
@@ -100,36 +100,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
             margin-bottom: 20px;
             margin-top: 40px;
         }
-        .invoice {
+        .bill {
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             padding: 20px;
             background-color: #fff;
             margin-bottom: 20px;
         }
-        .invoice-header {
-            border-bottom: 2px solid #1a73e8;
+        .bill-header {
+            border-bottom: 2px dashed #1a73e8;
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
-        .invoice-header h2 {
+        .bill-header h2 {
             color: #333;
             font-size: 1.5em;
             margin: 0;
+            text-transform: uppercase;
         }
-        .invoice-details {
+        .bill-details {
             margin: 15px 0;
             color: #555;
         }
-        .invoice-details .label {
+        .bill-details .label {
             font-weight: bold;
             color: #333;
+            width: 150px;
+            display: inline-block;
         }
-        .invoice-details div {
+        .bill-details div {
             margin: 8px 0;
         }
-        .invoice-total {
-            border-top: 2px solid #e0e0e0;
+        .bill-total {
+            border-top: 2px dashed #e0e0e0;
             padding-top: 15px;
             text-align: right;
             font-size: 1.3em;
@@ -177,11 +180,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
         }
         @media (max-width: 600px) {
             .container { padding: 15px; }
-            .invoice { padding: 15px; }
+            .bill { padding: 15px; }
             .buttons { flex-direction: column; }
             button, a.button { width: 100%; margin-bottom: 10px; }
             .user-info { left: 10px; font-size: 14px; }
             h1 { margin-top: 50px; }
+            .bill-details .label { width: 100px; }
         }
     </style>
 </head>
@@ -195,13 +199,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
             <?php if (empty($order)): ?>
                 <div class="no-orders">Bạn chưa có đơn hàng nào.</div>
             <?php else: ?>
-                <div class="invoice">
-                    <div class="invoice-header">
-                        <h2>Hóa Đơn Thanh Toán #<?php echo htmlspecialchars($order['id_don_hang']); ?></h2>
+                <div class="bill">
+                    <div class="bill-header">
+                        <h2>#<?php echo htmlspecialchars($order['id_don_hang']); ?></h2>
                     </div>
-                    <div class="invoice-details">
+                    <div class="bill-details">
                         <div><span class="label">Tên Khách Hàng:</span> <?php echo htmlspecialchars($order['ten_khach_hang']); ?></div>
-                        <div><span class="label">Địa Chỉ Giao Hàng:</span> <?php echo htmlspecialchars($order['dia_chi_giao_hang'] ?? $order['dia_chi']); ?></div>
+                        <div><span class="label">Địa Chỉ Giao:</span> <?php echo htmlspecialchars($order['dia_chi_giao_hang'] ?? $order['dia_chi']); ?></div>
                         <div><span class="label">Số Điện Thoại:</span> <?php echo htmlspecialchars($order['so_dien_thoai']); ?></div>
                         <div><span class="label">Ngày Đặt:</span> <?php echo htmlspecialchars($order['ngay_dat']); ?></div>
                         <div><span class="label">Tổng Tiền:</span> <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
@@ -210,12 +214,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
                         <div><span class="label">Thời Gian Kết Thúc:</span> <?php echo htmlspecialchars($order['thoi_gian_ket_thuc']); ?></div>
                         <div><span class="label">Người Chăm Sóc:</span> <?php echo htmlspecialchars($order['ten_cham_soc'] ?? 'Chưa gán'); ?></div>
                     </div>
-                    <div class="invoice-total">Tổng: <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
+                    <div class="bill-total">Tổng: <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
                     <div class="buttons">
-                        <?php if ($order['trang_thai'] === 'Chờ xác nhận'): ?>
+                        <?php if (isset($order['trang_thai']) && strtolower($order['trang_thai']) === 'chờ xác nhận'): ?>
                             <form method="POST" style="margin: 0;">
                                 <input type="hidden" name="id" value="<?php echo $order['id_don_hang']; ?>">
-                                <button type="submit" class="btn-cancel" name="cancel" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng?');">Hủy Đơn</button>
+                                <button type="submit" class="btn-cancel" name="cancel" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng?');">Hủy Đơn Hàng</button>
                             </form>
                         <?php endif; ?>
                         <?php if ($order['caregiver_id']): ?>
