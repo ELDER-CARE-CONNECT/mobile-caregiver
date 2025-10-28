@@ -1,58 +1,51 @@
 <?php
-include_once("../model/get_products.php"); // Kết nối CSDL
-$conn = connectdb(); // Giả sử bạn có một hàm này để kết nối DB
-session_start(); // Khởi động session
+include_once("../model/get_products.php"); 
+$conn = connectdb();
+session_start();
 
-// Biến lỗi
 $phoneError = $passwordError = $confirmPasswordError = "";
+$successMessage = "";
 
-// Kiểm tra khi form được submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $phone = $_POST['phone'];
-    $oldPassword = $_POST['old_password'];
+    $phone = trim($_POST['phone']);
     $newPassword = $_POST['new_password'];
     $confirmPassword = $_POST['confirm_password'];
 
-    // Kiểm tra số điện thoại có hợp lệ không (10-11 chữ số)
-    if (!preg_match('/^[0-9]{10,11}$/', $phone)) {
+    // Kiểm tra số điện thoại hợp lệ
+    if (!preg_match('/^[0-9]{9,11}$/', $phone)) {
         $phoneError = "Số điện thoại không hợp lệ.";
     } else {
-        // Kiểm tra số điện thoại đã đăng ký chưa trong cơ sở dữ liệu
-        $stmt = $conn->prepare("SELECT mat_khau FROM khach_hang WHERE so_dien_thoai = ?");
+        // Kiểm tra số điện thoại có tồn tại
+        $stmt = $conn->prepare("SELECT * FROM khach_hang WHERE so_dien_thoai = ?");
         $stmt->bind_param("s", $phone);
         $stmt->execute();
         $result = $stmt->get_result();
         $user = $result->fetch_assoc();
 
         if (!$user) {
-            // Nếu không tìm thấy người dùng trong DB
             $phoneError = "Số điện thoại này chưa được đăng ký.";
         } else {
-            // Kiểm tra mật khẩu cũ có đúng không
-            if ($user['mat_khau'] !== $oldPassword) {
-                $passwordError = "Mật khẩu cũ không đúng.";
-            }
-
-            // Kiểm tra mật khẩu mới và xác nhận mật khẩu có khớp không
+            // Kiểm tra mật khẩu xác nhận
             if ($newPassword !== $confirmPassword) {
-                $confirmPasswordError = "Mật khẩu mới và xác nhận mật khẩu không khớp.";
-            }
-
-            // Nếu không có lỗi, cập nhật mật khẩu
-            if (empty($phoneError) && empty($passwordError) && empty($confirmPasswordError)) {
+                $confirmPasswordError = "Mật khẩu xác nhận không khớp.";
+            } elseif (strlen($newPassword) < 6) {
+                $passwordError = "Mật khẩu phải có ít nhất 6 ký tự.";
+            } else {
                 // Cập nhật mật khẩu mới
                 $stmt = $conn->prepare("UPDATE khach_hang SET mat_khau = ? WHERE so_dien_thoai = ?");
                 $stmt->bind_param("ss", $newPassword, $phone);
-                $stmt->execute();
-
-                // Thông báo thành công
-                $successMessage = "Mật khẩu đã được thay đổi thành công.";
-                $redirect = true; // Biến này sẽ chỉ ra rằng chúng ta cần chuyển hướng sau khi đổi mật khẩu
+                if ($stmt->execute()) {
+                    $successMessage = "✅ Đổi mật khẩu thành công! Đang chuyển hướng đến trang đăng nhập...";
+                    header("refresh:2;url=login.php");
+                } else {
+                    $passwordError = "Đã có lỗi xảy ra. Vui lòng thử lại.";
+                }
             }
         }
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -60,156 +53,215 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quên mật khẩu</title>
-    <link rel="stylesheet" href="/fontend/css/quenmk.css">
-    <link rel="stylesheet" href="/fontend/css/style.css">
     <style>
-        .no-border-iframe {
-            border: none;
-            outline: none;
-            width: 100%;
-            height: 100px; /* Tuỳ kích thước taskbar */
-        }
+     /* --- RESET --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-       /* RESET CƠ BẢN */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* canh phải giống login */
+    min-height: 100vh;
+    margin: 0;
+    color: #333;
+}
+
+/* --- LỚP MỜ PHỦ LÊN NỀN --- */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: -1;
+}
+
+/* --- CONTAINER CHÍNH --- */
+.container {
+    margin-left: 65%; /* cùng vị trí với login */
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+/* --- KHUNG NGOÀI --- */
+.forgot-password-box {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    padding: 40px 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.forgot-password-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* --- HEADER TRÊN CÙNG --- */
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.header-row h2 {
+    font-size: 26px;
+    font-weight: bold;
+    color: #d70018;
+}
+
+.back-button {
+    position: absolute;
+    left: 0;
+    text-decoration: none;
+    font-size: 24px;
+    color: #d70018;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.back-button:hover {
+    transform: translateX(-4px);
+}
+
+/* --- MÔ TẢ NGẮN --- */
+.forgot-password-box p {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+/* --- INPUT FORM --- */
+form label {
+    display: block;
+    text-align: left;
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #222;
+}
+
+form input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+form input:focus {
+    outline: none;
+    border-color: #d70018;
+    box-shadow: 0 0 5px rgba(215, 0, 24, 0.3);
+}
+
+/* --- NÚT SUBMIT --- */
+.continue-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #d70018;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.continue-btn:hover {
+    background-color: #b30013;
+}
+
+/* --- THÔNG BÁO LỖI / THÀNH CÔNG --- */
+#phone-error,
+form p {
+    color: red;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+form p[style*="green"] {
+    color: green;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
     body {
-        font-family: Arial, sans-serif;
-        background-color: #f9f9f9;
-    }
-
-    /* CONTAINER CHÍNH */
-    .boxcenter {
-        width: 100%;
-        margin: 0 auto;
-    }
-
-    /* HEADER CHUẨN HÓA */
-    header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: rgb(187, 49, 49);
-        color: white;
-        height: 54.4px;
-        padding: 0 20px;
-        margin: 0 auto;
-        flex-wrap: wrap;
-        position: relative;
-        width: 100%;
-    }
-
-    /* LOGO */
-    .logo {
-        font-size: 20px;
-        font-weight: bold;
-        padding-top: 15px;
-    }
-
-    /* THANH TÌM KIẾM */
-    .search-box {
-        flex: 1;
-        display: flex;
         justify-content: center;
-        
-    }
-    .search-box input {
-        width: 100%;
-        max-width: 400px;
-        padding: 8px 15px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 14px;.
-    }
-
-    /* NÚT ĐĂNG NHẬP + GIỎ HÀNG */
-    .nav-right {
-        flex: 0 0 auto;
-        display: flex;
-        gap: 10px;
-    }
-    .cart, .login-btn {
-        background: white;
-        color: #d32f2f;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        height: 34.4px;
-        font-weight: bold;
-        font-size: 13px;
-        width: 118.06px;
-    }
-    .cart:hover, .login-btn:hover {
-        background-color: #f0f0f0;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-        header {
-            flex-direction: column;
-            height: auto;
-            padding: 10px;
-        }
-
-        .search-box {
-            margin: 10px 0;
-            width: 100%;
-        }
-
-        .nav-right {
-            justify-content: center;
-            width: 100%;
-            flex-wrap: wrap;
-        }
-
-        .cart, .login-btn {
-            margin: 5px;
-        }
+        padding: 20px;
     }
 
     .container {
-    text-align: center;
-    width: 100%;
-    max-width: 500px;
-    margin-top: 40px;
+        margin-left: 0;
+        max-width: 90%;
     }
 
+    .forgot-password-box {
+        padding: 30px 20px;
+    }
+}
+.forgot-password-box a {
+    display: inline-block;
+    margin-top: 20px;
+    color: #d70018;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.forgot-password-box a:hover {
+    color: #d70018;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    text-align: center;
+    color: #333;
+    animation: fadeIn 0.4s ease forwards;
+    z-index: 1000;
+}
+
+.popup.success {
+    border-left: 6px solid #28a745;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
     </style>
 
     
 </head>
 <body>
-<header>
-    <div class="logo">Apple.Acsr</div>
-  
-    <div class="nav-right">
-        <button class="cart">🛒 Giỏ hàng</button>
-        <div class="dropdown">
-            <?php if (isset($_SESSION['ten_khach_hang'])): ?>
-                <button id="loginBtn" class="login-btn">
-                    👤 <?php echo htmlspecialchars($_SESSION['ten_khach_hang']); ?>
-                </button>
-                <div class="dropdown-menu" style="display: none;">
-                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
-                        <a href="http://localhost/WEB_PhuKien/Admin/tongquan.php" id="ThongTinTaiKhoan">Trang cá nhân</a>
-                    <?php endif; ?>
-                    <a href="../model/logout.php" id="logoutBtn">Đăng xuất</a>
-                </div>
-            <?php else: ?>
-                <button id="loginBtn" class="login-btn" onclick="window.location.href='../view/login.php'">👤 Đăng nhập</button>
-            <?php endif; ?>
-        </div>
-    </div>
-</header>
-
     <div class="container">
         <div class="forgot-password-box">
             <div class="header-row">
-                <a href="login.php" class="back-button">←</a> 
+                
                 <h2>Quên mật khẩu</h2>
             </div>
             <p>Hãy nhập số điện thoại của bạn vào bên dưới để bắt đầu quá trình khôi phục mật khẩu.</p>
@@ -220,8 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="phone">Nhập vào số điện thoại của bạn</label>
                     <input type="text" id="phone" name="phone" placeholder="" required>
 
-                    <label for="old_password">Nhập mật khẩu cũ</label>
-                    <input type="password" id="old_password" name="old_password" placeholder="" required>
+                  
 
                     <label for="new_password">Nhập mật khẩu mới</label>
                     <input type="password" id="new_password" name="new_password" placeholder="" required>
@@ -236,6 +287,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p style="color: red;"><?php echo $confirmPasswordError; ?></p>
 
                     <button type="submit" class="continue-btn">Đổi mật khẩu</button>
+                    <a href="login.php">Quay lại trang đăng nhập</a> 
                 </form>
 
                 <?php if (isset($successMessage)): ?>
@@ -246,36 +298,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <?php if (isset($redirect) && $redirect): ?>
-        <script>
-            setTimeout(function() {
-                window.location.href = "login.php";
-            }, 2000); // Chuyển hướng sau 2 giây
-        </script>
-    <?php endif; ?>
+    <?php if (!empty($success_message)): ?>
+    <div class="popup success">
+        <?= htmlspecialchars($success_message) ?>
+    </div>
+<?php endif; ?>
 
-    <script src="../script/script1.js"></script>.
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const loginBtn = document.getElementById("loginBtn");
-    const dropdownMenu = document.querySelector(".dropdown-menu");
 
-    if (loginBtn && dropdownMenu) {
-        loginBtn.addEventListener("click", function (e) {
-            e.stopPropagation(); // Ngăn việc click lan ra ngoài
-            dropdownMenu.style.display = dropdownMenu.style.display === "none" ? "block" : "none";
-        });
-
-        // Ẩn dropdown khi click ra ngoài
-        document.addEventListener("click", function () {
-            dropdownMenu.style.display = "none";
-        });
-
-        dropdownMenu.addEventListener("click", function (e) {
-            e.stopPropagation(); // Click trong menu không ẩn nó
-        });
-    }
-});
-</script>
 </body>
 </html>
