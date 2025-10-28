@@ -13,8 +13,8 @@ try {
     die("Kết nối DB thất bại: " . $e->getMessage());
 }
 
-// Biến để lưu thông tin đơn hàng
-$orders = [];
+// Biến để lưu thông tin đơn hàng mới nhất
+$order = [];
 
 if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SESSION['so_dien_thoai'])) {
     $so_dien_thoai = $_SESSION['so_dien_thoai'];
@@ -27,7 +27,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
         $id_khach_hang = $user['id_khach_hang'];
         $_SESSION['ten_khach_hang'] = $user['ten_khach_hang']; // Đảm bảo tên được lưu trong session
 
-        // Lấy danh sách đơn hàng
+        // Lấy đơn hàng mới nhất
         $stmt = $pdo->prepare("
             SELECT dh.*, kh.ten_khach_hang, kh.so_dien_thoai, kh.dia_chi,
                    ncs.ho_ten AS ten_cham_soc, ncs.id_cham_soc AS caregiver_id
@@ -36,15 +36,16 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
             LEFT JOIN nguoi_cham_soc ncs ON dh.id_cham_soc = ncs.id_cham_soc
             WHERE dh.id_khach_hang = :id_kh
             ORDER BY dh.ngay_dat DESC
+            LIMIT 1
         ");
         $stmt->bindValue(':id_kh', $id_khach_hang, PDO::PARAM_INT);
         $stmt->execute();
-        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
 
 // Xử lý hủy đơn hàng
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_POST['id']) && !empty($orders)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_POST['id']) && $order) {
     $id_to_cancel = intval($_POST['id']);
     $stmt_check = $pdo->prepare("SELECT trang_thai FROM don_hang WHERE id_don_hang = :id");
     $stmt_check->execute(['id' => $id_to_cancel]);
@@ -80,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
             background-color: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 600px;
             position: relative;
@@ -97,48 +98,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
             color: #1a73e8;
             text-align: center;
             margin-bottom: 20px;
-            margin-top: 40px; /* Điều chỉnh để tránh chồng lên user-info */
+            margin-top: 40px;
         }
         .invoice {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
             background-color: #fff;
+            margin-bottom: 20px;
         }
-        .invoice h2 {
+        .invoice-header {
+            border-bottom: 2px solid #1a73e8;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .invoice-header h2 {
             color: #333;
-            font-size: 1.2em;
-            margin-bottom: 10px;
+            font-size: 1.5em;
+            margin: 0;
         }
-        .invoice .details {
-            margin: 10px 0;
+        .invoice-details {
+            margin: 15px 0;
             color: #555;
         }
-        .invoice .details .label {
+        .invoice-details .label {
             font-weight: bold;
+            color: #333;
         }
-        .invoice .total {
-            font-size: 1.2em;
+        .invoice-details div {
+            margin: 8px 0;
+        }
+        .invoice-total {
+            border-top: 2px solid #e0e0e0;
+            padding-top: 15px;
+            text-align: right;
+            font-size: 1.3em;
             font-weight: bold;
             color: #d32f2f;
-            text-align: right;
-            margin-top: 10px;
         }
         .buttons {
             display: flex;
             gap: 10px;
             justify-content: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
         button, a.button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             transition: background-color 0.3s;
             text-decoration: none;
             color: white;
+            font-size: 16px;
         }
         .btn-cancel {
             background-color: #f44336;
@@ -158,11 +170,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
         .btn-home:hover {
             background-color: #1557a0;
         }
+        .no-orders {
+            color: #d32f2f;
+            text-align: center;
+            margin-top: 20px;
+        }
         @media (max-width: 600px) {
-            .container { padding: 10px; }
-            .invoice { padding: 10px; }
+            .container { padding: 15px; }
+            .invoice { padding: 15px; }
             .buttons { flex-direction: column; }
-            button, a.button { width: 100%; margin-bottom: 5px; }
+            button, a.button { width: 100%; margin-bottom: 10px; }
             .user-info { left: 10px; font-size: 14px; }
             h1 { margin-top: 50px; }
         }
@@ -175,39 +192,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
         <?php endif; ?>
         <h1>Chi Tiết Đơn Hàng</h1>
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SESSION['so_dien_thoai'])): ?>
-            <?php if (empty($orders)): ?>
-                <div style="color: #d32f2f; text-align: center;">Bạn chưa có đơn hàng nào.</div>
+            <?php if (empty($order)): ?>
+                <div class="no-orders">Bạn chưa có đơn hàng nào.</div>
             <?php else: ?>
-                <?php foreach ($orders as $order): ?>
-                    <div class="invoice">
-                        <h2>Hóa Đơn Đơn Hàng #<?php echo htmlspecialchars($order['id_don_hang']); ?></h2>
-                        <div class="details">
-                            <div><span class="label">Tên Khách Hàng:</span> <?php echo htmlspecialchars($order['ten_khach_hang']); ?></div>
-                            <div><span class="label">Địa Chỉ:</span> <?php echo htmlspecialchars($order['dia_chi_giao_hang'] ?? $order['dia_chi']); ?></div>
-                            <div><span class="label">Số Điện Thoại:</span> <?php echo htmlspecialchars($order['so_dien_thoai']); ?></div>
-                            <div><span class="label">Ngày Đặt:</span> <?php echo htmlspecialchars($order['ngay_dat']); ?></div>
-                            <div><span class="label">Tổng Tiền:</span> <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
-                            <div><span class="label">Trạng Thái:</span> <?php echo htmlspecialchars($order['trang_thai']); ?></div>
-                            <div><span class="label">Thời Gian Bắt Đầu:</span> <?php echo htmlspecialchars($order['thoi_gian_bat_dau']); ?></div>
-                            <div><span class="label">Thời Gian Kết Thúc:</span> <?php echo htmlspecialchars($order['thoi_gian_ket_thuc']); ?></div>
-                            <div><span class="label">Người Chăm Sóc:</span> <?php echo htmlspecialchars($order['ten_cham_soc'] ?? 'Chưa gán'); ?></div>
-                        </div>
-                        <div class="total">Tổng: <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
-                        <div class="buttons">
-                            <?php if ($order['trang_thai'] === 'Chờ xác nhận'): ?>
-                                <form method="POST" style="margin: 0;">
-                                    <input type="hidden" name="id" value="<?php echo $order['id_don_hang']; ?>">
-                                    <button type="submit" class="btn-cancel" name="cancel" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng?');">Hủy</button>
-                                </form>
-                            <?php endif; ?>
-                            <?php if ($order['caregiver_id']): ?>
-                                <a href="Chatkhachhang.php?id=<?php echo $order['caregiver_id']; ?>" class="button btn-chat">Chat Với Người Chăm Sóc</a>
-                            <?php endif; ?>
-                        </div>
+                <div class="invoice">
+                    <div class="invoice-header">
+                        <h2>Hóa Đơn Thanh Toán #<?php echo htmlspecialchars($order['id_don_hang']); ?></h2>
                     </div>
-                <?php endforeach; ?>
+                    <div class="invoice-details">
+                        <div><span class="label">Tên Khách Hàng:</span> <?php echo htmlspecialchars($order['ten_khach_hang']); ?></div>
+                        <div><span class="label">Địa Chỉ Giao Hàng:</span> <?php echo htmlspecialchars($order['dia_chi_giao_hang'] ?? $order['dia_chi']); ?></div>
+                        <div><span class="label">Số Điện Thoại:</span> <?php echo htmlspecialchars($order['so_dien_thoai']); ?></div>
+                        <div><span class="label">Ngày Đặt:</span> <?php echo htmlspecialchars($order['ngay_dat']); ?></div>
+                        <div><span class="label">Tổng Tiền:</span> <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
+                        <div><span class="label">Trạng Thái:</span> <?php echo htmlspecialchars($order['trang_thai']); ?></div>
+                        <div><span class="label">Thời Gian Bắt Đầu:</span> <?php echo htmlspecialchars($order['thoi_gian_bat_dau']); ?></div>
+                        <div><span class="label">Thời Gian Kết Thúc:</span> <?php echo htmlspecialchars($order['thoi_gian_ket_thuc']); ?></div>
+                        <div><span class="label">Người Chăm Sóc:</span> <?php echo htmlspecialchars($order['ten_cham_soc'] ?? 'Chưa gán'); ?></div>
+                    </div>
+                    <div class="invoice-total">Tổng: <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
+                    <div class="buttons">
+                        <?php if ($order['trang_thai'] === 'Chờ xác nhận'): ?>
+                            <form method="POST" style="margin: 0;">
+                                <input type="hidden" name="id" value="<?php echo $order['id_don_hang']; ?>">
+                                <button type="submit" class="btn-cancel" name="cancel" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng?');">Hủy Đơn</button>
+                            </form>
+                        <?php endif; ?>
+                        <?php if ($order['caregiver_id']): ?>
+                            <a href="Chatkhachhang.php?id=<?php echo $order['caregiver_id']; ?>" class="button btn-chat">Chat Với Người Chăm Sóc</a>
+                        <?php endif; ?>
+                        <a href="Dichvu.php" class="button btn-home">Quay Về Trang Chủ</a>
+                    </div>
+                </div>
             <?php endif; ?>
-            <a href="Dichvu.php" class="login-button btn-home">Quay Về Trang Chủ</a>
         <?php else: ?>
             <div style="color: #d32f2f; text-align: center; margin-top: 20px;">Bạn cần đăng nhập để xem chi tiết đơn hàng.</div>
         <?php endif; ?>
