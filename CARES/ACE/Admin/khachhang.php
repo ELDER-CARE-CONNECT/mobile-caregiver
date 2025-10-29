@@ -5,148 +5,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lí Khách Hàng</title>
+    <title>Quản Lí Khách Hàng</title>
     <link rel="stylesheet" href="fontend/css/khachhang.css">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
     <style>
-       body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background-color: #f5f7fb;
-    color: #222;
-    margin: 0;
-    padding: 0;
-}
+    /* ===== Tổng thể ===== */
+    body {
+        font-family: "Segoe UI", sans-serif;
+        background-color: #f0f4f8;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
 
-.main-content {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    padding: 20px;
-    margin: 20px;
-}
+    /* ===== Bố cục ===== */
+    .container {
+        display: flex;
+        min-height: 100vh;
+    }
 
-h1 {
-    color: #1a237e;
-    font-size: 26px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+    .main-content {
+        flex-grow: 1;
+        background: #fff;
+        padding: 25px 40px;
+        border-radius: 12px;
+        margin: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
 
-h2 {
-    color: #333;
-    font-size: 20px;
-    margin-bottom: 15px;
-    border-left: 5px solid #007bff;
-    padding-left: 8px;
-}
+    /* ===== Thanh navbar ===== */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 15px;
+        margin-bottom: 10px;
+    }
 
-/* Bảng khách hàng */
-table {
-    border-collapse: collapse;
-    width: 98%;
-    margin: 0 auto;
-    background-color: #ffffff;
-    border-radius: 10px;
-    overflow: hidden;
-}
+    .navbar h1 {
+        color: #3498db;
+        font-size: 22px;
+        font-weight: 600;
+    }
 
-th {
-    background-color: #007bff;
-    color: #100e0eff;
-    font-weight: bold;
-    padding: 10px;
-    text-align: center;
-    font-size: 15px;
-    border-bottom: 3px solid #0056b3;
-}
+    /* ===== Ô tìm kiếm ===== */
+    .search input {
+        padding: 7px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        width: 260px;
+    }
 
-td {
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddddddff;
-    color: #222;
-    font-size: 15px;
-}
+    .search button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 7px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
 
-tr:hover {
-    background-color: #f0f8ff;
-    transition: background 0.3s;
-}
+    .search button:hover {
+        background: #2980b9;
+    }
 
-/* Ảnh khách hàng */
-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 6px;
-    object-fit: cover;
-}
+    /* ===== Tiêu đề phụ ===== */
+    h2 {
+        color: #2c3e50;
+        font-size: 20px;
+        margin-bottom: 15px;
+        border-left: 5px solid #3498db;
+        padding-left: 10px;
+    }
 
+    /* ===== Bảng dữ liệu ===== */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
 
-/* Nút xem đơn hàng */
-.show-orders {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
+    th {
+        background: #3498db;
+        color: #fff;
+        padding: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 14px;
+        text-align: center;
+    }
 
-.show-orders:hover {
-    background-color: #218838;
-    transform: scale(1.05);
-}
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+        font-size: 15px;
+        color: #2c3e50;
+    }
 
-/* Thanh tìm kiếm */
-.search input {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    outline: none;
-    transition: all 0.2s;
-}
+    tr:nth-child(even) {
+        background: #f9f9f9;
+    }
 
-.search input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 4px rgba(0,123,255,0.4);
-}
+    tr:hover {
+        background: #eaf4ff;
+        transition: 0.2s;
+    }
 
-.search button {
-    padding: 8px 12px;
-    border: none;
-    background: #007bff;
-    color: white;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-}
+    /* ===== Ảnh khách hàng ===== */
+    img {
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        object-fit: cover;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
 
-.search button:hover {
-    background-color: #0056b3;
-}
+    /* ===== Nút xem đơn hàng ===== */
+    .show-orders {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
 
-/* Dòng chi tiết đơn hàng */
-.order-details-row {
-    background-color: #f8f9fa;
-}
+    .show-orders:hover {
+        background-color: #2980b9;
+        transform: scale(1.05);
+    }
 
-.order-details-row table {
-    background: #fff;
-    border: 1px solid #3e2020ff;
-    width: 100%;
-}
+    /* ===== Dòng chi tiết đơn hàng ===== */
+    .order-details-row {
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
 
-.order-details-row th {
-    background-color: #6c757d;
-    color: white;
-}
+    .order-details-row table {
+        width: 100%;
+        border: 1px solid #ddd;
+        margin-top: 8px;
+        border-radius: 6px;
+    }
+
+    .order-details-row th {
+        background-color: #5dade2;
+        color: white;
+        padding: 6px;
+    }
+
+    .order-details-row td {
+        background-color: #fff;
+    }
     </style>
 </head>
+
 <body>
 <div class="container">
     <?php 
@@ -198,9 +222,7 @@ img {
                     if ($result && $result->num_rows > 0) {
                         while($row = $result->fetch_assoc()) {
                             $id = $row['id_khach_hang'];
-
-                            $orderSummary = $conn->query("SELECT COUNT(*) AS tong_don, SUM(tong_tien) AS tong_tien 
-                                                          FROM don_hang WHERE id_khach_hang = $id");
+                            $orderSummary = $conn->query("SELECT COUNT(*) AS tong_don, SUM(tong_tien) AS tong_tien FROM don_hang WHERE id_khach_hang = $id");
                             $summary = $orderSummary->fetch_assoc();
                             $tong_don = $summary['tong_don'] ?? 0;
                             $tong_tien = $summary['tong_tien'] ?? 0;
@@ -226,10 +248,9 @@ img {
                             echo "<td><button class='show-orders' data-id='{$id}'>Xem đơn hàng</button></td>";
                             echo "</tr>";
 
-                            // Chi tiết đơn hàng (ĐÃ CHỈNH)
                             echo "<tr class='order-details-row' id='orders-{$id}' style='display:none;'>
                                     <td colspan='12'>
-                                    <table border='1' cellpadding='4' cellspacing='0'>
+                                    <table>
                                         <tr>
                                             <th>Mã đơn hàng</th>
                                             <th>Ngày đặt</th>
@@ -275,7 +296,7 @@ img {
 $(document).ready(function(){
     $(".show-orders").click(function(){
         const id = $(this).data("id");
-        $("#orders-" + id).toggle(300);
+        $("#orders-" + id).slideToggle(300);
     });
 });
 </script>
