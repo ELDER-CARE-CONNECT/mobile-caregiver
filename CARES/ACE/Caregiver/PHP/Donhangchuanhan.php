@@ -2,13 +2,16 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
-  <title>Đơn Hàng Đã Xác Nhận - Caregiver</title>
+  <title>Đơn Hàng Chưa Nhận - Caregiver</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
   <style>
     :root{
-      --xanh:#0b5ed7; --xanh-nhat:#eaf2ff; --vien:#e7e9ef; --chu:#1a1d29;
+      --xanh:#0b5ed7; 
+      --xanh-nhat:#eaf2ff; 
+      --vien:#e7e9ef; 
+      --chu:#1a1d29;
     }
     *{box-sizing:border-box} html,body{height:100%}
     body{
@@ -114,7 +117,6 @@
 
     /* BRIDGE: nếu không có sidebar thì bỏ layout 2 cột */
     body:has(.cg-wrap):not(:has(.sidebar)){ display:block; grid-template-columns:unset }
-    
 
     /* Mobile */
     @media (max-width:600px){
@@ -126,8 +128,8 @@
 <body>
   <main class="cg-wrap">
     <header class="cg-header">
-      <h1>Đơn Hàng Đã Xác Nhận</h1>
-      <p>Hiển thị tất cả đơn ở trạng thái <b> Đã Xác Nhận </b></p>
+      <h1>Đơn Hàng Đang Chờ Nhận</h1>
+      <p>Hiển thị tất cả đơn ở trạng thái <b>chờ xác nhận / chưa gán người chăm sóc</b></p>
     </header>
 
     <!-- Thanh tìm kiếm mới -->
@@ -146,66 +148,76 @@
     </form>
 
     <div class="cg-topbar">
-      <span id="summaryLine" class="cg-muted">Tổng đơn hàng: </span>
+      <span id="summaryLine" class="cg-muted">Tổng đơn hàng: 18</span>
       <div class="cg-pager">
         <button id="prevBtn" class="cg-pagebtn" disabled><i class="fas fa-chevron-left"></i> Trước</button>
-        <span id="pageInfo" class="cg-muted">Trang 1/1</span>
+        <span id="pageInfo" class="cg-muted">Trang 1/2</span>
         <button id="nextBtn" class="cg-pagebtn">Sau <i class="fas fa-chevron-right"></i></button>
       </div>
     </div>
 
-    <!-- Danh sách đơn hàng từ CSDL -->
+    <!-- Danh sách thẻ giả lập -->
     <section id="cg-list" class="cg-grid">
-      <?php if (empty($orders)): ?>
-        <div class="cg-empty">
-          <i class="fas fa-inbox"></i>
-          <p>Chưa có đơn hàng nào đã xác nhận</p>
+      <!-- Ví dụ 1 -->
+      <div class="cg-card" data-order-id="42">
+        <div class="cg-card-header">
+          <h3>Đơn hàng #42</h3>
+          <span class="cg-status cg-status-pending">CHỜ XÁC NHẬN</span>
         </div>
-        <?php else: ?>
-        <?php foreach ($orders as $order): ?>
-          <div class="cg-card" data-order-id="<?= $order['id_don_hang'] ?>">
-            <div class="cg-card-header">
-              <h3>Đơn hàng #<?= $order['id_don_hang'] ?></h3>
-              <span class="cg-status cg-status-pending"><?= strtoupper($order['trang_thai']) ?></span>
-            </div>
-            <div class="cg-card-body">
-              <div class="cg-info-row">
-                <i class="fas fa-user"></i>
-                <span class="cg-label">Khách hàng:</span>
-                <span class="cg-value"><?= htmlspecialchars($order['ten_khach_hang']) ?></span>
-              </div>
-              <div class="cg-info-row">
-                <i class="fas fa-phone"></i>
-                <span class="cg-label">SĐT:</span>
-                <span class="cg-value"><?= htmlspecialchars($order['so_dien_thoai']) ?></span>
-              </div>
-              <div class="cg-info-row">
-                <i class="fas fa-calendar"></i>
-                <span class="cg-label">Ngày đặt:</span>
-                <span class="cg-value"><?= date('d/m/Y', strtotime($order['ngay_dat'])) ?></span>
-              </div>
-              <div class="cg-info-row">
-                <i class="fas fa-clock"></i>
-                <span class="cg-label">Thời gian:</span>
-                <span class="cg-value"><?= $order['thoi_gian_bat_dau'] ?> - <?= $order['thoi_gian_ket_thuc'] ?></span>
-              </div>
-              <div class="cg-info-row">
-                <i class="fas fa-map-marker-alt"></i>
-                <span class="cg-label">Địa chỉ:</span>
-                <span class="cg-value"><?= htmlspecialchars($order['dia_chi_giao_hang']) ?></span>
-              </div>
-              <div class="cg-info-row cg-price">
-                <i class="fas fa-money-bill-wave"></i>
-                <span class="cg-label">Tổng tiền:</span>
-                <span class="cg-value cg-price-value"><?= number_format($order['tong_tien'], 0, ',', '.') ?> ₫</span>
-              </div>
-            </div>
-            <div class="cg-card-footer">
-              <button class="cg-btn cg-btn-primary" onclick="cancelOrder(<?= $order['id_don_hang'] ?>)">
-                <i class="fas fa-times"></i> Huỷ đơn
-              </button>
-              <button class="cg-btn cg-btn-ghost" onclick="viewDetails(<?= $order['id_don_hang'] ?>)">
-                <i class="fas fa-eye"></i> Chi tiết
-              </button>
-            </div>
-          </div>
+        <div class="cg-card-body">
+          <div class="cg-info-row"><i class="fas fa-user"></i><span class="cg-label">Khách hàng:</span><span class="cg-value">Gia An</span></div>
+          <div class="cg-info-row"><i class="fas fa-phone"></i><span class="cg-label">SĐT:</span><span class="cg-value">334290589</span></div>
+          <div class="cg-info-row"><i class="fas fa-calendar"></i><span class="cg-label">Ngày đặt:</span><span class="cg-value">06/05/2025</span></div>
+          <div class="cg-info-row"><i class="fas fa-clock"></i><span class="cg-label">Thời gian:</span><span class="cg-value">00:00 - 00:00</span></div>
+          <div class="cg-info-row"><i class="fas fa-map-marker-alt"></i><span class="cg-label">Địa chỉ:</span><span class="cg-value">asdiasdias</span></div>
+          <div class="cg-info-row cg-price"><i class="fas fa-money-bill-wave"></i><span class="cg-label">Tổng tiền:</span><span class="cg-value cg-price-value">20 VNĐ</span></div>
+        </div>
+        <div class="cg-card-footer">
+          <button class="cg-btn cg-btn-primary"><i class="fas fa-handshake"></i> Nhận đơn</button>
+          <button class="cg-btn cg-btn-ghost"><i class="fas fa-eye"></i> Chi tiết</button>
+        </div>
+      </div>
+
+      <!-- Ví dụ 2 -->
+      <div class="cg-card" data-order-id="41">
+        <div class="cg-card-header">
+          <h3>Đơn hàng #41</h3>
+          <span class="cg-status cg-status-pending">CHỜ XÁC NHẬN</span>
+        </div>
+        <div class="cg-card-body">
+          <div class="cg-info-row"><i class="fas fa-user"></i><span class="cg-label">Khách hàng:</span><span class="cg-value">Gia An</span></div>
+          <div class="cg-info-row"><i class="fas fa-phone"></i><span class="cg-label">SĐT:</span><span class="cg-value">334290562</span></div>
+          <div class="cg-info-row"><i class="fas fa-calendar"></i><span class="cg-label">Ngày đặt:</span><span class="cg-value">05/05/2025</span></div>
+          <div class="cg-info-row"><i class="fas fa-clock"></i><span class="cg-label">Thời gian:</span><span class="cg-value">00:00 - 00:00</span></div>
+          <div class="cg-info-row"><i class="fas fa-map-marker-alt"></i><span class="cg-label">Địa chỉ:</span><span class="cg-value">0</span></div>
+          <div class="cg-info-row cg-price"><i class="fas fa-money-bill-wave"></i><span class="cg-label">Tổng tiền:</span><span class="cg-value cg-price-value">160 VNĐ</span></div>
+        </div>
+        <div class="cg-card-footer">
+          <button class="cg-btn cg-btn-primary"><i class="fas fa-handshake"></i> Nhận đơn</button>
+          <button class="cg-btn cg-btn-ghost"><i class="fas fa-eye"></i> Chi tiết</button>
+        </div>
+      </div>
+
+      <!-- Ví dụ 3 -->
+      <div class="cg-card" data-order-id="40">
+        <div class="cg-card-header">
+          <h3>Đơn hàng #40</h3>
+          <span class="cg-status cg-status-pending">CHỜ XÁC NHẬN</span>
+        </div>
+        <div class="cg-card-body">
+          <div class="cg-info-row"><i class="fas fa-user"></i><span class="cg-label">Khách hàng:</span><span class="cg-value">Minh Thư</span></div>
+          <div class="cg-info-row"><i class="fas fa-phone"></i><span class="cg-label">SĐT:</span><span class="cg-value">0978 555 222</span></div>
+          <div class="cg-info-row"><i class="fas fa-calendar"></i><span class="cg-label">Ngày đặt:</span><span class="cg-value">04/05/2025</span></div>
+          <div class="cg-info-row"><i class="fas fa-clock"></i><span class="cg-label">Thời gian:</span><span class="cg-value">08:00 - 10:00</span></div>
+          <div class="cg-info-row"><i class="fas fa-map-marker-alt"></i><span class="cg-label">Địa chỉ:</span><span class="cg-value">Q.1, TP.HCM</span></div>
+          <div class="cg-info-row cg-price"><i class="fas fa-money-bill-wave"></i><span class="cg-label">Tổng tiền:</span><span class="cg-value cg-price-value">350.000 VNĐ</span></div>
+        </div>
+        <div class="cg-card-footer">
+          <button class="cg-btn cg-btn-primary"><i class="fas fa-handshake"></i> Nhận đơn</button>
+          <button class="cg-btn cg-btn-ghost"><i class="fas fa-eye"></i> Chi tiết</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
