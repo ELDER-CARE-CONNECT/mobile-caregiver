@@ -50,8 +50,10 @@ $avg_result = $conn->query($avg_sql);
 $avg_star = 0;
 if ($avg_result && $avg_result->num_rows > 0) {
     $avg_data = $avg_result->fetch_assoc();
- $avg_star = $avg_data['trung_binh'] !== null ? round($avg_data['trung_binh'], 2) : 0;
-
+    // ✅ Làm tròn 1 chữ số thập phân, hiển thị dạng 4.3 / 5 ⭐
+    $avg_star = $avg_data['trung_binh'] !== null 
+        ? number_format(round($avg_data['trung_binh'], 1), 1) 
+        : 0;
 }
 ?>
 
