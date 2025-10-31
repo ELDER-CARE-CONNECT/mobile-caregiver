@@ -49,7 +49,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi Tiết Lịch Sử Đơn Hàng</title>
+    <title>Biên Nhận Đơn Hàng Đã Hoàn Thành</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -79,10 +79,12 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
             font-weight: bold;
         }
         h1 {
-            color: #1a73e8;
+            color: #333;
             text-align: center;
             margin-bottom: 20px;
             margin-top: 40px;
+            font-size: 24px;
+            font-weight: bold;
         }
         .bill {
             border: 1px solid #e0e0e0;
@@ -91,37 +93,67 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
             background-color: #fff;
             margin-bottom: 20px;
         }
-        .bill-header {
-            border-bottom: 2px dashed #1a73e8;
-            padding-bottom: 10px;
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 18px;
             margin-bottom: 15px;
-        }
-        .bill-header h2 {
             color: #333;
-            font-size: 1.5em;
-            margin: 0;
-            text-transform: uppercase;
         }
-        .bill-details {
-            margin: 15px 0;
+        .section-content {
             color: #555;
+            line-height: 1.6;
         }
-        .bill-details .label {
+        .section-content .label {
             font-weight: bold;
             color: #333;
             width: 150px;
             display: inline-block;
         }
-        .bill-details div {
+        .section-content div {
             margin: 8px 0;
         }
-        .bill-total {
-            border-top: 2px dashed #e0e0e0;
-            padding-top: 15px;
-            text-align: right;
-            font-size: 1.3em;
+        .product-name {
             font-weight: bold;
-            color: #d32f2f;
+            margin-bottom: 10px;
+        }
+        .order-details {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .order-details div {
+            width: 48%;
+            margin-bottom: 10px;
+        }
+        .price-breakdown {
+            width: 100%;
+        }
+        .price-breakdown div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .total-section {
+            border-top: 2px solid #e0e0e0;
+            padding-top: 15px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .status-completed {
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 16px;
         }
         .buttons {
             display: flex;
@@ -138,6 +170,8 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
             text-decoration: none;
             color: white;
             font-size: 16px;
+            text-align: center;
+            display: inline-block;
         }
         .btn-reorder {
             background-color: #ff9800;
@@ -161,6 +195,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
             color: #d32f2f;
             text-align: center;
             margin-top: 20px;
+            font-size: 18px;
         }
         @media (max-width: 600px) {
             .container { padding: 15px; }
@@ -169,7 +204,8 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
             a.button { width: 100%; margin-bottom: 10px; }
             .user-info { left: 10px; font-size: 14px; }
             h1 { margin-top: 50px; }
-            .bill-details .label { width: 100px; }
+            .section-content .label { width: 100px; }
+            .order-details div { width: 100%; }
         }
     </style>
 </head>
@@ -178,27 +214,67 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SESSION['ten_khach_hang'])): ?>
             <div class="user-info">Chào, <?php echo htmlspecialchars($_SESSION['ten_khach_hang']); ?>!</div>
         <?php endif; ?>
-        <h1>Chi Tiết Lịch Sử Đơn Hàng</h1>
+        <h1>Biên Nhận Đơn Hàng Đã Hoàn Thành</h1>
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SESSION['so_dien_thoai'])): ?>
             <?php if (empty($order)): ?>
                 <div class="no-orders">Bạn chưa có đơn hàng nào đã hoàn thành.</div>
             <?php else: ?>
                 <div class="bill">
-                    <div class="bill-header">
-                        <h2>#<?php echo htmlspecialchars($order['id_don_hang']); ?></h2>
+                    <!-- Chi tiết giao hàng -->
+                    <div class="section">
+                        <div class="section-title">Chi tiết giao hàng</div>
+                        <div class="section-content">
+                            <div class="customer-name"><?php echo htmlspecialchars($order['ten_khach_hang']); ?></div>
+                            <div class="customer-address"><?php echo htmlspecialchars($order['dia_chi_giao_hang'] ?? $order['dia_chi']); ?></div>
+                            <div class="customer-phone"><span class="label">Số điện thoại:</span> <?php echo htmlspecialchars($order['so_dien_thoai']); ?></div>
+                        </div>
                     </div>
-                    <div class="bill-details">
-                        <div><span class="label">Tên Khách Hàng:</span> <?php echo htmlspecialchars($order['ten_khach_hang']); ?></div>
-                        <div><span class="label">Địa Chỉ Giao:</span> <?php echo htmlspecialchars($order['dia_chi_giao_hang'] ?? $order['dia_chi']); ?></div>
-                        <div><span class="label">Số Điện Thoại:</span> <?php echo htmlspecialchars($order['so_dien_thoai']); ?></div>
-                        <div><span class="label">Ngày Đặt:</span> <?php echo htmlspecialchars($order['ngay_dat']); ?></div>
-                        <div><span class="label">Tổng Tiền:</span> <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
-                        <div><span class="label">Trạng Thái:</span> <?php echo htmlspecialchars($order['trang_thai']); ?></div>
-                        <div><span class="label">Thời Gian Bắt Đầu:</span> <?php echo htmlspecialchars($order['thoi_gian_bat_dau']); ?></div>
-                        <div><span class="label">Thời Gian Kết Thúc:</span> <?php echo htmlspecialchars($order['thoi_gian_ket_thuc']); ?></div>
-                        <div><span class="label">Người Chăm Sóc:</span> <?php echo htmlspecialchars($order['ten_cham_soc'] ?? 'Chưa gán'); ?></div>
+                    
+                    <!-- Mô tả -->
+                    <div class="section">
+                        <div class="section-title">Mô tả</div>
+                        <div class="section-content">
+                            <div class="product-name">Kết nối dịch vụ chăm sóc, nâng cao chất lượng cuộc sống và sự an tâm cho người cao tuổi.</div>
+                        </div>
                     </div>
-                    <div class="bill-total">Tổng: <?php echo number_format($order['tong_tien'], 2); ?> VND</div>
+                    
+                    <!-- Người cung cấp -->
+                    <div class="section">
+                        <div class="section-title">Người cung cấp</div>
+                        <div class="section-content">
+                            <div>ELDER-CARE-CONNECT</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chi tiết đơn hàng -->
+                    <div class="section">
+                        <div class="section-title">Chi tiết đơn hàng</div>
+                        <div class="section-content">
+                            <div class="order-details">
+                                <div><span class="label">Số đơn hàng:</span> <?php echo htmlspecialchars($order['id_don_hang']); ?></div>
+                                <div><span class="label">Trạng Thái:</span> <span class="status-completed"><?php echo htmlspecialchars($order['trang_thai']); ?></span></div>
+                                <div><span class="label">Người Chăm Sóc:</span> <?php echo htmlspecialchars($order['ten_cham_soc'] ?? 'Chưa gán'); ?></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ngày đặt hàng -->
+                    <div class="section">
+                        <div class="section-title">Ngày đặt hàng</div>
+                        <div class="section-content price-breakdown">
+                            <div><span>Ngày đặt:</span> <span><?php echo htmlspecialchars($order['ngay_dat']); ?></span></div>
+                            <div><span>Thời gian bắt đầu:</span> <span><?php echo htmlspecialchars($order['thoi_gian_bat_dau']); ?></span></div>
+                            <div><span>Thời gian kết thúc:</span> <span><?php echo htmlspecialchars($order['thoi_gian_ket_thuc']); ?></span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tổng cộng -->
+                    <div class="total-section">
+                        <span>Tổng cộng (đã bao gồm VAT)</span>
+                        <span><?php echo number_format($order['tong_tien'], 2); ?> VND</span>
+                    </div>
+                    
+                    <!-- Nút chức năng -->
                     <div class="buttons">
                         <a href="http://localhost/CARES/ACE/CareSeeker/PHP/Datdonhang.php?id=<?php echo $order['id_cham_soc'] ?? ''; ?>" class="button btn-reorder">Đặt Lại Đơn Hàng</a>
                         <a href="http://localhost/CARES/ACE/CareSeeker/PHP/Danhgia.php?id_don_hang=<?php echo $order['id_don_hang']; ?>&id=<?php echo $order['id_cham_soc'] ?? ''; ?>" class="button btn-rate">Đánh Giá</a>
