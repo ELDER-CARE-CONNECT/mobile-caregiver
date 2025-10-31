@@ -293,7 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel']) && isset($_
                         <?php if ($order['caregiver_id']): ?>
                             <a href="Chatkhachhang.php?id=<?php echo $order['caregiver_id']; ?>" class="button btn-chat">Chat Với Người Chăm Sóc</a>
                         <?php endif; ?>
-                        <a href="Dichvu.php" class="button btn-home">Quay Về Trang Chủ</a>
+                        <a href=".php" class="button btn-home">Quay Về Trang Chủ</a>
                     </div>
                 </div>
             <?php endif; ?>

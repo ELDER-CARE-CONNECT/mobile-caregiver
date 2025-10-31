@@ -278,7 +278,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'khach_hang' && isset($_SE
                     <div class="buttons">
                         <a href="http://localhost/CARES/ACE/CareSeeker/PHP/Datdonhang.php?id=<?php echo $order['id_cham_soc'] ?? ''; ?>" class="button btn-reorder">Đặt Lại Đơn Hàng</a>
                         <a href="http://localhost/CARES/ACE/CareSeeker/PHP/Danhgia.php?id_don_hang=<?php echo $order['id_don_hang']; ?>&id=<?php echo $order['id_cham_soc'] ?? ''; ?>" class="button btn-rate">Đánh Giá</a>
-                        <a href="Dichvu.php" class="button btn-home">Quay Về Trang Chủ</a>
+                        <a href="index.php" class="button btn-home">Quay Về Trang Chủ</a>
                     </div>
                 </div>
             <?php endif; ?>
