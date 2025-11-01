@@ -6,47 +6,153 @@ if ($conn->connect_error) {
     die("Kết nối thất bại: " . $conn->connect_error);
 }
 
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
-    $id_cham_soc   = intval($_POST['id_cham_soc'] ?? 0);
-    $ten_khach_hang= trim($_POST['ten_khach_hang'] ?? '');
-    $so_dien_thoai = trim($_POST['so_dien_thoai'] ?? '');
-    $dia_chi       = trim($_POST['dia_chi'] ?? '');
-    $tong_tien     = floatval($_POST['tong_tien'] ?? 0);
-    $ngay_bat_dau  = $_POST['ngay_bat_dau'] ?? null; 
-    $ngay_ket_thuc = $_POST['ngay_ket_thuc'] ?? null; 
-    $gio_bat_dau   = $_POST['gio_bat_dau'] ?? null; 
-    $gio_ket_thuc  = $_POST['gio_ket_thuc'] ?? null; 
-    $phuong_thuc   = $_POST['phuong_thuc'] ?? 'cash';
+// Lấy thông tin khách hàng đang đăng nhập (nếu có)
+$id_khach_hang_session = $_SESSION['id_khach_hang'] ?? 0; 
+$user_info = null;
 
-    $errors = [];
-    if ($id_cham_soc <= 0) $errors[] = "ID người chăm sóc không hợp lệ.";
-    if ($tong_tien <= 0) $errors[] = "Tổng tiền không hợp lệ.";
-    if (!$ngay_bat_dau || !$ngay_ket_thuc) $errors[] = "Chưa chọn ngày.";
-    if (!$gio_bat_dau || !$gio_ket_thuc) $errors[] = "Chưa chọn giờ.";
-
-    if (empty($errors)) {
-        $sql = "INSERT INTO don_hang 
-            (id_khach_hang, id_cham_soc, id_danh_gia, ngay_dat, tong_tien, dia_chi_giao_hang, ten_khach_hang, so_dien_thoai, trang_thai, thoi_gian_bat_dau, thoi_gian_ket_thuc)
-            VALUES (NULL, ?, 0, CURDATE(), ?, ?, ?, ?, 'Chờ xác nhận', ?, ?)";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) {
-            $errors[] = "Lỗi prepare: " . $conn->error;
-        } else {
-            $stmt->bind_param("idsssss", $id_cham_soc, $tong_tien, $dia_chi, $ten_khach_hang, $so_dien_thoai, $gio_bat_dau, $gio_ket_thuc);
-            if ($stmt->execute()) {
-                $stmt->close();
-                $conn->close();
-                header("Location: chitiet_chamsoc.php?id=" . $id_cham_soc . "&booked=1");
-                exit;
-            } else {
-                $errors[] = "Lỗi khi lưu đơn hàng: " . $stmt->error;
-                $stmt->close();
-            }
+if ($id_khach_hang_session > 0) {
+    $stmt_user = $conn->prepare("SELECT ten_khach_hang, so_dien_thoai, dia_chi FROM khach_hang WHERE id_khach_hang = ?");
+    if ($stmt_user) {
+        $stmt_user->bind_param("i", $id_khach_hang_session);
+        $stmt_user->execute();
+        $result_user = $stmt_user->get_result();
+        if ($result_user->num_rows > 0) {
+            $user_info = $result_user->fetch_assoc();
         }
+        $stmt_user->close();
     }
-    
 }
 
+$errors = []; // Khởi tạo $errors ở đây để dùng chung
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
+    // Lấy dữ liệu từ POST
+    $id_cham_soc    = intval($_POST['id_cham_soc'] ?? 0);
+    $tong_tien      = floatval($_POST['tong_tien'] ?? 0);
+    $ngay_bat_dau   = $_POST['ngay_bat_dau'] ?? null;  
+    $ngay_ket_thuc  = $_POST['ngay_ket_thuc'] ?? null;  
+    $gio_bat_dau    = $_POST['gio_bat_dau'] ?? null;  
+    $gio_ket_thuc   = $_POST['gio_ket_thuc'] ?? null;  
+    $phuong_thuc    = $_POST['phuong_thuc'] ?? 'cash';
+    
+    // Thu thập dịch vụ từ TẤT CẢ các selects đã chọn (dùng tên chung)
+    $selected_services = [];
+    
+    // Lấy giá trị đã chọn từ mỗi select
+    $service_1 = trim($_POST['dich_vu1'] ?? '');
+    $service_2 = trim($_POST['dich_vu2'] ?? '');
+    $service_3 = trim($_POST['dich_vu3'] ?? '');
+    
+    // Chỉ thêm vào mảng nếu giá trị KHÔNG rỗng (đã chọn)
+    if (!empty($service_1)) $selected_services[] = $service_1;
+    if (!empty($service_2)) $selected_services[] = $service_2;
+    if (!empty($service_3)) $selected_services[] = $service_3;
+
+    // Lấy thông tin người đặt (có thể là đặt hộ)
+    $ten_khach_hang_post = trim($_POST['ten_khach_hang'] ?? '');
+    $so_dien_thoai_post  = trim($_POST['so_dien_thoai'] ?? '');
+    $dia_chi_post        = trim($_POST['dia_chi'] ?? '');
+
+    // Quyết định thông tin cuối cùng để lưu vào DB
+    $id_khach_hang_to_insert = $id_khach_hang_session > 0 ? $id_khach_hang_session : NULL;
+    // Nếu đặt hộ, dùng thông tin đặt hộ. Nếu không, dùng thông tin session.
+    $ten_to_insert = !empty($so_dien_thoai_post) ? $ten_khach_hang_post : ($user_info['ten_khach_hang'] ?? '');
+    $sdt_to_insert = !empty($so_dien_thoai_post) ? $so_dien_thoai_post : ($user_info['so_dien_thoai'] ?? '');
+    $dia_chi_to_insert = !empty($so_dien_thoai_post) ? $dia_chi_post : ($user_info['dia_chi'] ?? '');
+
+    // Kiểm tra lỗi
+    if ($id_cham_soc <= 0) $errors[] = "ID người chăm sóc không hợp lệ.";
+    if ($tong_tien <= 0) $errors[] = "Tổng tiền không hợp lệ. Vui lòng chọn lại giờ.";
+    if (!$ngay_bat_dau || !$ngay_ket_thuc) $errors[] = "Chưa chọn ngày.";
+    if (!$gio_bat_dau || !$gio_ket_thuc) $errors[] = "Chưa chọn giờ.";
+    if (empty($sdt_to_insert) || empty($ten_to_insert)) $errors[] = "Thiếu thông tin người đặt. Vui lòng đăng nhập hoặc điền thông tin đặt hộ.";
+    
+    // Kiểm tra dịch vụ đã chọn 
+    if (empty($selected_services)) {
+        $errors[] = "Vui lòng chọn ít nhất một dịch vụ cụ thể.";
+    }
+
+    // ===================================================================
+    // KHỐI LƯU DATABASE (Đã sửa lỗi cú pháp try...catch và logic lưu dịch vụ)
+    // ===================================================================
+    if (empty($errors)) {
+        
+        $conn->begin_transaction();
+
+        try {
+            // 1. TẠO ĐƠN HÀNG CHÍNH
+            $sql1 = "INSERT INTO don_hang 
+                     (id_khach_hang, id_cham_soc, id_danh_gia, ngay_dat, tong_tien, dia_chi_giao_hang, ten_khach_hang, so_dien_thoai, trang_thai)
+                     VALUES (?, ?, 0, CURDATE(), ?, ?, ?, ?, 'chờ xác nhận')";
+            
+            $stmt1 = $conn->prepare($sql1);
+            if (!$stmt1) {
+                throw new Exception("Lỗi prepare (don_hang): " . $conn->error);
+            }
+            $stmt1->bind_param(
+                "iidsss", 
+                $id_khach_hang_to_insert, 
+                $id_cham_soc, 
+                $tong_tien, 
+                $dia_chi_to_insert, 
+                $ten_to_insert, 
+                $sdt_to_insert
+            );
+            
+            if (!$stmt1->execute()) {
+                throw new Exception("Lỗi khi tạo đơn hàng chính: " . $stmt1->error);
+            }
+            $stmt1->close();
+
+            $id_don_hang = $conn->insert_id;
+            
+            if ($id_don_hang > 0) {
+                // 2. LƯU CHI TIẾT DỊCH VỤ (Đã hợp nhất logic)
+                
+                // Chuyển đổi giờ từ định dạng 'H:i A' sang 24h và ghép với ngày
+                // Lưu ý: date() và strtotime() cần thiết để chuyển đổi giờ từ "H:i A" của form sang "H:i:s"
+                $datetime_start_str = $ngay_bat_dau . ' ' . date("H:i:s", strtotime($gio_bat_dau));
+                $datetime_end_str = $ngay_ket_thuc . ' ' . date("H:i:s", strtotime($gio_ket_thuc));
+
+                $sql2 = "INSERT INTO dich_vu_don_hang 
+                         (id_don_hang, ten_nhiem_vu, thoi_gian_bat_dau, thoi_gian_ket_thuc)
+                         VALUES (?, ?, ?, ?)";
+                
+                $stmt2 = $conn->prepare($sql2);
+                if (!$stmt2) {
+                    throw new Exception("Lỗi prepare (dich_vu_don_hang): " . $conn->error);
+                }
+
+                // Lặp qua từng dịch vụ đã chọn (từ mảng gộp $selected_services)
+                foreach ($selected_services as $service_name) {
+                    // $service_name đã được trim và kiểm tra không rỗng ở trên
+                    // BIND $id_don_hang (ID đơn hàng vừa tạo)
+                    $stmt2->bind_param("isss", $id_don_hang, $service_name, $datetime_start_str, $datetime_end_str);
+
+                    if (!$stmt2->execute()) {
+                        throw new Exception("Lỗi khi lưu chi tiết dịch vụ: " . $stmt2->error);
+                    }
+                }
+                
+                $stmt2->close();
+            }
+
+            $conn->commit();
+            
+            $conn->close();
+            // Điều hướng về trang chi tiết đơn hàng vừa tạo (dùng ID đơn hàng vừa tạo)
+            header("Location: Chitietlichsudonhang.php"); // Quay về trang lịch sử để xem chi tiết đơn mới nhất
+            exit;
+
+        } catch (Exception $e) { // Cú pháp catch đúng
+            $conn->rollback();
+            // Lưu lỗi vào mảng $errors để hiển thị trên form
+            $errors[] = "Lỗi giao dịch: " . $e->getMessage();
+        }
+    }
+}
+
+// Lấy ID người chăm sóc để hiển thị trang
 $id = 0;
 if (isset($_GET['id'])) $id = intval($_GET['id']);
 elseif (isset($_POST['id_cham_soc'])) $id = intval($_POST['id_cham_soc']);
@@ -67,7 +173,19 @@ if ($res2->num_rows === 0) {
 }
 $row = $res2->fetch_assoc();
 $stmt2->close();
-// Giữ kết nối mở để có thể dùng nếu cần (nhưng chúng ta sẽ đóng ở cuối file)
+
+// Hàm tạo các option cho giờ (từ 1:00 AM đến 11:30 PM)
+function generateTimeOptions() {
+    $options = '';
+    for ($h = 0; $h < 24; $h++) {
+        for ($m = 0; $m < 60; $m += 30) {
+            $time_24 = sprintf("%02d:%02d", $h, $m);
+            $time_ampm = date("g:i A", strtotime($time_24));
+            $options .= "<option value=\"$time_ampm\">$time_ampm</option>";
+        }
+    }
+    return $options;
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -75,204 +193,545 @@ $stmt2->close();
 <meta charset="UTF-8">
 <title>Đặt dịch vụ - <?php echo htmlspecialchars($row['ho_ten']); ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <style>
-/* CSS như bạn có, thêm chỉnh sửa nhỏ */
-body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg,#fff4f6,#f8f9ff); margin:0; color:#333; }
-.container { max-width:900px; margin:40px auto; background:#fff; border-radius:20px; padding:30px; box-shadow:0 10px 30px rgba(0,0,0,0.1); }
-h1 { text-align:center; color:#ff6b81; }
-form label { display:block; margin:10px 0 5px; font-weight:500; }
-.row { display:flex; gap:15px; }
-.col { flex:1; }
-select, input[type="text"]#tongTien, input, select { width:100%; padding:10px 12px; height:42px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box; font-size:15px; }
-.btn-row { display:flex; justify-content:space-between; align-items:center; margin-top:25px; }
-.btn-confirm { background:#ff6b81; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer; }
-.btn-confirm:hover { background:#ff4d6d; }
-.btn-back { background:none; border:none; color:#444; cursor:pointer; }
-.summary { background:#fff7f9; padding:20px; border-radius:10px; margin-bottom:25px; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
-.price { color:#ff4757; font-weight:600; font-size:18px; }
-#qrBox { text-align:center; margin-top:30px; display:none; }
-#qrBox img { width:240px; height:240px; margin-bottom:10px; }
-.error-box { background:#ffecec; border:1px solid #ffb4bd; color:#9b1c1c; padding:10px; border-radius:6px; margin-bottom:12px; }
+/* ======================================= */
+/* CÁC STYLE CHUNG */
+/* ======================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+body { background: #FFF9FA; color: #333; overflow-x: hidden; line-height: 1.6; } 
+
+.container { 
+    max-width: 1000px; 
+    margin: 40px auto; 
+    background: #fff; 
+    border-radius: 16px; 
+    padding: 40px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+}
+h1 { 
+    text-align: center; 
+    color: #FF6B81; 
+    font-size: 32px;
+    margin-bottom: 30px;
+    font-weight: 800;
+}
+form label { 
+    display: block; 
+    margin: 15px 0 8px; 
+    font-weight: 600; 
+    color: #444;
+}
+/* CHỈNH SỬA: Căn chỉnh lại row cho Ngày/Giờ */
+.row { 
+    display: flex; 
+    gap: 20px; 
+    margin-bottom: 20px;
+    flex-wrap: wrap; 
+}
+.row > div {
+    flex: 1;
+    min-width: 250px;
+}
+/* Tạo cặp Ngày và Giờ nằm cạnh nhau */
+.date-time-pair {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+.date-time-pair > div {
+    flex: 1;
+    min-width: 45%;
+}
+
+select, input:not(#tongTien), input#hoTen, input#diaChi, input#soDienThoai, input[type="date"] { 
+    width: 100%; 
+    padding: 12px; 
+    height: 48px; 
+    border: 1px solid #FFD8E0; 
+    border-radius: 10px; 
+    box-sizing: border-box; 
+    font-size: 16px;
+    transition: all 0.3s;
+}
+select:focus, input:focus {
+    border-color: #FF6B81;
+    box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.15); 
+    outline: none;
+}
+#tongTien {
+    background: #fff;
+    font-size: 20px;
+    color: #FF6B81 !important; 
+    font-weight: 700 !important;
+    border: 1px solid #FFD8E0; 
+}
+.btn-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-top: 30px; 
+}
+.btn-confirm { 
+    background: #FF6B81; 
+    color: #fff; 
+    border: none; 
+    padding: 15px 30px; 
+    border-radius: 10px; 
+    font-weight: 700; 
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.3s;
+}
+.btn-confirm:hover { background: #E55B70; } 
+.btn-back { 
+    background: none; 
+    border: 2px solid #FFD8E0; 
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: #444; 
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: background 0.3s, border-color 0.3s;
+}
+.btn-back:hover { 
+    background: #FFF0F3; 
+    border-color: #FF6B81;
+}
+.summary { 
+    background: #fff7f9; 
+    padding: 25px; 
+    border-radius: 12px; 
+    margin-bottom: 30px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+    border-left: 5px solid #ff6b81; 
+}
+.summary h3 {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-bottom: 1px dashed #FFD8E0; 
+    padding-bottom: 10px;
+    font-weight: 700;
+}
+.summary p strong {
+    color: #ff6b81; 
+}
+.summary img {
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.error-box { 
+    background: #FFF0F3; 
+    border: 1px solid #FFB4C4; 
+    color: #9B1C3C; 
+    padding: 15px; 
+    border-radius: 8px; 
+    margin-bottom: 20px; 
+    font-weight: 500;
+}
+/* ======================================= */
+/* STYLE CHO ACCORDION (KHUNG THU GỌN) */
+/* ======================================= */
+.accordion-container {
+    margin-bottom: 20px;
+}
+.accordion-item {
+    border: 1px solid #FFD8E0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+.accordion-header {
+    background-color: #FFF0F3;
+    color: #FF6B81;
+    cursor: pointer;
+    padding: 15px 20px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.accordion-header:hover {
+    background-color: #FFE6EB;
+}
+.accordion-header .fas {
+    transition: transform 0.3s ease;
+}
+.accordion-header.active .fas {
+    transform: rotate(180deg);
+}
+.service-select-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%; /* Đổi chiều rộng thành 100% để hiển thị tốt hơn */
+}
+
+.service-select label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.service-select select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1> Đặt dịch vụ chăm sóc</h1>
+    <h1> Đặt dịch vụ chăm sóc</h1>
 
-  <?php
-  if (!empty($errors)) {
-      echo '<div class="error-box"><ul>';
-      foreach ($errors as $er) echo '<li>' . htmlspecialchars($er) . '</li>';
-      echo '</ul></div>';
-  }
-  if (isset($_GET['booked'])) {
-      echo '<div class="summary" style="border:1px solid #cfe9d8;color:#2a7a2a">Đặt dịch vụ thành công! Hệ thống đang chờ xác nhận.</div>';
-  }
-  ?>
+    <?php
+    // Hiển thị lỗi (nếu có)
+    if (!empty($errors)) {
+        echo '<div class="error-box"><ul>';
+        foreach ($errors as $er) echo '<li><i class="fas fa-exclamation-triangle"></i> ' . htmlspecialchars($er) . '</li>';
+        echo '</ul></div>';
+    }
+    if (isset($_GET['booked'])) {
+        echo '<div class="success-box"><i class="fas fa-check-circle"></i> Đặt dịch vụ thành công! Hệ thống đang chờ xác nhận.</div>';
+    }
+    ?>
 
-  <div class="summary">
-    <h3>Thông tin người chăm sóc</h3>
-    <p><strong>Họ tên:</strong> <?php echo htmlspecialchars($row['ho_ten']); ?></p>
-    <p><strong>Kinh nghiệm:</strong> <?php echo htmlspecialchars($row['kinh_nghiem']); ?></p>
-    <p><strong>Đánh giá:</strong> ⭐ <?php echo htmlspecialchars($row['danh_gia_tb']); ?>/5</p>
-    <p><strong>Giá tiền/giờ:</strong> <span class="price"><?php echo number_format($row['tong_tien_kiem_duoc'], 0, ',', '.'); ?> đ/giờ</span></p>
-  </div>
-
-  <form id="bookingForm" method="post">
-    <input type="hidden" name="id_cham_soc" value="<?php echo intval($row['id_cham_soc']); ?>">
-    <input type="hidden" name="tong_tien" id="tong_tien_input">
-    <input type="hidden" name="ngay_bat_dau" id="ngay_bat_dau_input">
-    <input type="hidden" name="ngay_ket_thuc" id="ngay_ket_thuc_input">
-    <input type="hidden" name="gio_bat_dau" id="gio_bat_dau_input">
-    <input type="hidden" name="gio_ket_thuc" id="gio_ket_thuc_input">
-    <input type="hidden" name="phuong_thuc" id="phuong_thuc_input">
-    <input type="hidden" name="ten_khach_hang" id="ten_khach_hang_input">
-    <input type="hidden" name="so_dien_thoai" id="so_dien_thoai_input">
-    <input type="hidden" name="dia_chi" id="dia_chi_input">
-
-    <div class="row">
-      <div class="col">
-        <label>Ngày bắt đầu</label>
-        <input type="date" id="startDate" required>
-      </div>
-      <div class="col">
-        <label>Ngày kết thúc</label>
-        <input type="date" id="endDate" required>
-      </div>
+    <div class="summary" style="display: flex; align-items: flex-start; gap: 30px;">
+        <div style="flex: 2;">
+            <h3>Thông tin người chăm sóc</h3>
+            <p><strong>Họ tên:</strong> <?php echo htmlspecialchars($row['ho_ten']); ?></p>
+            <p><strong>Kinh nghiệm:</strong> <?php echo htmlspecialchars($row['kinh_nghiem']); ?></p>
+            <p><strong>Đánh giá:</strong> <span style="color:#F7C513">⭐</span> <?php echo htmlspecialchars($row['danh_gia_tb']); ?>/5</p>
+            <p><strong>Giá tiền/giờ:</strong> 
+                <span style="color:#FF6B81; font-weight:700;">
+                    <?php echo number_format($row['tong_tien_kiem_duoc'], 0, ',', '.'); ?> đ/giờ
+                </span>
+            </p>
+        </div>
+        <div style="flex: 1; text-align: center;">
+            <?php if (!empty($row['hinh_anh'])): ?>
+                <img src="<?php echo htmlspecialchars($row['hinh_anh']); ?>" 
+                    alt="Ảnh của <?php echo htmlspecialchars($row['ho_ten']); ?>" 
+                    width="200" height="200">
+            <?php else: ?>
+                <img src="fontend/img/default-avatar.jpg" 
+                    alt="Không có ảnh" 
+                    width="200" height="200">
+            <?php endif; ?>
+        </div>
     </div>
+    <form id="bookingForm" method="post">
+        <input type="hidden" name="id_cham_soc" value="<?php echo intval($row['id_cham_soc']); ?>">
+        <input type="hidden" name="tong_tien" id="tong_tien_input">
+        <input type="hidden" name="ngay_bat_dau" id="ngay_bat_dau_input">
+        <input type="hidden" name="ngay_ket_thuc" id="ngay_ket_thuc_input">
+        <input type="hidden" name="gio_bat_dau" id="gio_bat_dau_input">
+        <input type="hidden" name="gio_ket_thuc" id="gio_ket_thuc_input">
+        <input type="hidden" name="phuong_thuc" id="phuong_thuc_input">
+        <input type="hidden" name="ten_khach_hang" id="ten_khach_hang_input">
+        <input type="hidden" name="so_dien_thoai" id="so_dien_thoai_input">
+        <input type="hidden" name="dia_chi" id="dia_chi_input">
 
-    <div class="row" style="margin-top:12px">
-      <div class="col">
-        <label>Giờ bắt đầu</label>
-        <input type="time" id="startTime" required>
-      </div>
-      <div class="col">
-        <label>Giờ kết thúc</label>
-        <input type="time" id="endTime" required>
-      </div>
+        <label><i class="fas fa-list-alt"></i> Chọn dịch vụ cụ thể:</label>
+        
+        <div class="accordion-container">
+            
+            <div class="service-select-container">
+                <div class="service-select">
+                    <label>1. Chăm sóc và Y tế cơ bản:</label>
+                    <select name="dich_vu1">
+                        <option value="">Chọn dịch vụ cụ thể</option>
+                        <option value="Chăm sóc người già">Chăm sóc người già</option>
+                        <option value="Chăm sóc người bệnh">Chăm sóc người bệnh</option>
+                        <option value="Hỗ trợ uống thuốc">Hỗ trợ uống thuốc</option>
+                        <option value="Đo huyết áp/đường huyết cơ bản">Đo huyết áp/đường huyết cơ bản</option>
+                        <option value="Theo dõi sức khỏe và báo cáo">Theo dõi sức khỏe và báo cáo</option>
+                    </select>
+                </div>
+
+                <div class="service-select">
+                    <label>2. Việc nhà và Dinh dưỡng:</label>
+                    <select name="dich_vu2">
+                        <option value="">Chọn dịch vụ cụ thể</option>
+                        <option value="Nấu ăn cho người già">Nấu ăn theo chế độ</option>
+                        <option value="Dọn dẹp nhà cửa">Dọn dẹp khu vực sinh hoạt</option>
+                        <option value="Giặt giũ và ủi đồ">Giặt giũ và ủi đồ cá nhân</option>
+                        <option value="Đi chợ/Mua sắm">Đi chợ/Mua sắm thực phẩm</option>
+                        <option value="Rửa chén bát">Rửa chén bát</option>
+                    </select>
+                </div>
+
+                <div class="service-select">
+                    <label>3. Hỗ trợ Cá nhân và Tinh thần:</label>
+                    <select name="dich_vu3">
+                        <option value="">Chọn dịch vụ cụ thể</option>
+                        <option value="Hỗ trợ tắm rửa">Hỗ trợ tắm rửa/vệ sinh cá nhân</option>
+                        <option value="Hỗ trợ đi lại">Hỗ trợ đi lại/tập vật lý trị liệu</option>
+                        <option value="Đi dạo/Vận động nhẹ">Đi dạo/Vận động nhẹ</option>
+                        <option value="Xoa bóp/Massage cơ bản">Xoa bóp/Massage cơ bản</option>
+                        <option value="Trò chuyện/Giải trí">Trò chuyện/Hỗ trợ tinh thần</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+        <label><i class="fas fa-calendar-alt"></i> Chọn thời gian dịch vụ:</label>
+        
+        <div class="date-time-pair">
+            <div>
+                <label for="startDate">Ngày bắt đầu:</label>
+                <input type="date" id="startDate" required> 
+            </div>
+            
+            <div>
+                <label for="startHour">Giờ bắt đầu:</label>
+                <select id="startHour" required>
+                    <option value="">Chọn giờ</option>
+                    <?php echo generateTimeOptions(); ?>
+                </select>
+            </div>
+        </div>
+        
+        <div class="date-time-pair">
+            <div>
+                <label for="endDate">Ngày kết thúc:</label>
+                <input type="date" id="endDate" required>
+            </div>
+
+            <div>
+                <label for="endHour">Giờ kết thúc:</label>
+                <select id="endHour" required>
+                    <option value="">Chọn giờ</option>
+                    <?php echo generateTimeOptions(); ?>
+                </select>
+            </div>
+        </div>
+        
+        <hr style="border:0; border-top: 1px dashed #FFD8E0; margin: 25px 0;">
+
+        <label><i class="fas fa-user-circle"></i> Hồ sơ đặt</label>
+        <select id="profileSelect">
+            <option value="own" <?php echo ($user_info) ? 'selected' : ''; ?>>
+                Sử dụng hồ sơ của tôi <?php echo ($user_info) ? '('.htmlspecialchars($user_info['ten_khach_hang']).')' : '(Vui lòng đăng nhập)'; ?>
+            </option>
+            <option value="new" <?php echo (!$user_info) ? 'selected' : ''; ?>>Đặt hộ người khác</option>
+        </select>
+
+        <div id="customProfile" style="<?php echo (!$user_info) ? 'display:block;' : 'display:none;'; ?> margin-top:10px">
+            <label for="hoTen">Họ và tên người nhận dịch vụ</label>
+            <input type="text" id="hoTen" placeholder="Nhập họ tên">
+            <label for="diaChi">Địa chỉ nhận dịch vụ</label>
+            <input type="text" id="diaChi" placeholder="Nhập địa chỉ chi tiết">
+            <label for="soDienThoai">Số điện thoại liên hệ</label>
+            <input type="text" id="soDienThoai" placeholder="Nhập số điện thoại">
+        </div>
+
+        <div style="margin-top:25px" class="form-group">
+            <label for="tongTien"><i class="fas fa-money-bill-wave"></i> Tổng tiền (ước tính)</label>
+            <input type="text" id="tongTien" value="0 đ" readonly>
+        </div>
+
+        <div style="margin-top:12px" class="form-group">
+            <label for="payment"><i class="far fa-credit-card"></i> Phương thức thanh toán</label>
+            <select id="payment">
+                <option value="cash">Tiền mặt khi hoàn thành dịch vụ</option>
+                <option value="momo">Momo (Thanh toán trước)</option>
+            </select>
+        </div>
+
+        <div class="btn-row">
+            <button type="submit" name="submit_booking" class="btn-confirm"><i class="fas fa-check-circle"></i> Xác nhận đặt dịch vụ</button>
+            <button type="button" class="btn-back" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Quay lại</button>
+        </div>
+    </form>
+
+    <div id="qrBox" style="display:none;">
+        <h3>Quét mã để thanh toán qua Momo 💖</h3>
+        <img id="qrImage" src="" alt="Momo QR Code">
+        <p><strong>Số tiền:</strong> <span id="qrAmount" style="color:#FF6B81;"></span></p>
+        <p><strong>Nội dung:</strong> Thanh toán dịch vụ chăm sóc cho <?php echo htmlspecialchars($row['ho_ten']); ?></p>
     </div>
-
-    <div style="margin-top:12px">
-      <label>Hồ sơ đặt</label>
-      <select id="profileSelect">
-        <option value="own">Sử dụng hồ sơ của tôi</option>
-        <option value="new">Đặt hộ người khác</option>
-      </select>
-    </div>
-
-    <div id="customProfile" style="display:none; margin-top:10px">
-      <label>Họ và tên</label>
-      <input type="text" id="hoTen">
-      <label>Địa chỉ</label>
-      <input type="text" id="diaChi">
-      <label>Số điện thoại</label>
-      <input type="text" id="soDienThoai">
-    </div>
-
-    <div style="margin-top:12px" class="form-group">
-      <label for="tongTien">Tổng tiền (ước tính)</label>
-      <input type="text" id="tongTien" readonly style="font-weight:600;color:#ff4757">
-    </div>
-
-    <div style="margin-top:12px" class="form-group">
-      <label for="payment">Phương thức thanh toán</label>
-      <select id="payment">
-        <option value="cash">Tiền mặt</option>
-        <option value="momo">Momo (QR)</option>
-      </select>
-    </div>
-
-    <div class="btn-row">
-      <button type="submit" name="submit_booking" class="btn-confirm">Xác nhận đặt dịch vụ</button>
-      <button type="button" class="btn-back" onclick="window.history.back()">← Quay lại</button>
-    </div>
-  </form>
-
-  <div id="qrBox">
-    <h3>Quét mã để thanh toán qua Momo 💖</h3>
-    <img id="qrImage" src="" alt="Momo QR Code">
-    <p><strong>Số tiền:</strong> <span id="qrAmount"></span></p>
-    <p><strong>Nội dung:</strong> Thanh toán dịch vụ chăm sóc cho <?php echo htmlspecialchars($row['ho_ten']); ?></p>
-  </div>
 </div>
 
+<footer>
+    © 2025 Elder Care Connect | Mang yêu thương đến từng mái ấm 💖
+</footer>
+
+
 <script>
+// Truyền thông tin PHP sang JS
 const pricePerHour = <?php echo floatval($row['tong_tien_kiem_duoc']); ?>;
 
+// Hàm chuyển đổi thời gian sang đối tượng Date để so sánh
+function parseDateTime(dateStr, timeStr) {
+    if (!dateStr || !timeStr) return null;
+    
+    // timeStr có dạng "H:i A" (ví dụ: "8:30 AM")
+    const [time, ampm] = timeStr.split(' ');
+    const [hourStr, minuteStr] = time.split(':');
+
+    let hour = parseInt(hourStr);
+    const minute = parseInt(minuteStr);
+
+    if (ampm === "PM" && hour !== 12) {
+        hour += 12;
+    } else if (ampm === "AM" && hour === 12) {
+        hour = 0; // 12:xx AM là 00:xx giờ
+    }
+
+    const dateTimeStr = `${dateStr}T${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}:00`;
+    return new Date(dateTimeStr);
+}
+
+
+function calcTotal() {
+    const startDateVal = document.getElementById("startDate").value;
+    const endDateVal = document.getElementById("endDate").value;
+    const startHourVal = document.getElementById("startHour").value;
+    const endHourVal = document.getElementById("endHour").value;
+
+    if (!startDateVal || !endDateVal || !startHourVal || !endHourVal) {
+        document.getElementById("tongTien").value = "0 đ";
+        return 0;
+    }
+
+    const start = parseDateTime(startDateVal, startHourVal);
+    const end = parseDateTime(endDateVal, endHourVal);
+
+    if (!start || !end) {
+        document.getElementById("tongTien").value = "0 đ";
+        return 0;
+    }
+
+    const diffMs = end - start;
+    if (diffMs <= 0) {
+        document.getElementById("tongTien").value = "Giờ kết thúc phải sau giờ bắt đầu";
+        return 0;
+    }
+
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const total = diffHours * pricePerHour;
+    document.getElementById("tongTien").value = Math.round(total).toLocaleString('vi-VN') + " đ";
+    return total;
+}
+
+// Gắn sự kiện thay đổi cho tất cả các trường ngày giờ
+document.querySelectorAll("#startDate, #endDate, #startHour, #endHour")
+    .forEach(el => el.addEventListener("change", calcTotal));
+
+
 document.getElementById("profileSelect").addEventListener("change", function(){
-  document.getElementById("customProfile").style.display =
+    document.getElementById("customProfile").style.display =
     this.value === "new" ? "block" : "none";
 });
 
-function calcTotal(){
-  const startVal = document.getElementById("startDate").value;
-  const endVal = document.getElementById("endDate").value;
-  const startH = document.getElementById("startTime").value;
-  const endH = document.getElementById("endTime").value;
-
-  if(!startVal || !endVal || !startH || !endH) return 0;
-  const start = new Date(startVal);
-  const end = new Date(endVal);
-  const days = Math.floor((end - start) / (1000*60*60*24)) + 1;
-  const hours = (parseInt(endH.split(':')[0],10) + parseInt(endH.split(':')[1],10)/60) - (parseInt(startH.split(':')[0],10) + parseInt(startH.split(':')[1],10)/60);
-  if (days > 0 && hours > 0){
-    const total = days * hours * pricePerHour;
-    document.getElementById("tongTien").value = Math.round(total).toLocaleString() + " đ";
-    return total;
-  } else {
-    document.getElementById("tongTien").value = "";
-    return 0;
-  }
-}
-document.querySelectorAll("#startDate,#endDate,#startTime,#endTime").forEach(el => el.addEventListener("change", calcTotal));
 
 document.getElementById("bookingForm").addEventListener("submit", function(e){
-  const total = Math.round(calcTotal());
-  if (total <= 0) {
-    alert("Vui lòng chọn ngày/giờ hợp lệ để tính tổng tiền.");
-    e.preventDefault();
-    return;
-  }
-  document.getElementById("tong_tien_input").value = total;
-  document.getElementById("ngay_bat_dau_input").value = document.getElementById("startDate").value;
-  document.getElementById("ngay_ket_thuc_input").value = document.getElementById("endDate").value;
-  document.getElementById("gio_bat_dau_input").value = document.getElementById("startTime").value;
-  document.getElementById("gio_ket_thuc_input").value = document.getElementById("endTime").value;
-  document.getElementById("phuong_thuc_input").value = document.getElementById("payment").value;
-
-  if (document.getElementById("profileSelect").value === "new") {
-    const ten = document.getElementById("hoTen").value.trim();
-    const diachi = document.getElementById("diaChi").value.trim();
-    const sdt = document.getElementById("soDienThoai").value.trim();
-    if (!ten || !sdt) {
-      alert("Vui lòng nhập họ tên và số điện thoại của người được đặt hộ.");
-      e.preventDefault();
-      return;
-    }
-    document.getElementById("ten_khach_hang_input").value = ten;
-    document.getElementById("dia_chi_input").value = diachi;
-    document.getElementById("so_dien_thoai_input").value = sdt;
-  } else {
-
-    document.getElementById("ten_khach_hang_input").value = "";
-    document.getElementById("dia_chi_input").value = "";
-    document.getElementById("so_dien_thoai_input").value = "";
-  }
-
-  if (document.getElementById("payment").value === "momo") {
-    e.preventDefault();
-    const amountText = total.toLocaleString() + " đ";
-    const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=MOMO%20PAY%20-%20${amountText}`;
-    document.getElementById("qrBox").style.display = "block";
-    document.getElementById("qrImage").src = qrLink;
-    document.getElementById("qrAmount").textContent = amountText;
-    window.scrollTo({top: document.getElementById("qrBox").offsetTop, behavior: 'smooth'});
+    const total = Math.round(calcTotal());
     
-    return;
-  }
+    // Kiểm tra đã chọn ít nhất 1 dịch vụ chưa
+    const selects = ['dich_vu1', 'dich_vu2', 'dich_vu3'];
+      let hasService = false;
+      for (let selName of selects) {
+          const sel = document.querySelector(`select[name="${selName}"]`);
+          if (sel && sel.value.trim() !== '') {
+              hasService = true;
+              break;
+          }
+      }
+    if (!hasService) {
+        alert("Vui lòng chọn ít nhất một dịch vụ cụ thể.");
+        e.preventDefault();
+        return;
+    }
 
+
+    if (total <= 0) {
+        alert("Vui lòng chọn ngày/giờ hợp lệ để tính tổng tiền.");
+        e.preventDefault();
+        return;
+    }
+    
+    // Lấy các giá trị ngày/giờ
+    const startDateVal = document.getElementById("startDate").value;
+    const endDateVal = document.getElementById("endDate").value;
+    const startHourVal = document.getElementById("startHour").value; // dạng "8:30 AM"
+    const endHourVal = document.getElementById("endHour").value;      // dạng "4:00 PM"
+
+    // Điền vào các trường hidden
+    document.getElementById("tong_tien_input").value = total;
+    document.getElementById("ngay_bat_dau_input").value = startDateVal;
+    document.getElementById("ngay_ket_thuc_input").value = endDateVal;
+    
+    // Gửi đi giờ đầy đủ (dạng "8:30 AM")
+    document.getElementById("gio_bat_dau_input").value = startHourVal;
+    document.getElementById("gio_ket_thuc_input").value = endHourVal;
+    document.getElementById("phuong_thuc_input").value = document.getElementById("payment").value;
+
+    if (document.getElementById("profileSelect").value === "new") {
+        // Nếu là "Đặt hộ"
+        const ten = document.getElementById("hoTen").value.trim();
+        const diachi = document.getElementById("diaChi").value.trim();
+        const sdt = document.getElementById("soDienThoai").value.trim();
+        if (!ten || !sdt) {
+            alert("Vui lòng nhập họ tên và số điện thoại của người được đặt hộ.");
+            e.preventDefault();
+            return;
+        }
+        document.getElementById("ten_khach_hang_input").value = ten;
+        document.getElementById("dia_chi_input").value = diachi;
+        document.getElementById("so_dien_thoai_input").value = sdt;
+    } else {
+        // Nếu là "Sử dụng hồ sơ của tôi"
+        // Gửi SĐT rỗng để PHP biết và dùng thông tin session
+        document.getElementById("ten_khach_hang_input").value = "";
+        document.getElementById("dia_chi_input").value = "";
+        document.getElementById("so_dien_thoai_input").value = "";
+    }
+
+    // Xử lý Momo (giữ nguyên)
+    if (document.getElementById("payment").value === "momo") {
+        e.preventDefault();
+        const amountText = total.toLocaleString('vi-VN') + " đ";
+        // Thêm data tốt hơn
+        const qrData = `2|99|0${total}|<?php echo $row['ho_ten']; ?>|0|0|0|ElderCareConnect`; 
+        const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrData)}`;
+        
+        document.getElementById("qrBox").style.display = "block";
+        document.getElementById("qrImage").src = qrLink;
+        document.getElementById("qrAmount").textContent = amountText;
+        window.scrollTo({top: document.getElementById("qrBox").offsetTop, behavior: 'smooth'});
+        
+        alert("Vui lòng quét mã Momo để thanh toán. Sau khi thanh toán thành công, bạn cần gửi lại đơn hàng.");
+        
+        return; 
+    }
 });
 </script>
 </body>
 </html>
+
+<?php
+// Đóng kết nối cuối file
+if (isset($conn) && $conn) {
+    $conn->close();
+}
+?>
