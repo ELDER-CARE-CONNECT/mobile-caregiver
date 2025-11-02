@@ -206,7 +206,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 12px 20px;
-      color: #485063;
+      color:;
       font-size: 14px;
     }
 
