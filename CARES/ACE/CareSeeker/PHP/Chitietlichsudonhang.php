@@ -107,7 +107,11 @@
             transition: border-color 0.3s ease;
         }
 
-        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
 
         .filter-actions {
             display: flex;
@@ -819,4 +823,5 @@
     </script>
 </body>
 </html>
+
 
