@@ -6,47 +6,68 @@ $conn = connectdb();
 // Bước 2: Khởi tạo session
 session_start();
 
-// Bước 3: Xử lý form khi người dùng nhấn đăng nhập
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $so_dien_thoai = $_POST['phone'];
-    $mat_khau = $_POST['password'];
+    $so_dien_thoai = trim($_POST['phone']);
+    $mat_khau = trim($_POST['password']);
 
-    // Bước 4: Kiểm tra dữ liệu có hợp lệ không
     if (empty($so_dien_thoai) || empty($mat_khau)) {
         $error_message = "Số điện thoại và mật khẩu không được để trống!";
     } else {
-        // Bước 5: Kết nối tới CSDL và kiểm tra thông tin đăng nhập
-        $sql = "SELECT * FROM khach_hang WHERE so_dien_thoai = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $so_dien_thoai);  // Ràng buộc tham số
-
+        // ===== KIỂM TRA TRONG BẢNG ADMIN =====
+        $sql_admin = "SELECT * FROM admin WHERE so_dien_thoai = ? AND mat_khau = ?";
+        $stmt = $conn->prepare($sql_admin);
+        $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
         $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
+        $result_admin = $stmt->get_result();
 
-        // Bước 6: Kiểm tra xem có người dùng hợp lệ không và so sánh mật khẩu trực tiếp
-        if ($user) {
-            // Nếu mật khẩu khớp
-            if ($user['mat_khau'] === $mat_khau) {
-                // Đăng nhập thành công, lưu thông tin vào session
-                $_SESSION['so_dien_thoai'] = $user['so_dien_thoai'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['ten_khach_hang'] = $user['ten_khach_hang'];
-
-                // Chuyển hướng tới trang index1.php
-                header("Location: tongquan.php");
-                exit();
-            } else {
-                // Mật khẩu không khớp
-                $error_message = "Sai số điện thoại hoặc mật khẩu!";
-            }
-        } else {
-            // Người dùng không tồn tại trong cơ sở dữ liệu
-            $error_message = "Sai số điện thoại hoặc mật khẩu!";
+        if ($result_admin->num_rows > 0) {
+            $_SESSION['role'] = 'admin';
+            $_SESSION['so_dien_thoai'] = $so_dien_thoai;
+            header("Location: tongquan.php");
+            exit();
         }
+
+        // ===== KIỂM TRA TRONG BẢNG KHÁCH HÀNG =====
+        $sql_kh = "SELECT * FROM khach_hang WHERE so_dien_thoai = ? AND mat_khau = ?";
+        $stmt = $conn->prepare($sql_kh);
+        $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
+        $stmt->execute();
+        $result_kh = $stmt->get_result();
+
+        if ($result_kh->num_rows > 0) {
+            $user = $result_kh->fetch_assoc();
+            $_SESSION['role'] = 'khach_hang';
+            $_SESSION['so_dien_thoai'] = $so_dien_thoai;
+            $_SESSION['ten_khach_hang'] = $user['ten_khach_hang'];
+
+            if (empty($user['ten_khach_hang'])) {
+                header("Location: ../CareSeeker/PHP/Hoso.php");
+            } else {
+                header("Location: ../CareSeeker/PHP/tongdonhang.php");
+            }
+            exit();
+        }
+
+        // ===== KIỂM TRA TRONG BẢNG NGƯỜI CHĂM SÓC =====
+        $sql_ncs = "SELECT * FROM nguoi_cham_soc WHERE ten_tai_khoan = ? AND mat_khau = ?";
+        $stmt = $conn->prepare($sql_ncs);
+        $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
+        $stmt->execute();
+        $result_ncs = $stmt->get_result();
+
+        if ($result_ncs->num_rows > 0) {
+            $_SESSION['role'] = 'nguoi_cham_soc';
+            $_SESSION['ten_tai_khoan'] = $so_dien_thoai;
+            header("Location: ../Caregiver/PHP/Donhangchuanhan.php");
+            exit();
+        }
+
+        // ===== NẾU KHÔNG TỒN TẠI Ở BẤT KỲ BẢNG NÀO =====
+        $error_message = "Sai số điện thoại hoặc mật khẩu!";
     }
 }
 ?>
+
 
 <!-- Giao diện đăng nhập -->
 <!DOCTYPE html>
@@ -56,188 +77,183 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập</title>
     <link rel="stylesheet" href="../style/style.css">
-    <style>
-    .auth-wrapper {
-        max-width: 500px;
-        width: 100%;
-        margin: 0 auto;
-        margin-top: 40px;
-        text-align: center;
-    }
-
-    .auth-logo {
-        width: 80px;
-        margin-bottom: 20px;
-    }
-
-    .auth-heading {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-
-    .auth-social {
+  <!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập</title>
+<style>
+    /* --- NỀN TRANG --- */
+   body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
+        background-size: cover; /* Ảnh nền phủ toàn bộ màn hình */
         display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-bottom: 15px;
+        align-items: center;
+        justify-content: flex-start; /* nếu muốn canh giữa, đổi thành center */
+        min-height: 100vh;
+        margin: 0;
     }
 
-    .btn-google, .btn-zalo {
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 16px;
+    /* --- LỚP MỜ NỀN PHÍA SAU --- */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.25); /* lớp phủ đen mờ 25% */
+        z-index: -1;
     }
 
-    .btn-google {
-        background-color: #fff;
-        border: 1px solid #ccc;
+    /* --- KHUNG NGOÀI --- */
+    .auth-container {
+        margin-left: 65%; /* khoảng cách từ viền trái, có thể chỉnh tùy bạn */
+        padding: 20px;
+        border-radius: 20px;
+        backdrop-filter: blur(10px); /* làm mờ ảnh nền phía sau */
     }
 
-    .btn-zalo {
-        background-color: #fff;
-        border: 1px solid #ccc;
-    }
-
-    .auth-divider {
+    /* --- KHUNG FORM --- */
+    .auth-wrapper {
         width: 100%;
-        border: none;
-        border-top: 2px solid #ccc;
-        margin: 20px 0;
-    }
-
-    .auth-input {
-        width: 100%;
-        padding: 15px;
-        margin-bottom: 15px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 16px;
-    }
-
-    .auth-forgot {
+        max-width: 420px;
+        background: rgba(255,255,255,0.95);
+        padding: 40px 30px;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         text-align: center;
-        font-size: 14px;
-        margin-top: 15px;
-        margin-bottom: 15px;
-        color: #d70018;
+        transition: all 0.3s ease;
     }
 
-    .auth-submit {
-        width: 100%;
-        padding: 15px;
-        background-color: #d70018;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 18px;
+    .auth-wrapper:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* --- LOGO --- */
+    .auth-logo {
+        width: 90px;
+        margin-bottom: 20px;
+    }
+
+    /* --- TIÊU ĐỀ --- */
+    .auth-heading {
+        font-size: 26px;
         font-weight: bold;
-        margin-top: 15px;
-    }
-
-    .auth-register, .auth-policy {
-        font-size: 14px;
-        margin-top: 15px;
-    }
-
-    .auth-register a, .auth-policy a {
         color: #d70018;
-        text-decoration: none;
-        font-weight: bold;
+        margin-bottom: 25px;
     }
 
+    /* --- Ô NHẬP LIỆU --- */
+   .auth-input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.2s;
+    box-sizing: border-box; /* ✅ giúp tính cả padding & border trong width */
+}
+
+
+    .auth-input:focus {
+        outline: none;
+        border-color: #d70018;
+        box-shadow: 0 0 5px rgba(215, 0, 24, 0.3);
+    }
+
+    /* --- LỖI --- */
     .auth-error {
         color: red;
         font-size: 14px;
         margin-top: 5px;
     }
-    .cart, .login-btn {
-        background: white;
-        color: #d32f2f;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        height: 34.4px;
-        font-weight: bold;
-        font-size: 13px;
-        width: 118.06px;
+
+    /* --- QUÊN MẬT KHẨU --- */
+    .auth-forgot {
+        text-align: right;
+        font-size: 14px;
+        margin-top: 5px;
+        margin-bottom: 20px;
     }
-    </style>
-    
+
+    .auth-forgot a {
+        color: #d70018;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-forgot a:hover {
+        text-decoration: underline;
+    }
+
+    /* --- NÚT ĐĂNG NHẬP --- */
+    .auth-submit {
+        width: 100%;
+        padding: 14px;
+        background-color: #d70018;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 17px;
+        font-weight: bold;
+        transition: background 0.3s ease;
+    }
+
+    .auth-submit:hover {
+        background-color: #b30013;
+    }
+
+    /* --- LINK ĐĂNG KÝ --- */
+    .auth-register {
+        font-size: 14px;
+        margin-top: 25px;
+    }
+
+    .auth-register a {
+        color: #d70018;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .auth-register a:hover {
+        text-decoration: underline;
+    }
+</style>
 </head>
 <body>
-<header>
-    <div class="logo">Apple.Acsr</div>
-   
-    <div class="nav-right">
-        <button class="cart">🛒 Giỏ hàng</button>
-        <div class="dropdown">
-            <?php if (isset($_SESSION['ten_khach_hang'])): ?>
-                <button id="loginBtn" class="login-btn">
-                    👤 <?php echo htmlspecialchars($_SESSION['ten_khach_hang']); ?>
-                </button>
-                <div class="dropdown-menu" style="display: none;">
-                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
-                        <a href="http://localhost/WEB_PhuKien/Admin/tongquan.php" id="ThongTinTaiKhoan">Trang cá nhân</a>
-                    <?php endif; ?>
-                    <a href="../model/logout.php" id="logoutBtn">Đăng xuất</a>
-                </div>
-            <?php else: ?>
-                <button id="loginBtn" class="login-btn" onclick="window.location.href='../view/login.php'">👤 Đăng nhập</button>
-            <?php endif; ?>
-        </div>
-    </div>
-</header>
 
+    <div class="auth-container">
         <div class="auth-wrapper">
-            <img src="../../Admin/Images/avatar.png" alt="Logo" class="auth-logo">
+            <img src="fontend/images/avatar.png" alt="Logo" class="auth-logo">
             <h2 class="auth-heading">Đăng nhập</h2>
 
             <form method="POST" action="login.php">
-                <input type="text" placeholder="Nhập số điện thoại" class="auth-input" name="phone" id="phone" value="<?php echo isset($so_dien_thoai) ? $so_dien_thoai : ''; ?>">
+                <input type="text" placeholder="Nhập số điện thoại" class="auth-input" name="phone" id="phone" 
+                       value="<?php echo isset($so_dien_thoai) ? $so_dien_thoai : ''; ?>">
                 <input type="password" placeholder="Nhập mật khẩu" class="auth-input" name="password" id="password">
                 
                 <?php if (isset($error_message)) { ?>
                     <div id="error-message" class="auth-error"><?php echo $error_message; ?></div>
                 <?php } ?>
-                
+
                 <div class="auth-forgot">
                     <a href="quenmk.php">Quên mật khẩu?</a>
                 </div>
+
                 <button class="auth-submit" type="submit">Đăng nhập</button>
             </form>
 
-            <p class="auth-register">Bạn chưa có tài khoản? <a href="register.php">Đăng ký ngay</a></p>
+            <p class="auth-register">
+                Bạn chưa có tài khoản? <a href="register.php">Đăng ký ngay</a>
+            </p>
         </div>
+    </div>
 
-
-    <script src="../script/script1.js"></script>.
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const loginBtn = document.getElementById("loginBtn");
-    const dropdownMenu = document.querySelector(".dropdown-menu");
-
-    if (loginBtn && dropdownMenu) {
-        loginBtn.addEventListener("click", function (e) {
-            e.stopPropagation(); // Ngăn việc click lan ra ngoài
-            dropdownMenu.style.display = dropdownMenu.style.display === "none" ? "block" : "none";
-        });
-
-        // Ẩn dropdown khi click ra ngoài
-        document.addEventListener("click", function () {
-            dropdownMenu.style.display = "none";
-        });
-
-        dropdownMenu.addEventListener("click", function (e) {
-            e.stopPropagation(); // Click trong menu không ẩn nó
-        });
-    }
-});
-</script>
+</body>
+</html>
 
 </body>
 </html>
