@@ -304,6 +304,15 @@ ALTER TABLE `khieu_nai`
   ADD CONSTRAINT `khieu_nai_ibfk_1` FOREIGN KEY (`id_don_hang`) REFERENCES `don_hang` (`id_don_hang`),
   ADD CONSTRAINT `khieu_nai_ibfk_2` FOREIGN KEY (`id_khach_hang`) REFERENCES `khach_hang` (`id_khach_hang`);
 COMMIT;
+-- bảng database của qtri dùng trong trang datdonhang.php á nha 
+CREATE TABLE `dich_vu_don_hang` (
+  `id` int(11) NOT NULL,
+  `id_don_hang` int(11) NOT NULL,
+  `ten_nhiem_vu` varchar(255) NOT NULL,
+  `thoi_gian_bat_dau` datetime NOT NULL,
+  `thoi_gian_ket_thuc` datetime NOT NULL,
+  `trang_thai_nhiem_vu` varchar(50) DEFAULT 'chua_hoan_thanh'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
