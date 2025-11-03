@@ -81,10 +81,11 @@ h1.page-title { text-align: center; font-size: 38px; color: #FF6B81; margin: 50p
 <div class="navbar">
   <h2>Elder Care Connect</h2>
   <div class="nav-links">
-    <a href="index.php">Trang chủ</a>
-    <a href="index.php#featured-services">Lợi ích</a>
-    <a href="index.php#about">Giới thiệu</a>
-    <a href="index.php#contact">Liên hệ</a>
+  <a href="index.php">Trang chủ</a>
+  <a href="dichvu.php">Dịch vụ</a>
+  <a href="index.php#featured-services">Lợi ích</a> 
+  <a href="index.php#about">Giới thiệu</a> 
+  <a href="index.php#contact">Liên hệ</a>  
   </div>
 </div>
 
@@ -145,6 +146,7 @@ h1.page-title { text-align: center; font-size: 38px; color: #FF6B81; margin: 50p
 </footer>
 
 <script>
+// --- SCRIPT LỌC/SẮP XẾP (giữ nguyên) ---
 const searchInput = document.getElementById("searchInput");
 const caregiverGrid = document.getElementById("caregiverGrid");
 
@@ -174,7 +176,37 @@ sortSelect.addEventListener("change", () => {
   caregiverGrid.innerHTML = "";
   cards.forEach(card => caregiverGrid.appendChild(card));
 });
+
+
+// --- SCRIPT NAVBAR (Phiên bản MỚI, an toàn hơn) ---
+(function() {
+    // Lấy tên file của trang hiện tại, chuyển sang chữ thường
+    var currentPage = window.location.pathname.split('/').pop().toLowerCase();
+    if (currentPage === "") {
+      currentPage = "index.php"; 
+    }
+
+    var navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(function(link) {
+      
+      // Chỉ xử lý các link không có hash (không có #)
+      if (link.href && link.hash === "") {
+        // Lấy tên file từ link, chuyển sang chữ thường
+        var linkPage = new URL(link.href).pathname.split('/').pop().toLowerCase();
+        
+        if (linkPage === "") {
+          linkPage = "index.php";
+        }
+
+        // So sánh trang hiện tại với trang của link
+        if (linkPage === currentPage) { 
+          link.classList.add('active'); 
+        }
+      }
+    });
+})();
 </script>
+</body> </html>
 </body>
 </html>
 <?php $conn->close(); ?>
