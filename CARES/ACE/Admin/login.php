@@ -67,37 +67,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Đăng nhập</title>
 <style>
-   /* --- CSS gốc của bạn (giữ nguyên, đã tinh chỉnh nhỏ cho responsive) --- */
-   body { 
+    body { 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
         background-size: cover;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
         min-height: 100vh;
         margin: 0;
-    }
-    body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.25);
-        z-index: -1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
     }
     .auth-container {
-        margin-left: 65%;
-        padding: 20px;
+        display: flex;
+        gap: 50px;
+        background: rgba(255,255,255,0.85);
         border-radius: 20px;
-        backdrop-filter: blur(10px);
+        padding: 40px;
+        max-width: 940px;
+        width: 100%;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        position: relative; /* Để đảm bảo z-index hoạt động */
+        z-index: 1; /* Đảm bảo container ở trên ảnh */
+    }
+    .auth-image {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .auth-image img {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        object-fit: cover;
+        border-radius: 0; /* Xóa border-radius vì giờ là full màn */
     }
     .auth-wrapper {
-        width: 100%;
-        max-width: 420px;
+        flex: 0 0 420px;
         background: rgba(255,255,255,0.95);
         padding: 40px 30px;
         border-radius: 16px;
@@ -179,7 +197,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .auth-register a:hover {
         text-decoration: underline;
     }
-    /* --- Nút Gmail --- */
     .google-btn {
         width: 100%;
         background-color: #db4437;
@@ -194,23 +211,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         align-items: center;
         justify-content: center;
         gap: 10px;
+        box-sizing: border-box;
     }
     .google-btn img {
         width: 20px;
         height: 20px;
     }
-
-    /* Responsive nhỏ */
     @media (max-width: 900px) {
-        .auth-container { margin-left: 5%; }
+        body {
+            padding: 10px;
+        }
+        .auth-container {
+            flex-direction: column;
+            padding: 20px 15px;
+            max-width: 100%;
+            box-shadow: none;
+            background: transparent;
+        }
+        .auth-image {
+            display: none;
+        }
+        .auth-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+        }
     }
 </style>
 </head>
 <body>
 
 <div class="auth-container">
+    <div class="auth-image">
+        <img src="images/nguoi-cao-tuoi-2.jpg" alt="Ảnh minh họa">
+    </div>
     <div class="auth-wrapper">
-        <img src="fontend/images/avatar.png" alt="Logo" class="auth-logo">
+        <img src="images/logo.jpg" alt="Logo" class="auth-logo">
         <h2 class="auth-heading">Đăng nhập</h2>
 
         <form method="POST" action="">
@@ -229,7 +268,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button class="auth-submit" type="submit">Đăng nhập</button>
         </form>
 
-        <!-- Nút đăng nhập bằng Gmail -->
         <button class="google-btn" type="button" onclick="loginWithGoogle()">
             <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google logo"/> Đăng nhập bằng Gmail
         </button>
@@ -240,7 +278,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -263,7 +300,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     signInWithPopup(auth, provider)
       .then((result) => {
         const user = result.user;
-        // gửi dữ liệu lên save_google_user.php (cùng thư mục Admin)
         return fetch('save_google_user.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
