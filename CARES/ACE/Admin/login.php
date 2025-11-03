@@ -1,9 +1,6 @@
 <?php
-// Bước 1: Kết nối với CSDL
-include_once("../model/sanpham.php");
-include_once('../model/get_products.php'); // Đảm bảo rằng bạn đã kết nối với CSDL đúng cách
-$conn = connectdb();
-// Bước 2: Khởi tạo session
+// Admin/login.php
+include_once("connect.php"); // kết nối DB (file connect.php nằm cùng thư mục Admin/)
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -13,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($so_dien_thoai) || empty($mat_khau)) {
         $error_message = "Số điện thoại và mật khẩu không được để trống!";
     } else {
-        // ===== KIỂM TRA TRONG BẢNG ADMIN =====
+        // === Kiểm tra bảng admin ===
         $sql_admin = "SELECT * FROM admin WHERE so_dien_thoai = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_admin);
         $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
@@ -27,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        // ===== KIỂM TRA TRONG BẢNG KHÁCH HÀNG =====
+        // === Kiểm tra bảng khách hàng ===
         $sql_kh = "SELECT * FROM khach_hang WHERE so_dien_thoai = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_kh);
         $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
@@ -48,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        // ===== KIỂM TRA TRONG BẢNG NGƯỜI CHĂM SÓC =====
+        // === Kiểm tra bảng người chăm sóc ===
         $sql_ncs = "SELECT * FROM nguoi_cham_soc WHERE ten_tai_khoan = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_ncs);
         $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
@@ -62,58 +59,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        // ===== NẾU KHÔNG TỒN TẠI Ở BẤT KỲ BẢNG NÀO =====
+        // Không tìm thấy tài khoản
         $error_message = "Sai số điện thoại hoặc mật khẩu!";
     }
 }
 ?>
-
-
-<!-- Giao diện đăng nhập -->
 <!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập</title>
-    <link rel="stylesheet" href="../style/style.css">
-  <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Đăng nhập</title>
 <style>
-    /* --- NỀN TRANG --- */
+   /* --- CSS gốc của bạn (giữ nguyên, đã tinh chỉnh nhỏ cho responsive) --- */
    body { 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
-        background-size: cover; /* Ảnh nền phủ toàn bộ màn hình */
+        background-size: cover;
         display: flex;
         align-items: center;
-        justify-content: flex-start; /* nếu muốn canh giữa, đổi thành center */
+        justify-content: flex-start;
         min-height: 100vh;
         margin: 0;
     }
-
-    /* --- LỚP MỜ NỀN PHÍA SAU --- */
     body::before {
         content: "";
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.25); /* lớp phủ đen mờ 25% */
+        background: rgba(0, 0, 0, 0.25);
         z-index: -1;
     }
-
-    /* --- KHUNG NGOÀI --- */
     .auth-container {
-        margin-left: 65%; /* khoảng cách từ viền trái, có thể chỉnh tùy bạn */
+        margin-left: 65%;
         padding: 20px;
         border-radius: 20px;
-        backdrop-filter: blur(10px); /* làm mờ ảnh nền phía sau */
+        backdrop-filter: blur(10px);
     }
-
-    /* --- KHUNG FORM --- */
     .auth-wrapper {
         width: 100%;
         max-width: 420px;
@@ -124,71 +105,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         text-align: center;
         transition: all 0.3s ease;
     }
-
     .auth-wrapper:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
-
-    /* --- LOGO --- */
     .auth-logo {
         width: 90px;
         margin-bottom: 20px;
     }
-
-    /* --- TIÊU ĐỀ --- */
     .auth-heading {
         font-size: 26px;
         font-weight: bold;
         color: #d70018;
         margin-bottom: 25px;
     }
-
-    /* --- Ô NHẬP LIỆU --- */
    .auth-input {
-    width: 100%;
-    padding: 14px 18px;
-    margin-bottom: 18px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-size: 15px;
-    transition: 0.2s;
-    box-sizing: border-box; /* ✅ giúp tính cả padding & border trong width */
-}
-
-
+        width: 100%;
+        padding: 14px 18px;
+        margin-bottom: 18px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        font-size: 15px;
+        box-sizing: border-box;
+    }
     .auth-input:focus {
         outline: none;
         border-color: #d70018;
         box-shadow: 0 0 5px rgba(215, 0, 24, 0.3);
     }
-
-    /* --- LỖI --- */
     .auth-error {
         color: red;
         font-size: 14px;
         margin-top: 5px;
     }
-
-    /* --- QUÊN MẬT KHẨU --- */
     .auth-forgot {
         text-align: right;
         font-size: 14px;
         margin-top: 5px;
         margin-bottom: 20px;
     }
-
     .auth-forgot a {
         color: #d70018;
         text-decoration: none;
         font-weight: 500;
     }
-
     .auth-forgot a:hover {
         text-decoration: underline;
     }
-
-    /* --- NÚT ĐĂNG NHẬP --- */
     .auth-submit {
         width: 100%;
         padding: 14px;
@@ -201,59 +164,131 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-weight: bold;
         transition: background 0.3s ease;
     }
-
     .auth-submit:hover {
         background-color: #b30013;
     }
-
-    /* --- LINK ĐĂNG KÝ --- */
     .auth-register {
         font-size: 14px;
         margin-top: 25px;
     }
-
     .auth-register a {
         color: #d70018;
         font-weight: bold;
         text-decoration: none;
     }
-
     .auth-register a:hover {
         text-decoration: underline;
+    }
+    /* --- Nút Gmail --- */
+    .google-btn {
+        width: 100%;
+        background-color: #db4437;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        margin-top: 15px;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    .google-btn img {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Responsive nhỏ */
+    @media (max-width: 900px) {
+        .auth-container { margin-left: 5%; }
     }
 </style>
 </head>
 <body>
 
-    <div class="auth-container">
-        <div class="auth-wrapper">
-            <img src="fontend/images/avatar.png" alt="Logo" class="auth-logo">
-            <h2 class="auth-heading">Đăng nhập</h2>
+<div class="auth-container">
+    <div class="auth-wrapper">
+        <img src="fontend/images/avatar.png" alt="Logo" class="auth-logo">
+        <h2 class="auth-heading">Đăng nhập</h2>
 
-            <form method="POST" action="login.php">
-                <input type="text" placeholder="Nhập số điện thoại" class="auth-input" name="phone" id="phone" 
-                       value="<?php echo isset($so_dien_thoai) ? $so_dien_thoai : ''; ?>">
-                <input type="password" placeholder="Nhập mật khẩu" class="auth-input" name="password" id="password">
-                
-                <?php if (isset($error_message)) { ?>
-                    <div id="error-message" class="auth-error"><?php echo $error_message; ?></div>
-                <?php } ?>
+        <form method="POST" action="">
+            <input type="text" placeholder="Nhập số điện thoại" class="auth-input" name="phone" id="phone" 
+                   value="<?php echo isset($so_dien_thoai) ? htmlspecialchars($so_dien_thoai, ENT_QUOTES, 'UTF-8') : ''; ?>">
+            <input type="password" placeholder="Nhập mật khẩu" class="auth-input" name="password" id="password">
+            
+            <?php if (isset($error_message)) { ?>
+                <div id="error-message" class="auth-error"><?php echo $error_message; ?></div>
+            <?php } ?>
 
-                <div class="auth-forgot">
-                    <a href="quenmk.php">Quên mật khẩu?</a>
-                </div>
+            <div class="auth-forgot">
+                <a href="quenmk.php">Quên mật khẩu?</a>
+            </div>
 
-                <button class="auth-submit" type="submit">Đăng nhập</button>
-            </form>
+            <button class="auth-submit" type="submit">Đăng nhập</button>
+        </form>
 
-            <p class="auth-register">
-                Bạn chưa có tài khoản? <a href="register.php">Đăng ký ngay</a>
-            </p>
-        </div>
+        <!-- Nút đăng nhập bằng Gmail -->
+        <button class="google-btn" type="button" onclick="loginWithGoogle()">
+            <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google logo"/> Đăng nhập bằng Gmail
+        </button>
+
+        <p class="auth-register">
+            Bạn chưa có tài khoản? <a href="register.php">Đăng ký ngay</a>
+        </p>
     </div>
+</div>
 
-</body>
-</html>
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmpKMonh3_RM8CtJ_5JZ2VLB71Hcd8Kn8",
+    authDomain: "demoxd-5ecba.firebaseapp.com",
+    projectId: "demoxd-5ecba",
+    storageBucket: "demoxd-5ecba.firebasestorage.app",
+    messagingSenderId: "347326750071",
+    appId: "1:347326750071:web:ab3d6813900af8cae39572",
+    measurementId: "G-ZJNZ8770QQ"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  window.loginWithGoogle = function() {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        // gửi dữ liệu lên save_google_user.php (cùng thư mục Admin)
+        return fetch('save_google_user.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ten_khach_hang: user.displayName,
+            email: user.email,
+            hinh_anh: user.photoURL
+          })
+        });
+      })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        if (data.success) {
+          window.location.href = "CareSeeker/PHP/Dichvu.php";
+        } else {
+          alert("Không thể lưu người dùng: " + (data.message || "Lỗi không xác định"));
+        }
+      })
+      .catch((error) => {
+        console.error("Đăng nhập Gmail thất bại:", error);
+        alert("Không thể đăng nhập bằng Gmail!");
+      });
+  }
+</script>
 
 </body>
 </html>
