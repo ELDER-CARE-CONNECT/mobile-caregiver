@@ -35,18 +35,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
     $gio_ket_thuc   = $_POST['gio_ket_thuc'] ?? null;  
     $phuong_thuc    = $_POST['phuong_thuc'] ?? 'cash';
     
-    // Thu thập dịch vụ từ TẤT CẢ các selects đã chọn (dùng tên chung)
+    // --- THU THẬP DỊCH VỤ TỪ INPUT DYNAMIC ---
+    $raw_services = $_POST['dich_vu'] ?? [];
     $selected_services = [];
     
-    // Lấy giá trị đã chọn từ mỗi select
-    $service_1 = trim($_POST['dich_vu1'] ?? '');
-    $service_2 = trim($_POST['dich_vu2'] ?? '');
-    $service_3 = trim($_POST['dich_vu3'] ?? '');
-    
-    // Chỉ thêm vào mảng nếu giá trị KHÔNG rỗng (đã chọn)
-    if (!empty($service_1)) $selected_services[] = $service_1;
-    if (!empty($service_2)) $selected_services[] = $service_2;
-    if (!empty($service_3)) $selected_services[] = $service_3;
+    if (is_array($raw_services)) {
+        // Dùng array_unique để loại bỏ các nhiệm vụ trùng lặp, trim để loại bỏ khoảng trắng
+        foreach ($raw_services as $service) {
+            $service = trim($service);
+            if (!empty($service) && !in_array($service, $selected_services)) {
+                $selected_services[] = $service;
+            }
+        }
+    }
+    // --- KẾT THÚC THU THẬP DỊCH VỤ ---
 
     // Lấy thông tin người đặt (có thể là đặt hộ)
     $ten_khach_hang_post = trim($_POST['ten_khach_hang'] ?? '');
@@ -69,34 +71,41 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
     
     // Kiểm tra dịch vụ đã chọn 
     if (empty($selected_services)) {
-        $errors[] = "Vui lòng chọn ít nhất một dịch vụ cụ thể.";
+        $errors[] = "Vui lòng nhập ít nhất một dịch vụ cụ thể."; // Đã cập nhật thông báo lỗi
     }
 
     // ===================================================================
-    // KHỐI LƯU DATABASE (Đã sửa lỗi cú pháp try...catch và logic lưu dịch vụ)
+    // KHỐI LƯU DATABASE
     // ===================================================================
     if (empty($errors)) {
         
         $conn->begin_transaction();
 
         try {
-            // 1. TẠO ĐƠN HÀNG CHÍNH
-            $sql1 = "INSERT INTO don_hang 
-                     (id_khach_hang, id_cham_soc, id_danh_gia, ngay_dat, tong_tien, dia_chi_giao_hang, ten_khach_hang, so_dien_thoai, trang_thai)
-                     VALUES (?, ?, 0, CURDATE(), ?, ?, ?, ?, 'chờ xác nhận')";
-            
-            $stmt1 = $conn->prepare($sql1);
-            if (!$stmt1) {
-                throw new Exception("Lỗi prepare (don_hang): " . $conn->error);
-            }
+            // Chuyển đổi giờ từ định dạng 'H:i A' sang 24h và ghép với ngày
+            $datetime_start_str = $ngay_bat_dau . ' ' . date("H:i:s", strtotime($gio_bat_dau));
+            $datetime_end_str = $ngay_ket_thuc . ' ' . date("H:i:s", strtotime($gio_ket_thuc));
+
+            // 1. TẠO ĐƠN HÀNG CHÍNH (ĐÃ THÊM THỜI GIAN VÀO BẢNG don_hang)
+            $sql1 = "INSERT INTO don_hang
+                (id_khach_hang, id_cham_soc, id_danh_gia, ngay_dat, tong_tien, dia_chi_giao_hang, ten_khach_hang, so_dien_thoai, trang_thai, thoi_gian_bat_dau, thoi_gian_ket_thuc, hinh_thuc_thanh_toan)
+                VALUES (?, ?, 0, CURDATE(), ?, ?, ?, ?, 'chờ xác nhận', ?, ?, ?)";
+
+                $stmt1 = $conn->prepare($sql1);
+                if (!$stmt1) {
+                    throw new Exception("Lỗi prepare (don_hang): " . $conn->error);
+        }
             $stmt1->bind_param(
-                "iidsss", 
+                "iidssssss", 
                 $id_khach_hang_to_insert, 
                 $id_cham_soc, 
                 $tong_tien, 
                 $dia_chi_to_insert, 
                 $ten_to_insert, 
-                $sdt_to_insert
+                $sdt_to_insert,
+                $datetime_start_str, 
+                $datetime_end_str,
+                $phuong_thuc  
             );
             
             if (!$stmt1->execute()) {
@@ -107,13 +116,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
             $id_don_hang = $conn->insert_id;
             
             if ($id_don_hang > 0) {
-                // 2. LƯU CHI TIẾT DỊCH VỤ (Đã hợp nhất logic)
+                // 2. LƯU CHI TIẾT DỊCH VỤ 
                 
-                // Chuyển đổi giờ từ định dạng 'H:i A' sang 24h và ghép với ngày
-                // Lưu ý: date() và strtotime() cần thiết để chuyển đổi giờ từ "H:i A" của form sang "H:i:s"
-                $datetime_start_str = $ngay_bat_dau . ' ' . date("H:i:s", strtotime($gio_bat_dau));
-                $datetime_end_str = $ngay_ket_thuc . ' ' . date("H:i:s", strtotime($gio_ket_thuc));
-
                 $sql2 = "INSERT INTO dich_vu_don_hang 
                          (id_don_hang, ten_nhiem_vu, thoi_gian_bat_dau, thoi_gian_ket_thuc)
                          VALUES (?, ?, ?, ?)";
@@ -141,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
             
             $conn->close();
             // Điều hướng về trang chi tiết đơn hàng vừa tạo (dùng ID đơn hàng vừa tạo)
-            header("Location: Chitietlichsudonhang.php"); // Quay về trang lịch sử để xem chi tiết đơn mới nhất
+            header("Location: Chitietdonhang.php?id=" . $id_don_hang);
             exit;
 
         } catch (Exception $e) { // Cú pháp catch đúng
@@ -336,65 +340,23 @@ select:focus, input:focus {
     font-weight: 500;
 }
 /* ======================================= */
-/* STYLE CHO ACCORDION (KHUNG THU GỌN) */
+/* STYLE CHO INPUT DYNAMIC */
 /* ======================================= */
-.accordion-container {
-    margin-bottom: 20px;
-}
-.accordion-item {
-    border: 1px solid #FFD8E0;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    overflow: hidden;
-}
-.accordion-header {
-    background-color: #FFF0F3;
-    color: #FF6B81;
-    cursor: pointer;
-    padding: 15px 20px;
-    width: 100%;
+.btn-remove-service {
+    background: #FF6B81;
+    color: #fff;
     border: none;
-    text-align: left;
-    outline: none;
-    font-size: 16px;
-    font-weight: 600;
-    transition: background-color 0.3s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.accordion-header:hover {
-    background-color: #FFE6EB;
-}
-.accordion-header .fas {
-    transition: transform 0.3s ease;
-}
-.accordion-header.active .fas {
-    transform: rotate(180deg);
-}
-.service-select-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%; /* Đổi chiều rộng thành 100% để hiển thị tốt hơn */
-}
-
-.service-select label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.service-select select {
-    width: 100%;
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background-color: #fff;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-weight: 700;
     cursor: pointer;
+    width: 48px;
+    flex-shrink: 0;
+    transition: background 0.3s;
 }
-
+.btn-remove-service:hover {
+    background: #E55B70;
+}
 </style>
 </head>
 <body>
@@ -450,81 +412,73 @@ select:focus, input:focus {
         <input type="hidden" name="so_dien_thoai" id="so_dien_thoai_input">
         <input type="hidden" name="dia_chi" id="dia_chi_input">
 
-        <label><i class="fas fa-list-alt"></i> Chọn dịch vụ cụ thể:</label>
+        <label><i class="fas fa-list-alt"></i> Chọn dịch vụ/Nhiệm vụ cụ thể:</label>
         
-        <div class="accordion-container">
-            
-            <div class="service-select-container">
-                <div class="service-select">
-                    <label>1. Chăm sóc và Y tế cơ bản:</label>
-                    <select name="dich_vu1">
-                        <option value="">Chọn dịch vụ cụ thể</option>
-                        <option value="Chăm sóc người già">Chăm sóc người già</option>
-                        <option value="Chăm sóc người bệnh">Chăm sóc người bệnh</option>
-                        <option value="Hỗ trợ uống thuốc">Hỗ trợ uống thuốc</option>
-                        <option value="Đo huyết áp/đường huyết cơ bản">Đo huyết áp/đường huyết cơ bản</option>
-                        <option value="Theo dõi sức khỏe và báo cáo">Theo dõi sức khỏe và báo cáo</option>
-                    </select>
-                </div>
-
-                <div class="service-select">
-                    <label>2. Việc nhà và Dinh dưỡng:</label>
-                    <select name="dich_vu2">
-                        <option value="">Chọn dịch vụ cụ thể</option>
-                        <option value="Nấu ăn cho người già">Nấu ăn theo chế độ</option>
-                        <option value="Dọn dẹp nhà cửa">Dọn dẹp khu vực sinh hoạt</option>
-                        <option value="Giặt giũ và ủi đồ">Giặt giũ và ủi đồ cá nhân</option>
-                        <option value="Đi chợ/Mua sắm">Đi chợ/Mua sắm thực phẩm</option>
-                        <option value="Rửa chén bát">Rửa chén bát</option>
-                    </select>
-                </div>
-
-                <div class="service-select">
-                    <label>3. Hỗ trợ Cá nhân và Tinh thần:</label>
-                    <select name="dich_vu3">
-                        <option value="">Chọn dịch vụ cụ thể</option>
-                        <option value="Hỗ trợ tắm rửa">Hỗ trợ tắm rửa/vệ sinh cá nhân</option>
-                        <option value="Hỗ trợ đi lại">Hỗ trợ đi lại/tập vật lý trị liệu</option>
-                        <option value="Đi dạo/Vận động nhẹ">Đi dạo/Vận động nhẹ</option>
-                        <option value="Xoa bóp/Massage cơ bản">Xoa bóp/Massage cơ bản</option>
-                        <option value="Trò chuyện/Giải trí">Trò chuyện/Hỗ trợ tinh thần</option>
-                    </select>
+        <div id="serviceInputs">
+            <div class="service-input-group" id="group-1" style="margin-bottom: 15px;">
+                <label for="dich_vu_1" style="font-weight: 500;">Nhiệm vụ 1:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="dich_vu_1" name="dich_vu[]" placeholder="Ví dụ: Hỗ trợ tắm rửa, Nấu ăn theo chế độ" required
+                        style="flex-grow: 1; width: 100%; padding: 12px; height: 48px; border: 1px solid #FFD8E0; border-radius: 10px; box-sizing: border-box; font-size: 16px;">
+                    <button type="button" class="btn-remove-service" style="visibility: hidden; width: 48px; flex-shrink: 0; background: none; border: none; padding: 0;"></button>
                 </div>
             </div>
-
         </div>
+        <button type="button" id="addServiceBtn" style="background: #FF6B81; color: #fff; border: none; padding: 10px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 20px; font-size: 15px;">
+            <i class="fas fa-plus"></i> Thêm Nhiệm Vụ Khác
+        </button>
+
         <label><i class="fas fa-calendar-alt"></i> Chọn thời gian dịch vụ:</label>
         
         <div class="date-time-pair">
-            <div>
-                <label for="startDate">Ngày bắt đầu:</label>
-                <input type="date" id="startDate" required> 
-            </div>
-            
-            <div>
-                <label for="startHour">Giờ bắt đầu:</label>
-                <select id="startHour" required>
-                    <option value="">Chọn giờ</option>
-                    <?php echo generateTimeOptions(); ?>
-                </select>
-            </div>
-        </div>
-        
-        <div class="date-time-pair">
-            <div>
-                <label for="endDate">Ngày kết thúc:</label>
-                <input type="date" id="endDate" required>
-            </div>
+    <div>
+        <label for="startDate">Ngày bắt đầu:</label>
+        <input type="date" id="startDate" required 
+            value="<?php echo htmlspecialchars($_POST['ngay_bat_dau'] ?? ''); ?>"> 
+    </div>
+    
+    <div>
+        <label for="startHour">Giờ bắt đầu:</label>
+        <select id="startHour" required name="select_start_hour">
+            <option value="">Chọn giờ</option>
+            <?php 
+                $options_start = generateTimeOptions();
+                $selected_start_hour = $_POST['gio_bat_dau'] ?? '';
+                // Thay thế giá trị đã chọn nếu tồn tại trong POST
+                echo str_replace(
+                    "value=\"{$selected_start_hour}\"", 
+                    "value=\"{$selected_start_hour}\" selected", 
+                    $options_start
+                );
+            ?>
+        </select>
+    </div>
+</div>
 
-            <div>
-                <label for="endHour">Giờ kết thúc:</label>
-                <select id="endHour" required>
-                    <option value="">Chọn giờ</option>
-                    <?php echo generateTimeOptions(); ?>
-                </select>
-            </div>
-        </div>
-        
+<div class="date-time-pair">
+    <div>
+        <label for="endDate">Ngày kết thúc:</label>
+        <input type="date" id="endDate" required
+            value="<?php echo htmlspecialchars($_POST['ngay_ket_thuc'] ?? ''); ?>">
+    </div>
+
+    <div>
+        <label for="endHour">Giờ kết thúc:</label>
+        <select id="endHour" required name="select_end_hour">
+            <option value="">Chọn giờ</option>
+            <?php 
+                $options_end = generateTimeOptions();
+                $selected_end_hour = $_POST['gio_ket_thuc'] ?? '';
+                // Thay thế giá trị đã chọn nếu tồn tại trong POST
+                echo str_replace(
+                    "value=\"{$selected_end_hour}\"", 
+                    "value=\"{$selected_end_hour}\" selected", 
+                    $options_end
+                );
+            ?>
+        </select>
+    </div>
+</div>
         <hr style="border:0; border-top: 1px dashed #FFD8E0; margin: 25px 0;">
 
         <label><i class="fas fa-user-circle"></i> Hồ sơ đặt</label>
@@ -643,25 +597,102 @@ document.getElementById("profileSelect").addEventListener("change", function(){
     this.value === "new" ? "block" : "none";
 });
 
+// ===========================================
+// LOGIC XỬ LÝ INPUT DYNAMIC (MỚI)
+// ===========================================
+// Biến đếm để tạo ID/Label cho input. Bắt đầu từ 1 vì input đầu tiên đã có sẵn.
+let serviceCount = 1;
+
+function createServiceInput() {
+    serviceCount++;
+    const container = document.getElementById('serviceInputs');
+    
+    const divGroup = document.createElement('div');
+    divGroup.className = 'service-input-group';
+    divGroup.style.marginBottom = '15px';
+    divGroup.id = 'group-' + serviceCount;
+    
+    const label = document.createElement('label');
+    label.htmlFor = 'dich_vu_' + serviceCount;
+    label.textContent = `Nhiệm vụ ${serviceCount}:`;
+    label.style.fontWeight = '500';
+
+    const inputWrapper = document.createElement('div');
+    inputWrapper.style.display = 'flex';
+    inputWrapper.style.gap = '10px';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'dich_vu_' + serviceCount;
+    input.name = 'dich_vu[]'; // Quan trọng: PHP nhận mảng
+    input.placeholder = 'Nhập tên nhiệm vụ (Ví dụ: Đưa đi khám bệnh)';
+    input.required = true;
+    // Dùng style inline để đảm bảo giao diện thống nhất với các input khác
+    input.style.cssText = 'flex-grow: 1; width: 100%; padding: 12px; height: 48px; border: 1px solid #FFD8E0; border-radius: 10px; box-sizing: border-box; font-size: 16px;';
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn-remove-service';
+    removeBtn.innerHTML = '<i class="fas fa-minus"></i>';
+    removeBtn.title = 'Xóa nhiệm vụ';
+    // Dùng style inline để đảm bảo giao diện thống nhất với các nút khác
+    removeBtn.style.cssText = 'width: 48px; flex-shrink: 0; background: #FF6B81; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.3s;';
+    
+    removeBtn.onclick = function() {
+        container.removeChild(divGroup);
+        // Sau khi xóa, cập nhật lại số thứ tự nhiệm vụ
+        updateServiceLabels();
+    };
+    
+    inputWrapper.appendChild(input);
+    inputWrapper.appendChild(removeBtn);
+    
+    divGroup.appendChild(label);
+    divGroup.appendChild(inputWrapper);
+    
+    container.appendChild(divGroup);
+    
+    // Cập nhật lại nhãn sau khi thêm
+    updateServiceLabels();
+}
+
+function updateServiceLabels() {
+    // Cập nhật lại nhãn "Nhiệm vụ X" sau khi thêm/xóa
+    const groups = document.querySelectorAll('#serviceInputs .service-input-group');
+    groups.forEach((group, index) => {
+        const label = group.querySelector('label');
+        if (label) {
+            label.textContent = `Nhiệm vụ ${index + 1}:`;
+        }
+    });
+    serviceCount = groups.length; // Đặt lại biến đếm theo số lượng hiện có
+}
+
+// Bắt sự kiện cho nút thêm
+document.getElementById("addServiceBtn").addEventListener("click", createServiceInput);
+// ===========================================
+// KẾT THÚC LOGIC INPUT DYNAMIC
+// ===========================================
+
 
 document.getElementById("bookingForm").addEventListener("submit", function(e){
     const total = Math.round(calcTotal());
     
-    // Kiểm tra đã chọn ít nhất 1 dịch vụ chưa
-    const selects = ['dich_vu1', 'dich_vu2', 'dich_vu3'];
-      let hasService = false;
-      for (let selName of selects) {
-          const sel = document.querySelector(`select[name="${selName}"]`);
-          if (sel && sel.value.trim() !== '') {
-              hasService = true;
-              break;
-          }
-      }
-    if (!hasService) {
-        alert("Vui lòng chọn ít nhất một dịch vụ cụ thể.");
+    // --- LOGIC KIỂM TRA DỊCH VỤ MỚI ---
+    const serviceInputs = document.querySelectorAll('#serviceInputs input[name="dich_vu[]"]');
+    let hasValidService = false;
+    serviceInputs.forEach(input => {
+        if (input.value.trim() !== '') {
+            hasValidService = true;
+        }
+    });
+
+    if (!hasValidService) {
+        alert("Vui lòng nhập ít nhất một Nhiệm vụ cụ thể để đặt dịch vụ.");
         e.preventDefault();
         return;
     }
+    // --- KẾT THÚC LOGIC KIỂM TRA DỊCH VỤ MỚI ---
 
 
     if (total <= 0) {
@@ -674,25 +705,26 @@ document.getElementById("bookingForm").addEventListener("submit", function(e){
     const startDateVal = document.getElementById("startDate").value;
     const endDateVal = document.getElementById("endDate").value;
     const startHourVal = document.getElementById("startHour").value; // dạng "8:30 AM"
-    const endHourVal = document.getElementById("endHour").value;      // dạng "4:00 PM"
+    const endHourVal = document.getElementById("endHour").value; // dạng "4:00 PM"
 
     // Điền vào các trường hidden
     document.getElementById("tong_tien_input").value = total;
     document.getElementById("ngay_bat_dau_input").value = startDateVal;
     document.getElementById("ngay_ket_thuc_input").value = endDateVal;
-    
+
     // Gửi đi giờ đầy đủ (dạng "8:30 AM")
     document.getElementById("gio_bat_dau_input").value = startHourVal;
     document.getElementById("gio_ket_thuc_input").value = endHourVal;
     document.getElementById("phuong_thuc_input").value = document.getElementById("payment").value;
-
+    
+    // Xử lý thông tin người nhận dịch vụ (Đã có logic Địa chỉ)
     if (document.getElementById("profileSelect").value === "new") {
         // Nếu là "Đặt hộ"
         const ten = document.getElementById("hoTen").value.trim();
         const diachi = document.getElementById("diaChi").value.trim();
         const sdt = document.getElementById("soDienThoai").value.trim();
-        if (!ten || !sdt) {
-            alert("Vui lòng nhập họ tên và số điện thoại của người được đặt hộ.");
+        if (!ten || !diachi || !sdt) {
+            alert("Vui lòng nhập đầy đủ Họ tên, Địa chỉ và Số điện thoại của người được đặt hộ.");
             e.preventDefault();
             return;
         }
@@ -701,7 +733,7 @@ document.getElementById("bookingForm").addEventListener("submit", function(e){
         document.getElementById("so_dien_thoai_input").value = sdt;
     } else {
         // Nếu là "Sử dụng hồ sơ của tôi"
-        // Gửi SĐT rỗng để PHP biết và dùng thông tin session
+        // Gửi các trường rỗng để PHP dùng thông tin session
         document.getElementById("ten_khach_hang_input").value = "";
         document.getElementById("dia_chi_input").value = "";
         document.getElementById("so_dien_thoai_input").value = "";
