@@ -49,6 +49,14 @@ body { background: #f8f8fa; color: #333; overflow-x: hidden; line-height: 1.6; }
   margin-top:5px; right:0; background:#FF6B81; transition:0.3s;
 }
 .nav-links a:hover::after { width:100%; left:0; }
+.nav-links a.active {
+  color: #FF6B81; /* Màu giống như khi hover */
+  font-weight: 600;
+}
+.nav-links a.active::after {
+  width: 100%; /* Hiện gạch chân giống như khi hover */
+  left: 0;
+}
 
 /* SLIDESHOW */
 .slideshow-container {
@@ -267,6 +275,30 @@ function showSlides(){
   if(arguments.length!==0){ clearTimeout(autoSlideTimer); autoSlideTimer=setTimeout(showSlides,4000);}
 }
 let autoSlideTimer = setTimeout(showSlides,3000);
+
+(function() {
+    // Lấy tên file của trang hiện tại (ví dụ: "index.php" hoặc "Dichvu.php")
+    var currentPage = window.location.pathname.split('/').pop();
+    if (currentPage === "") {
+      currentPage = "index.php"; // Mặc định là trang chủ
+    }
+
+    // Lấy tất cả các link trong navbar
+    var navLinks = document.querySelectorAll('.nav-links a');
+
+    navLinks.forEach(function(link) {
+      // Lấy tên file từ thuộc tính href của link
+      var linkPage = new URL(link.href).pathname.split('/').pop();
+      if (linkPage === "") {
+        linkPage = "index.php";
+      }
+
+      // So sánh nếu tên file của link trùng với tên file của trang hiện tại
+      if (linkPage === currentPage) {
+        link.classList.add('active'); // Thêm class 'active'
+      }
+    });
+  })();
 </script>
 
 </body>
