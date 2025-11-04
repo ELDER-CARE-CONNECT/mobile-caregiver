@@ -1,223 +1,276 @@
-<!doctype html>
+<?php
+session_start();
+include_once('../../model/get_products.php');
+$conn = connectdb();
+
+// Kiểm tra nếu chưa đăng nhập
+if (!isset($_SESSION['ten_tai_khoan'])) {
+    header("Location: ../../Admin/login.php");
+    exit();
+}
+
+$ten_tai_khoan = $_SESSION['ten_tai_khoan'];
+
+// 1️⃣ Lấy thông tin người chăm sóc
+$sql_chamsoc = "SELECT id_cham_soc, ho_ten FROM nguoi_cham_soc WHERE ten_tai_khoan = ?";
+$stmt_cs = $conn->prepare($sql_chamsoc);
+$stmt_cs->bind_param("s", $ten_tai_khoan);
+$stmt_cs->execute();
+$result_cs = $stmt_cs->get_result();
+
+if ($result_cs->num_rows === 0) {
+    die("❌ Không tìm thấy người chăm sóc với tài khoản này!");
+}
+
+$chamsoc = $result_cs->fetch_assoc();
+$id_cham_soc = $chamsoc['id_cham_soc'];
+$ho_ten_chamsoc = $chamsoc['ho_ten'];
+
+// 2️⃣ Nếu người dùng nhấn nút “Nhận đơn hàng”
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nhan_don'])) {
+    $id_don_hang = $_POST['id_don_hang'];
+
+    $update_sql = "UPDATE don_hang SET trang_thai = 'đang hoàn thành' WHERE id_don_hang = ? AND id_cham_soc = ?";
+    $stmt_update = $conn->prepare($update_sql);
+    $stmt_update->bind_param("ii", $id_don_hang, $id_cham_soc);
+    $stmt_update->execute();
+
+    // Sau khi cập nhật, tải lại trang để cập nhật giao diện
+    header("Location: Donhangchuanhan.php");
+    exit();
+}
+
+// 3️⃣ Lấy danh sách đơn hàng
+$sql_donhang = "SELECT id_don_hang, id_khach_hang, ngay_dat, tong_tien, trang_thai 
+                FROM don_hang 
+                WHERE id_cham_soc = ?";
+$stmt_dh = $conn->prepare($sql_donhang);
+$stmt_dh->bind_param("i", $id_cham_soc);
+$stmt_dh->execute();
+$result_dh = $stmt_dh->get_result();
+?>
+
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <title>Đơn Hàng Chưa Nhận - Caregiver</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn hàng được giao</title>
+    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
 
-  <style>
-    :root{
-      --xanh:#0b5ed7; 
-      --xanh-nhat:#eaf2ff; 
-      --vien:#e7e9ef; 
-      --chu:#1a1d29;
-    }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--chu); background:#fff; display:grid; grid-template-columns:260px 1fr; min-height:100vh;
-    }
+        .accepted-orders-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
 
-    /* Sidebar (để sẵn – nếu không có sidebar sẽ tự 1 cột nhờ BRIDGE ở dưới) */
-    .sidebar{background:var(--xanh); color:#fff; padding:22px 18px; display:flex; flex-direction:column; gap:20px}
-    .logo{display:flex; align-items:center; gap:10px}
-    .logo .hinh{width:36px; height:36px; border-radius:10px; background:#ffffff22; display:inline-block}
-    .logo h2{margin:0; font-size:18px; line-height:1.2}
-    .menu{display:flex; flex-direction:column; gap:6px}
-    .menu a{color:#fff; text-decoration:none; padding:10px 12px; border-radius:10px; opacity:.95; display:flex; align-items:center; gap:10px}
-    .menu a:hover,.menu a.active{background:#ffffff22; opacity:1}
+        .hero h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    /* Nội dung chính */
-    .wrap{display:flex; flex-direction:column}
-    header{padding:14px 20px; border-bottom:1px solid var(--vien); background:#fff; position:sticky; top:0; z-index:5}
-    header h1{margin:0; font-size:20px}
-    header p{margin:4px 0 0 0; color:#5b6070; font-size:14px}
+        .orders-wrapper {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+        }
 
-    /* ===== Bộ lọc / thanh công cụ ===== */
-    .cg-filters{
-      display:flex; flex-wrap:wrap; gap:12px 16px;
-      padding:14px 20px; background:var(--xanh-nhat); border-bottom:1px solid var(--vien);
-    }
-    .cg-filters label{display:flex; flex-direction:column; gap:6px; font-size:14px}
+        .orders-wrapper h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
 
-    /* Thanh tìm kiếm mới */
-    .cg-search{ flex:1; min-width:280px; position:relative; }
-    .cg-search input[type="text"]{
-      width:100%; padding:10px 14px 10px 38px;
-      border:1px solid var(--vien); border-radius:10px; background:#fff;
-    }
-    .cg-search i{
-      position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:#8b90a0;
-    }
-    /* Fix canh icon trong ô tìm kiếm */
-.cg-search{ flex:1; min-width:280px; }
-.cg-search .field{ position:relative; }
+        .order-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, max-content));
+            justify-content: start;
+            gap: 24px;
+            justify-items: flex-start;
+        }
 
-.cg-search .field i{
-  position:absolute;
-  left:12px;
-  top:50%;
-  transform:translateY(-50%);
-  color:#8b90a0;
-  pointer-events:none;
-}
+        .order-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            width: 340px;
+            height: 190px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
 
-.cg-search .field input{
-  width:100%;
-  height:42px;                 /* đảm bảo chiều cao cố định */
-  padding:10px 14px 10px 38px; /* chừa chỗ cho icon */
-  border:1px solid var(--vien);
-  border-radius:10px;
-  background:#fff;
-  line-height:1.2;
-}
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            border-color: #3b82f6;
+        }
 
-    .cg-actions{ display:flex; align-items:flex-end; gap:15px; margin-left:auto }
-    .cg-btn{
-      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; cursor:pointer;
-      border:1px solid transparent; font-size:14px; line-height:1;
-    }
-    .cg-btn i{font-size:14px}
-    .cg-btn-primary{ background:var(--xanh); color:#fff }
-    .cg-btn-primary:hover{ filter:brightness(.95) }
-    .cg-btn-ghost{ background:#fff; color:#1a1d29; border:1px solid var(--vien) }
-    .cg-btn-ghost:hover{ background:#f7f8fc }
+        .order-card h3 {
+            margin: 0 0 10px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #2563eb;
+        }
 
-    /* Topbar & phân trang */
-    .cg-topbar{ display:flex; align-items:center; justify-content:space-between; padding:12px 20px; color:#485063; font-size:14px }
-    .cg-muted{ color:#5b6070 }
-    .cg-pager{ display:flex; align-items:center; gap:10px }
-    .cg-pagebtn{
-      padding:8px 12px; border:1px solid var(--vien); background:#fff; border-radius:10px; cursor:pointer; font-size:14px; display:inline-flex; align-items:center; gap:8px
-    }
-    .cg-pagebtn:disabled{ opacity:.5; cursor:not-allowed }
-    .cg-pagebtn:hover:not(:disabled){ background:#f7f8fc }
+        .order-info p {
+            margin: 4px 0;
+            color: #374151;
+            font-size: 15px;
+            line-height: 1.4;
+        }
 
-    /* Lưới thẻ đơn */
-    .cg-grid{ padding:18px 20px; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px }
-    .cg-card{ border:1px solid var(--vien); background:#fff; border-radius:12px; overflow:hidden; display:flex; flex-direction:column }
-    .cg-card-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--vien); background:#f7f8fc }
-    .cg-card-header h3{ margin:0; font-size:16px }
-    .cg-status{ padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid transparent; display:inline-block }
-    .cg-status-pending{ background:#fff9e6; color:#a15c00; border-color:#ffe6a1 }
-    .cg-card-body{ padding:12px 14px; display:grid; gap:10px }
-    .cg-info-row{ display:grid; grid-template-columns:20px 110px 1fr; align-items:start; gap:8px; font-size:14px }
-    .cg-info-row i{ margin-top:2px }
-    .cg-label{ color:#5b6070 }
-    .cg-value{ color:#1a1d29; word-break:break-word }
-    .cg-price .cg-value{ font-weight:700 }
-    .cg-card-footer{ display:flex; gap:10px; padding:12px 14px; border-top:1px solid var(--vien) }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
 
-    /* Trạng thái rỗng & lỗi */
-    .cg-empty,.cg-error{
-      border:1px dashed var(--vien); border-radius:12px; padding:24px; text-align:center; color:#5b6070; background:#fff; grid-column:1 / -1
-    }
-    .cg-empty i,.cg-error i{ font-size:28px; margin-bottom:8px; display:block }
+        .status.completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
 
-    /* BRIDGE: nếu không có sidebar thì bỏ layout 2 cột */
-    body:has(.cg-wrap):not(:has(.sidebar)){ display:block; grid-template-columns:unset }
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
 
-    /* Mobile */
-    @media (max-width:600px){
-      .cg-actions{ width:100%; justify-content:flex-end }
-    }
-  </style>
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .view-btn:hover {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .accept-btn {
+            background: #dc2626; /* đỏ */
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .accept-btn:hover {
+            background: #b91c1c;
+            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .order-card {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
 </head>
-
 <body>
-  <main class="cg-wrap">
-    <header class="cg-header">
-      <h1>Đơn Hàng Đang Chờ Nhận</h1>
-      <p>Hiển thị tất cả đơn ở trạng thái <b>chờ xác nhận / chưa gán người chăm sóc</b></p>
-    </header>
-
-    <!-- Thanh tìm kiếm mới -->
-    <form id="cg-filter" class="cg-filters">
-      <div class="cg-search">
-  <label for="q">Tìm kiếm</label>
-  <div class="field">
-    <i class="fas fa-search" aria-hidden="true"></i>
-    <input id="q" type="text" placeholder="Mã đơn, tên khách hàng, SĐT, email">
-  </div>
-</div>
-      <div class="cg-actions">
-        <button type="submit" class="cg-btn cg-btn-primary"><i class="fas fa-magnifying-glass"></i> Tìm kiếm</button>
-        <button type="button" id="resetBtn" class="cg-btn cg-btn-ghost"><i class="fas fa-rotate"></i> Làm mới</button>
-      </div>
-    </form>
-
-    <div class="cg-topbar">
-      <span id="summaryLine" class="cg-muted">Tổng đơn hàng: 18</span>
-      <div class="cg-pager">
-        <button id="prevBtn" class="cg-pagebtn" disabled><i class="fas fa-chevron-left"></i> Trước</button>
-        <span id="pageInfo" class="cg-muted">Trang 1/2</span>
-        <button id="nextBtn" class="cg-pagebtn">Sau <i class="fas fa-chevron-right"></i></button>
-      </div>
+<div class="accepted-orders-container">
+    <div class="hero">
+        <h1><i class="fas fa-list"></i> Đơn hàng được giao cho bạn</h1>
     </div>
 
-    <!-- Danh sách thẻ giả lập -->
-    <section id="cg-list" class="cg-grid">
-      <!-- Ví dụ 1 -->
-      <div class="cg-card" data-order-id="42">
-        <div class="cg-card-header">
-          <h3>Đơn hàng #42</h3>
-          <span class="cg-status cg-status-pending">CHỜ XÁC NHẬN</span>
-        </div>
-        <div class="cg-card-body">
-          <div class="cg-info-row"><i class="fas fa-user"></i><span class="cg-label">Khách hàng:</span><span class="cg-value">Gia An</span></div>
-          <div class="cg-info-row"><i class="fas fa-phone"></i><span class="cg-label">SĐT:</span><span class="cg-value">334290589</span></div>
-          <div class="cg-info-row"><i class="fas fa-calendar"></i><span class="cg-label">Ngày đặt:</span><span class="cg-value">06/05/2025</span></div>
-          <div class="cg-info-row"><i class="fas fa-clock"></i><span class="cg-label">Thời gian:</span><span class="cg-value">00:00 - 00:00</span></div>
-          <div class="cg-info-row"><i class="fas fa-map-marker-alt"></i><span class="cg-label">Địa chỉ:</span><span class="cg-value">asdiasdias</span></div>
-          <div class="cg-info-row cg-price"><i class="fas fa-money-bill-wave"></i><span class="cg-label">Tổng tiền:</span><span class="cg-value cg-price-value">20 VNĐ</span></div>
-        </div>
-        <div class="cg-card-footer">
-          <button class="cg-btn cg-btn-primary"><i class="fas fa-handshake"></i> Nhận đơn</button>
-          <button class="cg-btn cg-btn-ghost"><i class="fas fa-eye"></i> Chi tiết</button>
-        </div>
-      </div>
+    <div class="orders-wrapper">
+        <h2>Xin chào, <?php echo htmlspecialchars($ho_ten_chamsoc); ?>!</h2>
 
-      <!-- Ví dụ 2 -->
-      <div class="cg-card" data-order-id="41">
-        <div class="cg-card-header">
-          <h3>Đơn hàng #41</h3>
-          <span class="cg-status cg-status-pending">CHỜ XÁC NHẬN</span>
-        </div>
-        <div class="cg-card-body">
-          <div class="cg-info-row"><i class="fas fa-user"></i><span class="cg-label">Khách hàng:</span><span class="cg-value">Gia An</span></div>
-          <div class="cg-info-row"><i class="fas fa-phone"></i><span class="cg-label">SĐT:</span><span class="cg-value">334290562</span></div>
-          <div class="cg-info-row"><i class="fas fa-calendar"></i><span class="cg-label">Ngày đặt:</span><span class="cg-value">05/05/2025</span></div>
-          <div class="cg-info-row"><i class="fas fa-clock"></i><span class="cg-label">Thời gian:</span><span class="cg-value">00:00 - 00:00</span></div>
-          <div class="cg-info-row"><i class="fas fa-map-marker-alt"></i><span class="cg-label">Địa chỉ:</span><span class="cg-value">0</span></div>
-          <div class="cg-info-row cg-price"><i class="fas fa-money-bill-wave"></i><span class="cg-label">Tổng tiền:</span><span class="cg-value cg-price-value">160 VNĐ</span></div>
-        </div>
-        <div class="cg-card-footer">
-          <button class="cg-btn cg-btn-primary"><i class="fas fa-handshake"></i> Nhận đơn</button>
-          <button class="cg-btn cg-btn-ghost"><i class="fas fa-eye"></i> Chi tiết</button>
-        </div>
-      </div>
+        <div class="order-cards">
+            <?php
+            if ($result_dh->num_rows > 0) {
+                while ($row = $result_dh->fetch_assoc()) {
+                    // Lấy tên khách hàng từ id_khach_hang
+                    $id_khach_hang = $row['id_khach_hang'];
+                    $sql_khach = "SELECT ten_khach_hang FROM khach_hang WHERE id_khach_hang = ?";
+                    $stmt_kh = $conn->prepare($sql_khach);
+                    $stmt_kh->bind_param("i", $id_khach_hang);
+                    $stmt_kh->execute();
+                    $result_kh = $stmt_kh->get_result();
+                    $ten_khach_hang = $result_kh->fetch_assoc()['ten_khach_hang'] ?? 'Không xác định';
+                    $stmt_kh->close();
 
-      <!-- Ví dụ 3 -->
-      <div class="cg-card" data-order-id="40">
-        <div class="cg-card-header">
-          <h3>Đơn hàng #40</h3>
-          <span class="cg-status cg-status-pending">CHỜ XÁC NHẬN</span>
+                    echo "
+                    <div class='order-card'>
+                        <div>
+                            <h3>Mã đơn: #{$row['id_don_hang']}</h3>
+                            <div class='order-info'>
+                                <p><strong>Khách hàng:</strong> {$ten_khach_hang}</p>
+                                <p><strong>Ngày đặt:</strong> {$row['ngay_dat']}</p>
+                                <p><strong>Trạng thái:</strong> 
+                                    <span class='status " . 
+                                        ($row['trang_thai'] == 'đang hoàn thành' ? 'completed' : 'pending') . "'>
+                                        {$row['trang_thai']}
+                                    </span>
+                                </p>
+                                <p><strong>Tổng tiền:</strong> " . number_format($row['tong_tien'], 0, ',', '.') . "₫</p>
+                            </div>
+                        </div>
+                        <div class='btn-container'>";
+                    
+                    if ($row['trang_thai'] == 'chờ xác nhận') {
+                        echo "
+                        <form method='POST' style='display:inline;'>
+                            <input type='hidden' name='id_don_hang' value='{$row['id_don_hang']}'>
+                            <button type='submit' name='nhan_don' class='accept-btn'>Nhận đơn</button>
+                        </form>";
+                    }
+
+                    echo "<button class='view-btn'>Xem</button>
+                        </div>
+                    </div>";
+                }
+            } else {
+                echo "<p>❌ Hiện tại bạn chưa có đơn hàng nào được giao.</p>";
+            }
+
+            $stmt_dh->close();
+            $conn->close();
+            ?>
         </div>
-        <div class="cg-card-body">
-          <div class="cg-info-row"><i class="fas fa-user"></i><span class="cg-label">Khách hàng:</span><span class="cg-value">Minh Thư</span></div>
-          <div class="cg-info-row"><i class="fas fa-phone"></i><span class="cg-label">SĐT:</span><span class="cg-value">0978 555 222</span></div>
-          <div class="cg-info-row"><i class="fas fa-calendar"></i><span class="cg-label">Ngày đặt:</span><span class="cg-value">04/05/2025</span></div>
-          <div class="cg-info-row"><i class="fas fa-clock"></i><span class="cg-label">Thời gian:</span><span class="cg-value">08:00 - 10:00</span></div>
-          <div class="cg-info-row"><i class="fas fa-map-marker-alt"></i><span class="cg-label">Địa chỉ:</span><span class="cg-value">Q.1, TP.HCM</span></div>
-          <div class="cg-info-row cg-price"><i class="fas fa-money-bill-wave"></i><span class="cg-label">Tổng tiền:</span><span class="cg-value cg-price-value">350.000 VNĐ</span></div>
-        </div>
-        <div class="cg-card-footer">
-          <button class="cg-btn cg-btn-primary"><i class="fas fa-handshake"></i> Nhận đơn</button>
-          <button class="cg-btn cg-btn-ghost"><i class="fas fa-eye"></i> Chi tiết</button>
-        </div>
-      </div>
-    </section>
-  </main>
+    </div>
+</div>
 </body>
 </html>
