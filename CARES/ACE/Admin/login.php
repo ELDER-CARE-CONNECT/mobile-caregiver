@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($user['ten_khach_hang'])) {
                 header("Location: CareSeeker/PHP/Hoso.php");
             } else {
-                header("Location: CareSeeker/PHP/Dichvu.php");
+                header("Location: ../CareSeeker/PHP/Dichvu.php");
             }
             exit();
         }

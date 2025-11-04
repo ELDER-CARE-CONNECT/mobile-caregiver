@@ -110,7 +110,7 @@
 <aside class="sidebar">
     <div class="navbar">
         <div class="logo">
-            <img src="fontend/images/logo.png" alt="Logo" class="logo-image" />
+            <img src="images/logo.jpg" alt="Logo" class="logo-image" />
             <a href="../Public/view/index1.php">Đăng xuất</a>
         </div>
     </div>
