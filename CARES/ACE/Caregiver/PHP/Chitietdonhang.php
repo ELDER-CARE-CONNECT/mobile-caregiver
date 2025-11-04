@@ -1,287 +1,398 @@
+
+
 <!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
-  <title>Hệ thống chăm sóc người già - CareGiver</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="../CSS/style.css" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <title>Chi tiết đơn hàng</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .back:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(-5px);
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .card-hd {
+      padding: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-hd h2 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-bd {
+      padding: 30px;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 25px 30px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .modal-body {
+      padding: 30px;
+    }
+
+    .order-detail-section {
+      margin-bottom: 25px;
+    }
+
+    .order-detail-section h4 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #374151;
+      margin: 0 0 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .detail-item-modal {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .detail-item-modal i {
+      width: 20px;
+      color: #667eea;
+      text-align: center;
+    }
+
+    .detail-label-modal {
+      font-weight: 600;
+      color: #374151;
+      min-width: 100px;
+    }
+
+    .detail-value-modal {
+      color: #1f2937;
+      flex: 1;
+    }
+
+    .customer-info-modal {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 20px;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .customer-avatar-modal {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .customer-details-modal h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .customer-details-modal p {
+      margin: 0 0 4px;
+      color: #6b7280;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .customer-details-modal p i {
+      width: 16px;
+      text-align: center;
+    }
+
+    .sum {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 25px;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from { 
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .customer-info-modal {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .card-hd {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+    }
+  </style>
 </head>
 <body>
-  <!-- Sidebar Navigation -->
-  <aside class="sidebar">
-    <div class="logo">
-      <i class="fas fa-heart-pulse"></i>
-      <h2>CareGiver</h2>
-    </div>
-    
-    <nav class="menu">
-      <a href="#" class="menu-item">
-        <i class="fas fa-home"></i>
-        <span>Trang chủ</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-user-plus"></i>
-        <span>Thêm hồ sơ</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-users"></i>
-        <span>Hồ Sơ Bệnh Nhân</span>
-      </a>
-      
-      <a href="#" class="menu-item active">
-        <i class="fas fa-clipboard-list"></i>
-        <span>Lịch Sử Đặt Dịch Vụ</span>
-        <span class="badge">5</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-calendar-check"></i>
-        <span>Lịch Hẹn</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-chart-line"></i>
-        <span>Báo Cáo</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-bell"></i>
-        <span>Thông Báo</span>
-        <span class="badge notification">99+</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-cog"></i>
-        <span>Cài Đặt</span>
-      </a>
-    </nav>
-  </aside>
+  <div class="container">
+    <a class="back" href="javascript:void(0)" onclick="goBack()">
+      <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <header class="header">
-      <div class="header-left">
-        <h1>Lịch Sử Đặt Dịch Vụ</h1>
-        <p>Quản Lý Và Theo Dõi Các Dịch Vụ Chăm Sóc Đã Đặt</p>
+    <div class="card">
+      <div class="card-hd">
+        <h2>Chi tiết đơn hàng #DH001</h2>
+        <span class="badge">Chờ xác nhận</span>
       </div>
-      <div class="header-right">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Tìm kiếm..." />
-        </div>
-        <div class="user-profile">
-          <img src="https://via.placeholder.com/40" alt="Avatar" />
-          <span>Nguyễn Minh Thư</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-      <span>Trang chủ</span>
-      <i class="fas fa-chevron-right"></i>
-      <span>Lịch Sử Đặt Dịch Vụ</span>
-    </div>
-
-    <!-- Filter Tabs -->
-    <div class="filter-tabs">
-      <button class="tab-btn active" data-status="all">
-        <i class="fas fa-list"></i>
-        Tất cả
-      </button>
-      <button class="tab-btn" data-status="completed">
-        <i class="fas fa-check-circle"></i>
-        Hoàn thành
-      </button>
-      <button class="tab-btn" data-status="pending">
-        <i class="fas fa-clock"></i>
-        Đang xử lý
-      </button>
-      <button class="tab-btn" data-status="cancelled">
-        <i class="fas fa-times-circle"></i>
-        Đã hủy
-      </button>
-    </div>
-
-    <!-- Search and Filter Tools -->
-    <div class="tools-section">
-      <div class="search-filters">
-        <div class="filter-group">
-          <label for="searchInput">Tìm kiếm</label>
-          <div class="search-input">
-            <i class="fas fa-search"></i>
-            <input id="searchInput" type="text" placeholder="Mã đơn, tên khách hàng, người chăm sóc..." />
+      <div class="card-bd">
+        <!-- Thông tin khách hàng -->
+        <div class="customer-info-modal">
+          <div class="customer-avatar-modal">NT</div>
+          <div class="customer-details-modal">
+            <h3>Nguyễn Văn A</h3>
+            <p><i class="fas fa-phone"></i> 0123456789</p>
+            <p><i class="fas fa-envelope"></i> nguyenvana@email.com</p>
+            <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, Quận 1, TP.HCM</p>
           </div>
         </div>
-        
-        <div class="filter-group">
-          <label for="dateFrom">Từ ngày</label>
-          <input id="dateFrom" type="date" />
-        </div>
-        
-        <div class="filter-group">
-          <label for="dateTo">Đến ngày</label>
-          <input id="dateTo" type="date" />
-        </div>
-        
-        <div class="filter-group">
-          <button class="btn-primary" id="searchBtn">
-            <i class="fas fa-search"></i>
-            Tìm kiếm
-          </button>
-        </div>
-        
-        <div class="filter-group">
-          <button class="btn-secondary" id="resetBtn">
-            <i class="fas fa-refresh"></i>
-            Làm mới
-          </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- Statistics -->
-    <div class="stats-section">
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-clipboard-list"></i>
+        <!-- Thông tin đơn hàng -->
+        <div class="order-detail-section">
+          <h4><i class="fas fa-info-circle"></i> Thông tin đơn hàng</h4>
+          <div class="detail-grid">
+            <div class="detail-item-modal">
+              <i class="fas fa-hashtag"></i>
+              <span class="detail-label-modal">Mã đơn:</span>
+              <span class="detail-value-modal">#DH001</span>
+            </div>
+            <div class="detail-item-modal">
+              <i class="fas fa-calendar"></i>
+              <span class="detail-label-modal">Ngày đặt:</span>
+              <span class="detail-value-modal">31/10/2025</span>
+            </div>
+            <div class="detail-item-modal">
+              <i class="fas fa-clock"></i>
+              <span class="detail-label-modal">Thời gian:</span>
+              <span class="detail-value-modal">08:00 - 17:00</span>
+            </div>
+            <div class="detail-item-modal">
+              <i class="fas fa-user-nurse"></i>
+              <span class="detail-label-modal">Người chăm sóc:</span>
+              <span class="detail-value-modal">Chưa phân công</span>
+            </div>
+            <div class="detail-item-modal">
+              <i class="fas fa-concierge-bell"></i>
+              <span class="detail-label-modal">Dịch vụ:</span>
+              <span class="detail-value-modal">Chăm sóc tại nhà</span>
+            </div>
+            <div class="detail-item-modal">
+              <i class="fas fa-credit-card"></i>
+              <span class="detail-label-modal">Thanh toán:</span>
+              <span class="detail-value-modal">Tiền mặt</span>
+            </div>
+          </div>
         </div>
-        <div class="stat-content">
-          <h3 id="totalOrders">0</h3>
-          <p>Tổng đơn hàng</p>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="stat-content">
-          <h3 id="completedOrders">0</h3>
-          <p>Hoàn thành</p>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-clock"></i>
-        </div>
-        <div class="stat-content">
-          <h3 id="pendingOrders">0</h3>
-          <p>Đang xử lý</p>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-dollar-sign"></i>
-        </div>
-        <div class="stat-content">
-          <h3 id="totalRevenue">0₫</h3>
-          <p>Tổng doanh thu</p>
-        </div>
-      </div>
-    </div>
 
-    <!-- Orders Table -->
-    <div class="table-section">
-      <div class="table-header">
-        <h2>Danh sách đơn hàng</h2>
-        <div class="table-actions">
-          <button class="btn-export">
-            <i class="fas fa-download"></i>
-            Xuất Excel
-          </button>
-          <button class="btn-print">
-            <i class="fas fa-print"></i>
-            In báo cáo
-          </button>
+        <!-- Trạng thái đơn hàng -->
+        <div class="order-detail-section">
+          <h4><i class="fas fa-tasks"></i> Trạng thái đơn hàng</h4>
+          <div class="detail-item-modal">
+            <i class="fas fa-clock"></i>
+            <span class="detail-label-modal">Trạng thái:</span>
+            <span class="detail-value-modal">
+              <span class="badge">Chờ xác nhận</span>
+            </span>
+          </div>
         </div>
-      </div>
-      
-      <div class="table-container">
-        <table class="orders-table">
-          <thead>
-            <tr>
-              <th>Mã đơn</th>
-              <th>Ngày đặt</th>
-              <th>Khách hàng</th>
-              <th>Người chăm sóc</th>
-              <th>Dịch vụ</th>
-              <th>Thời gian</th>
-              <th>Giá tiền</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody id="ordersTableBody">
-            <!-- Data will be populated by JavaScript -->
-          </tbody>
-        </table>
-      </div>
-      
-      <!-- Pagination -->
-      <div class="pagination">
-        <button class="page-btn" id="prevBtn">
-          <i class="fas fa-chevron-left"></i>
-          Trước
-        </button>
-        <div class="page-info">
-          <span id="pageInfo">Trang 1/1</span>
+
+        <!-- Tổng tiền -->
+        <div class="sum">
+          Tổng tiền: 500.000 ₫
         </div>
-        <button class="page-btn" id="nextBtn">
-          Sau
-          <i class="fas fa-chevron-right"></i>
-        </button>
       </div>
     </div>
   </div>
 
-  <!-- Order Detail Modal -->
-  <div id="orderModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Chi tiết đơn hàng</h2>
-        <button class="close-btn" id="closeModal">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="modal-body" id="modalBody">
-        <!-- Order details will be populated here -->
-      </div>
-    </div>
-  </div>
+  <script>
+    function goBack() {
+      history.back();
+    }
 
-  <!-- Template for order row -->
-  <template id="orderRowTemplate">
-    <tr class="order-row">
-      <td class="order-id"></td>
-      <td class="order-date"></td>
-      <td class="customer-name"></td>
-      <td class="caregiver-name"></td>
-      <td class="service-type"></td>
-      <td class="service-time"></td>
-      <td class="order-price"></td>
-      <td class="order-status">
-        <span class="status-badge"></span>
-      </td>
-      <td class="order-actions">
-        <button class="btn-view" title="Xem chi tiết">
-          <i class="fas fa-eye"></i>
-        </button>
-        <button class="btn-edit" title="Chỉnh sửa">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button class="btn-cancel" title="Hủy đơn">
-          <i class="fas fa-times"></i>
-        </button>
-      </td>
-    </tr>
-  </template>
+    function closeModal() {
+      document.getElementById('orderModal').classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }
 
-  <script src="../JS/app.js"></script>
+    // Đóng modal khi click bên ngoài
+    window.onclick = function(event) {
+      const modal = document.getElementById('orderModal');
+      if (event.target == modal) {
+        closeModal();
+      }
+    }
+
+    // Đóng modal với phím ESC
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeModal();
+      }
+    });
+  </script>
 </body>
 </html>
