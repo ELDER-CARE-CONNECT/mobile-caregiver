@@ -1,112 +1,168 @@
 <?php
-session_start();
+session_name("CARES_SESSION");
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+// Nếu chưa đăng nhập thì quay lại login
 if (!isset($_SESSION['caregiver_id'])) {
-    echo "<script>alert('Vui lòng đăng nhập trước!'); window.location.href='login_caregiver.php';</script>";
+    echo "<script>alert('Vui lòng đăng nhập trước!'); window.location.href='../../login/login.php';</script>";
     exit;
 }
-include 'connect.php';
 
+include 'connect.php';
 $id = $_SESSION['caregiver_id'];
-$sql = "SELECT * FROM nguoi_cham_soc WHERE id_cham_soc = ?";
-$stmt = $conn->prepare($sql);
+
+// Lấy thông tin người chăm sóc
+$stmt = $conn->prepare("SELECT * FROM nguoi_cham_soc WHERE id_cham_soc = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $result = $stmt->get_result();
-$info = $result->fetch_assoc();
-$stmt->close();
-$conn->close();
-?>
+$user = $result->fetch_assoc();
 
+if (!$user) {
+    echo "<p style='color:white;text-align:center;'>Không tìm thấy thông tin người dùng.</p>";
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Trang cá nhân người chăm sóc</title>
+<title>Thông tin cá nhân</title>
 <style>
-body {
-    font-family: "Segoe UI", sans-serif;
-    background: linear-gradient(135deg, #fef1f4, #eef5ff);
+  body {
+    font-family: 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
+    background: linear-gradient(135deg, #ffd1ff 0%, #ffe6f7 100%);
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-}
-.container {
-    display: flex;
+  }
+
+  .profile-container {
     background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    padding: 30px;
-    width: 900px;
-}
-.left {
+    border-radius: 25px;
+    width: 1200px; /* ✅ mở rộng khung */
+    max-width: 95%;
+    display: flex;
+    padding: 60px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    align-items: center;
+  }
+
+  .profile-left {
     flex: 1;
-    text-align: center;
-    border-right: 1px solid #eee;
-    padding-right: 30px;
-}
-.left img {
-    width: 220px;
-    height: 220px;
-    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .profile-left img {
+    width: 340px; /* ✅ to hơn */
+    height: 340px;
+    border-radius: 25px;
     object-fit: cover;
-    background: #f5f5f5;
-    display: block;
-    margin: 0 auto 20px;
-}
-.btn {
-    background: #ff6b81;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+
+  .profile-right {
+    flex: 1.5;
+    padding-left: 70px; /* ✅ khoảng cách rộng hơn */
+  }
+
+  h2 {
+    font-size: 40px; /* ✅ chữ lớn hơn */
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .highlight {
+    color: #e91e63;
+  }
+
+  .info-item {
+    font-size: 22px; /* ✅ phóng to chữ thông tin */
+    margin: 14px 0;
+    line-height: 1.6;
+  }
+
+  .info-item b {
+    color: #333;
+  }
+
+  .rating {
+    color: #FFD700;
+    font-size: 26px; /* ✅ icon to hơn */
+    display: inline-block;
+    margin-left: 6px;
+  }
+
+  .back-btn {
+    margin-top: 40px;
+    display: inline-block;
+    padding: 16px 35px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
+    text-decoration: none;
+    font-weight: bold;
     transition: 0.3s;
-}
-.btn:hover {
-    background: #ff4c60;
-}
-.right {
-    flex: 2;
-    padding-left: 40px;
-}
-.right h2 {
-    color: #ff6b81;
-}
-.right p {
-    margin: 8px 0;
-    font-size: 16px;
-}
+    font-size: 20px;
+  }
+
+  .back-btn:hover {
+    opacity: 0.85;
+    transform: scale(1.03);
+  }
+
+  @media (max-width: 900px) {
+    .profile-container {
+      flex-direction: column;
+      text-align: center;
+      width: 95%;
+      padding: 30px;
+    }
+
+    .profile-left img {
+      width: 250px;
+      height: 250px;
+      margin-bottom: 25px;
+    }
+
+    .profile-right {
+      padding-left: 0;
+    }
+  }
 </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="left">
-        <!-- Nếu chưa có ảnh thì hiển thị ô trống -->
-        <img src="<?php echo !empty($info['hinh_anh']) ? $info['hinh_anh'] : 'uploads/default.jpg'; ?>" alt="Ảnh đại diện">
-        
-        <h3><?php echo htmlspecialchars($info['ho_ten']); ?></h3>
-        <!-- ✅ Nút đăng xuất nằm dưới ảnh -->
-        <button onclick="window.location.href='logout.php'" class="btn">Đăng xuất</button>
+<div class="profile-container">
+  <div class="profile-left">
+    <img src="../../<?php echo htmlspecialchars($user['hinh_anh']); ?>" alt="Ảnh đại diện">
+  </div>
+  <div class="profile-right">
+    <h2>Xin chào, <span class="highlight"><?php echo htmlspecialchars($user['ho_ten']); ?></span> 👋</h2>
+    <div class="info-item"><b>Địa chỉ:</b> <?php echo htmlspecialchars($user['dia_chi']); ?></div>
+    <div class="info-item"><b>Tuổi:</b> <?php echo htmlspecialchars($user['tuoi']); ?></div>
+    <div class="info-item"><b>Giới tính:</b> <?php echo htmlspecialchars($user['gioi_tinh']); ?></div>
+    <div class="info-item"><b>Chiều cao:</b> <?php echo htmlspecialchars($user['chieu_cao']); ?> cm</div>
+    <div class="info-item"><b>Cân nặng:</b> <?php echo htmlspecialchars($user['can_nang']); ?> kg</div>
+
+    <div class="info-item">
+      <b>Đánh giá trung bình:</b> <?php echo htmlspecialchars($user['danh_gia_tb']); ?>/5
+      <span class="rating">⭐</span><span class="rating">⭐</span><span class="rating">⭐</span><span class="rating">⭐</span><span class="rating">✨</span>
     </div>
 
-    <div class="right">
-        <h2>Thông tin cá nhân</h2>
-        <p><strong>Địa chỉ:</strong> <?php echo $info['dia_chi']; ?></p>
-        <p><strong>Tuổi:</strong> <?php echo $info['tuoi']; ?></p>
-        <p><strong>Giới tính:</strong> <?php echo $info['gioi_tinh']; ?></p>
-        <p><strong>Chiều cao:</strong> <?php echo $info['chieu_cao']; ?> cm</p>
-        <p><strong>Cân nặng:</strong> <?php echo $info['can_nang']; ?> kg</p>
-        <p><strong>Kinh nghiệm:</strong> <?php echo $info['kinh_nghiem']; ?></p>
-        <p><strong>Đơn đã nhận:</strong> <?php echo $info['don_da_nhan']; ?></p>
-        <p><strong>Tổng tiền kiếm được:</strong> <?php echo number_format($info['tong_tien_kiem_duoc'], 0, ',', '.'); ?> đ</p>
-    </div>
+    <div class="info-item"><b>Kinh nghiệm:</b> <?php echo htmlspecialchars($user['kinh_nghiem']); ?></div>
+    <div class="info-item"><b>Số đơn đã nhận:</b> <?php echo htmlspecialchars($user['don_da_nhan']); ?></div>
+    <div class="info-item"><b>Tổng tiền kiếm được:</b> <?php echo number_format($user['tong_tien_kiem_duoc'], 0, ',', '.'); ?> ₫</div>
+
+    <a href="javascript:history.back()" class="back-btn">⬅ Quay lại</a>
+  </div>
 </div>
 
 </body>
 </html>
+

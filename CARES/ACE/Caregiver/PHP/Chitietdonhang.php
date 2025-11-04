@@ -1,287 +1,191 @@
+<?php
+session_name("CARES_SESSION");
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+if (!isset($_SESSION['caregiver_id'])) {
+    echo "<script>alert('Vui lòng đăng nhập trước!'); window.location.href='../../login/login.php';</script>";
+    exit;
+}
+?>
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <title>Hệ thống chăm sóc người già - CareGiver</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="../CSS/style.css" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<meta charset="utf-8">
+<title>Chi tiết đơn hàng</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+ body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  margin: 0;
+  padding: 40px;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: white;
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1200px) {
+  .orders-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.order-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
+}
+
+.order-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.order-header {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+}
+
+.order-body {
+  padding: 20px;
+  font-size: 14px;
+}
+
+.order-body p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.detail-item {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #333;
+}
+
+.sum {
+  text-align: right;
+  font-weight: 700;
+  color: #333;
+  padding: 10px 15px 15px;
+  border-top: 1px solid #eee;
+}
+</style>
 </head>
 <body>
-  <!-- Sidebar Navigation -->
-  <aside class="sidebar">
-    <div class="logo">
-      <i class="fas fa-heart-pulse"></i>
-      <h2>CareGiver</h2>
-    </div>
-    
-    <nav class="menu">
-      <a href="#" class="menu-item">
-        <i class="fas fa-home"></i>
-        <span>Trang chủ</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-user-plus"></i>
-        <span>Thêm hồ sơ</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-users"></i>
-        <span>Hồ Sơ Bệnh Nhân</span>
-      </a>
-      
-      <a href="#" class="menu-item active">
-        <i class="fas fa-clipboard-list"></i>
-        <span>Lịch Sử Đặt Dịch Vụ</span>
-        <span class="badge">5</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-calendar-check"></i>
-        <span>Lịch Hẹn</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-chart-line"></i>
-        <span>Báo Cáo</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-bell"></i>
-        <span>Thông Báo</span>
-        <span class="badge notification">99+</span>
-      </a>
-      
-      <a href="#" class="menu-item">
-        <i class="fas fa-cog"></i>
-        <span>Cài Đặt</span>
-      </a>
-    </nav>
-  </aside>
+<div class="container">
+  <h1>Danh sách đơn hàng của bạn</h1>
+  <div id="ordersList"><p class="no-data">Đang tải dữ liệu...</p></div>
+</div>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <header class="header">
-      <div class="header-left">
-        <h1>Lịch Sử Đặt Dịch Vụ</h1>
-        <p>Quản Lý Và Theo Dõi Các Dịch Vụ Chăm Sóc Đã Đặt</p>
-      </div>
-      <div class="header-right">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Tìm kiếm..." />
+<script>
+async function loadOrders() {
+  try {
+    const res = await fetch("get_order_details.php", { credentials: "include" });
+    const data = await res.json();
+
+    const list = document.getElementById("ordersList");
+    if (!data.success) {
+      list.innerHTML = `<p class="no-data">${data.error || 'Không thể tải dữ liệu'}</p>`;
+      return;
+    }
+    if (data.data.length === 0) {
+  list.innerHTML = `<p class="no-data">Không có đơn hàng nào</p>`;
+  return;
+}
+
+list.innerHTML = `
+  <div class="orders-grid">
+    ${data.data.map(order => `
+      <div class="order-card">
+        <div class="order-header">
+          <h3>Đơn hàng #${order.id_don_hang}</h3>
+          <span class="status-badge ${order.trang_thai === 'Đã giao' ? 'status-completed' : 'status-pending'}">
+            ${order.trang_thai}
+          </span>
         </div>
-        <div class="user-profile">
-          <img src="https://via.placeholder.com/40" alt="Avatar" />
-          <span>Nguyễn Minh Thư</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-      <span>Trang chủ</span>
-      <i class="fas fa-chevron-right"></i>
-      <span>Lịch Sử Đặt Dịch Vụ</span>
-    </div>
-
-    <!-- Filter Tabs -->
-    <div class="filter-tabs">
-      <button class="tab-btn active" data-status="all">
-        <i class="fas fa-list"></i>
-        Tất cả
-      </button>
-      <button class="tab-btn" data-status="completed">
-        <i class="fas fa-check-circle"></i>
-        Hoàn thành
-      </button>
-      <button class="tab-btn" data-status="pending">
-        <i class="fas fa-clock"></i>
-        Đang xử lý
-      </button>
-      <button class="tab-btn" data-status="cancelled">
-        <i class="fas fa-times-circle"></i>
-        Đã hủy
-      </button>
-    </div>
-
-    <!-- Search and Filter Tools -->
-    <div class="tools-section">
-      <div class="search-filters">
-        <div class="filter-group">
-          <label for="searchInput">Tìm kiếm</label>
-          <div class="search-input">
-            <i class="fas fa-search"></i>
-            <input id="searchInput" type="text" placeholder="Mã đơn, tên khách hàng, người chăm sóc..." />
+        <div class="order-body">
+          <p><b>Khách hàng:</b> ${order.ten_khach_hang}</p>
+          <p><b>Địa chỉ:</b> ${order.dia_chi_giao_hang}</p>
+          <p><b>SĐT:</b> ${order.so_dien_thoai}</p>
+          <div class="detail-grid">
+            <div class="detail-item">Ngày đặt: ${formatDate(order.ngay_dat)}</div>
+            <div class="detail-item">Thời gian: ${order.thoi_gian_bat_dau} - ${order.thoi_gian_ket_thuc}</div>
+            <div class="detail-item">Dịch vụ: ${order.dich_vu || 'Chăm sóc tại nhà'}</div>
+            <div class="detail-item">Thanh toán: ${order.phuong_thuc_thanh_toan || 'Tiền mặt'}</div>
           </div>
         </div>
-        
-        <div class="filter-group">
-          <label for="dateFrom">Từ ngày</label>
-          <input id="dateFrom" type="date" />
-        </div>
-        
-        <div class="filter-group">
-          <label for="dateTo">Đến ngày</label>
-          <input id="dateTo" type="date" />
-        </div>
-        
-        <div class="filter-group">
-          <button class="btn-primary" id="searchBtn">
-            <i class="fas fa-search"></i>
-            Tìm kiếm
-          </button>
-        </div>
-        
-        <div class="filter-group">
-          <button class="btn-secondary" id="resetBtn">
-            <i class="fas fa-refresh"></i>
-            Làm mới
-          </button>
-        </div>
+        <div class="sum">Tổng tiền: ${formatCurrency(order.tong_tien)} ₫</div>
       </div>
-    </div>
-
-    <!-- Statistics -->
-    <div class="stats-section">
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-clipboard-list"></i>
-        </div>
-        <div class="stat-content">
-          <h3 id="totalOrders">0</h3>
-          <p>Tổng đơn hàng</p>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="stat-content">
-          <h3 id="completedOrders">0</h3>
-          <p>Hoàn thành</p>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-clock"></i>
-        </div>
-        <div class="stat-content">
-          <h3 id="pendingOrders">0</h3>
-          <p>Đang xử lý</p>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-dollar-sign"></i>
-        </div>
-        <div class="stat-content">
-          <h3 id="totalRevenue">0₫</h3>
-          <p>Tổng doanh thu</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- orders Table -->
-    <div class="table-section">
-      <div class="table-header">
-        <h2>Danh sách đơn hàng</h2>
-        <div class="table-actions">
-          <button class="btn-export">
-            <i class="fas fa-download"></i>
-            Xuất Excel
-          </button>
-          <button class="btn-print">
-            <i class="fas fa-print"></i>
-            In báo cáo
-          </button>
-        </div>
-      </div>
-      
-      <div class="table-container">
-        <table class="orders-table">
-          <thead>
-            <tr>
-              <th>Mã đơn</th>
-              <th>Ngày đặt</th>
-              <th>Khách hàng</th>
-              <th>Người chăm sóc</th>
-              <th>Dịch vụ</th>
-              <th>Thời gian</th>
-              <th>Giá tiền</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody id="ordersTableBody">
-            <!-- Data will be populated by JavaScript -->
-          </tbody>
-        </table>
-      </div>
-      
-      <!-- Pagination -->
-      <div class="pagination">
-        <button class="page-btn" id="prevBtn">
-          <i class="fas fa-chevron-left"></i>
-          Trước
-        </button>
-        <div class="page-info">
-          <span id="pageInfo">Trang 1/1</span>
-        </div>
-        <button class="page-btn" id="nextBtn">
-          Sau
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-    </div>
+    `).join("")}
   </div>
+`;
 
-  <!-- Order Detail Modal -->
-  <div id="orderModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Chi tiết đơn hàng</h2>
-        <button class="close-btn" id="closeModal">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="modal-body" id="modalBody">
-        <!-- Order details will be populated here -->
-      </div>
-    </div>
-  </div>
 
-  <!-- Template for order row -->
-  <template id="orderRowTemplate">
-    <tr class="order-row">
-      <td class="order-id"></td>
-      <td class="order-date"></td>
-      <td class="customer-name"></td>
-      <td class="caregiver-name"></td>
-      <td class="service-type"></td>
-      <td class="service-time"></td>
-      <td class="order-price"></td>
-      <td class="order-status">
-        <span class="status-badge"></span>
-      </td>
-      <td class="order-actions">
-        <button class="btn-view" title="Xem chi tiết">
-          <i class="fas fa-eye"></i>
-        </button>
-        <button class="btn-edit" title="Chỉnh sửa">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button class="btn-cancel" title="Hủy đơn">
-          <i class="fas fa-times"></i>
-        </button>
-      </td>
-    </tr>
-  </template>
+  } catch (err) {
+    document.getElementById("ordersList").innerHTML =
+      `<p class="no-data">Lỗi kết nối: ${err.message}</p>`;
+  }
+}
 
-  <script src="../JS/app.js"></script>
+function formatCurrency(num) {
+  return new Intl.NumberFormat("vi-VN").format(num);
+}
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("vi-VN");
+}
+
+document.addEventListener("DOMContentLoaded", loadOrders);
+</script>
 </body>
 </html>

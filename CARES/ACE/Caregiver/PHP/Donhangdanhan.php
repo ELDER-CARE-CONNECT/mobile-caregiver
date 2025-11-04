@@ -1,46 +1,13 @@
-<?php
-// ===============================
-// File: Caregiver/PHP/Donhangchuanhan.php
-// ===============================
-
-// 1️⃣ Khởi tạo session chung cho toàn bộ hệ thống
-session_name("CARES_SESSION");
-if (session_status() === PHP_SESSION_NONE) session_start();
-
-// 2️⃣ Kết nối CSDL
-include_once('../../model/sanpham.php');
-include_once('../../model/get_products.php');
-$conn = connectdb();
-
-// 3️⃣ Kiểm tra trạng thái đăng nhập
-$logged_in = isset($_SESSION['caregiver_id']);
-$caregiverId = $logged_in ? (int)$_SESSION['caregiver_id'] : 0;
-
-// ⚠️ Nếu chưa đăng nhập — không chặn trang, chỉ thông báo nhẹ
-if (!$logged_in) {
-    echo "<script>console.warn('⚠️ Bạn chưa đăng nhập - chỉ hiển thị giao diện, dữ liệu sẽ không được tải');</script>";
-}
-
-// 4️⃣ Hàm xuất JSON (cho AJAX)
-function send_json($payload, $code = 200) {
-    http_response_code($code);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode($payload, JSON_UNESCAPED_UNICODE);
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đơn Hàng Chưa Nhận - Caregiver</title>
+    <title>Đơn Hàng Đã Nhận - Caregiver</title>
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        .pending-orders-container {
+        .accepted-orders-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
@@ -365,14 +332,19 @@ function send_json($payload, $code = 200) {
             letter-spacing: 0.5px;
         }
         
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
         .status-pending {
             background: #fef3c7;
             color: #d97706;
         }
         
-        .status-waiting {
-            background: #dbeafe;
-            color: #1d4ed8;
+        .status-cancelled {
+            background: #fee2e2;
+            color: #dc2626;
         }
         
         .price-cell {
@@ -412,28 +384,6 @@ function send_json($payload, $code = 200) {
         .action-btn-small.primary:hover {
             background: #5a67d8;
             border-color: #5a67d8;
-        }
-        
-        .action-btn-small.success {
-            background: #10b981;
-            color: white;
-            border-color: #10b981;
-        }
-        
-        .action-btn-small.success:hover {
-            background: #059669;
-            border-color: #059669;
-        }
-        
-        .action-btn-small.chat {
-            background: #8b5cf6;
-            color: white;
-            border-color: #8b5cf6;
-        }
-        
-        .action-btn-small.chat:hover {
-            background: #7c3aed;
-            border-color: #7c3aed;
         }
         
         /* Modal styles */
@@ -592,7 +542,7 @@ function send_json($payload, $code = 200) {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px;
-            border-radius: 11px;
+            border-radius: 10px;
             text-align: center;
             margin-top: 20px;
         }
@@ -623,6 +573,139 @@ function send_json($payload, $code = 200) {
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
+        }
+        
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 20px;
+            }
+            
+            .modal-header, .modal-body {
+                padding: 20px;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .customer-info-modal {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+        
+        .order-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .order-id {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .order-status {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .order-body {
+            padding: 25px;
+        }
+        
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .customer-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e5e7eb;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .customer-details h4 {
+            margin: 0 0 5px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .customer-details p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-item i {
+            width: 20px;
+            color: #667eea;
+            text-align: center;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #374151;
+            min-width: 100px;
+        }
+        
+        .detail-value {
+            color: #1f2937;
+        }
+        
+        .order-total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .order-total h3 {
+            margin: 0 0 5px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .order-total p {
+            margin: 0;
+            opacity: 0.9;
         }
         
         .pagination {
@@ -707,11 +790,11 @@ function send_json($payload, $code = 200) {
                 justify-content: center;
             }
             
-            .detail-grid {
+            .order-details {
                 grid-template-columns: 1fr;
             }
             
-            .customer-info-modal {
+            .customer-info {
                 flex-direction: column;
                 text-align: center;
             }
@@ -719,17 +802,17 @@ function send_json($payload, $code = 200) {
     </style>
 </head>
 <body>
-    <div class="pending-orders-container">
+    <div class="accepted-orders-container">
         <!-- Header -->
         <div class="hero">
-            <h1><i class="fas fa-clock"></i> Đơn Hàng Chưa Nhận</h1>
-            <p>Danh sách các đơn hàng đang chờ xác nhận và chưa gán người chăm sóc</p>
+            <h1><i class="fas fa-check-circle"></i> Đơn Hàng Đã Nhận</h1>
+            <p>Danh sách các đơn hàng đã hoàn thành</p>
         </div>
         <!-- Breadcrumb -->
 <nav class="breadcrumb">
   <a href="#" class="bc-link">Trang chủ</a>
   <span class="bc-sep">›</span>
-  <span class="bc-current">Đơn Hàng Chưa Nhận</span>
+  <span class="bc-current">Đơn Hàng Đã Nhận</span>
 </nav>
         
         <!-- Filters -->
@@ -748,7 +831,6 @@ function send_json($payload, $code = 200) {
                     <input type="date" id="to_date">
                 </div>
             </div>
-
             <div class="filter-actions">
                 <button class="btn btn-secondary" onclick="clearFilters()">
                     <i class="fas fa-times"></i> Xóa bộ lọc
@@ -758,20 +840,12 @@ function send_json($payload, $code = 200) {
                 </button>
             </div>
         </div>
+        
         <!-- Summary Cards -->
-<div class="summary-cards" id="summaryCards">
-    <div class="summary-card">
-        <i class="fas fa-clock"></i>
-        <h3>0</h3>
-        <p>Tổng đơn chưa nhận</p>
-    </div>
-    <div class="summary-card">
-        <i class="fas fa-money-bill-wave"></i>
-        <h3>0 ₫</h3>
-        <p>Tổng giá trị</p>
-    </div>
-</div>
-
+        <div class="summary-cards" id="summaryCards">
+            <!-- Summary cards will be loaded here -->
+        </div>
+        
         <!-- Orders List Section -->
         <div class="orders-section">
             <div class="orders-section-header">
@@ -822,7 +896,6 @@ function send_json($payload, $code = 200) {
         let currentPage = 1;
         let totalPages = 1;
         let currentFilters = {};
-        let currentOrders = [];
         
         // Load orders on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -865,12 +938,11 @@ function send_json($payload, $code = 200) {
                 });
                 
                 // Fetch data
-              const response = await fetch(`get_pending_orders.php?${queryParams.toString()}`);
+                const response = await fetch(`get_accepted_orders.php?${queryParams}`);
                 const data = await response.json();
                 
                 if (data.success) {
                     displayOrders(data.data);
-                    currentOrders = data.data;
                     displaySummary(data.summary);
                     displayPagination(data.pagination);
                 } else {
@@ -880,6 +952,24 @@ function send_json($payload, $code = 200) {
                 showError('Lỗi kết nối: ' + error.message);
             }
         }
+        
+        // Display orders
+        function displayOrders(orders) {
+            const container = document.getElementById('ordersContainer');
+            
+            // Store current orders for export
+            currentOrders = orders;
+            
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>Không có đơn hàng nào</h3>
+                        <p>Chưa có đơn hàng đã nhận nào trong khoảng thời gian này</p>
+                    </div>
+                `;
+                return;
+            }
             
             const ordersHTML = `
                 <table class="orders-table">
@@ -888,6 +978,7 @@ function send_json($payload, $code = 200) {
                             <th>Mã đơn</th>
                             <th>Ngày đặt</th>
                             <th>Khách hàng</th>
+                            <th>Người chăm sóc</th>
                             <th>Dịch vụ</th>
                             <th>Thời gian</th>
                             <th>Giá tiền</th>
@@ -909,22 +1000,20 @@ function send_json($payload, $code = 200) {
                                         <div class="customer-phone">${order.so_dien_thoai}</div>
                                     </div>
                                 </td>
+                                <td>${order.nguoi_cham_soc_ten || 'Chưa phân công'}</td>
                                 <td>Chăm sóc tại nhà</td>
                                 <td>${order.thoi_gian_bat_dau} - ${order.thoi_gian_ket_thuc}</td>
                                 <td class="price-cell">${formatCurrency(order.tong_tien)}</td>
                                 <td>
-                                    <span class="status-badge status-pending">${order.trang_thai}</span>
+                                    <span class="status-badge status-completed">${order.trang_thai}</span>
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <button class="action-btn-small success" onclick="acceptOrder(${order.id_don_hang})">
-                                            <i class="fas fa-handshake"></i>
-                                        </button>
                                         <button class="action-btn-small primary" onclick="viewOrder(${order.id_don_hang})">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="action-btn-small chat" onclick="openChat(${order.id_don_hang})">
-                                            <i class="fas fa-comments"></i>
+                                        <button class="action-btn-small" onclick="editOrder(${order.id_don_hang})">
+                                            <i class="fas fa-edit"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -941,14 +1030,14 @@ function send_json($payload, $code = 200) {
         function displaySummary(summary) {
             const summaryHTML = `
                 <div class="summary-card">
-                    <i class="fas fa-clock"></i>
-                    <h3>${summary.total_orders || 0}</h3>
-                    <p>Tổng đơn chưa nhận</p>
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>${summary.total_orders}</h3>
+                    <p>Tổng đơn hàng</p>
                 </div>
                 <div class="summary-card">
                     <i class="fas fa-money-bill-wave"></i>
-                    <h3>${formatCurrency(summary.total_amount || 0)}</h3>
-                    <p>Tổng giá trị</p>
+                    <h3>${formatCurrency(summary.total_amount)}</h3>
+                    <p>Tổng doanh thu</p>
                 </div>
             `;
             
@@ -1061,7 +1150,7 @@ function send_json($payload, $code = 200) {
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', `don_hang_chua_nhan_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', `don_hang_da_nhan_${new Date().toISOString().split('T')[0]}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
@@ -1075,7 +1164,7 @@ function send_json($payload, $code = 200) {
             
             document.body.innerHTML = `
                 <div style="font-family: Arial, sans-serif; padding: 20px;">
-                    <h1 style="text-align: center; color: #333;">BÁO CÁO ĐƠN HÀNG CHƯA NHẬN</h1>
+                    <h1 style="text-align: center; color: #333;">BÁO CÁO ĐƠN HÀNG ĐÃ NHẬN</h1>
                     <p style="text-align: center; color: #666;">Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}</p>
                     <div style="margin-top: 30px;">
                         ${printContent}
@@ -1087,6 +1176,9 @@ function send_json($payload, $code = 200) {
             document.body.innerHTML = originalContent;
             loadOrders(currentPage); // Reload data
         }
+        
+        // Store current orders for export
+        let currentOrders = [];
         
         // View order details
         function viewOrder(orderId) {
@@ -1138,6 +1230,11 @@ function send_json($payload, $code = 200) {
                             <span class="detail-value-modal">${order.thoi_gian_bat_dau} - ${order.thoi_gian_ket_thuc}</span>
                         </div>
                         <div class="detail-item-modal">
+                            <i class="fas fa-user-md"></i>
+                            <span class="detail-label-modal">Người chăm sóc:</span>
+                            <span class="detail-value-modal">${order.nguoi_cham_soc_ten || 'Chưa phân công'}</span>
+                        </div>
+                        <div class="detail-item-modal">
                             <i class="fas fa-concierge-bell"></i>
                             <span class="detail-label-modal">Dịch vụ:</span>
                             <span class="detail-value-modal">Chăm sóc tại nhà</span>
@@ -1145,7 +1242,7 @@ function send_json($payload, $code = 200) {
                         <div class="detail-item-modal">
                             <i class="fas fa-credit-card"></i>
                             <span class="detail-label-modal">Thanh toán:</span>
-                            <span class="detail-value-modal">${order.phuong_thuc_thanh_toan || 'Chưa xác định'}</span>
+                            <span class="detail-value-modal">${order.phuong_thuc_thanh_toan}</span>
                         </div>
                     </div>
                 </div>
@@ -1153,10 +1250,10 @@ function send_json($payload, $code = 200) {
                 <div class="order-detail-section">
                     <h4><i class="fas fa-tasks"></i> Trạng thái đơn hàng</h4>
                     <div class="detail-item-modal">
-                        <i class="fas fa-clock"></i>
+                        <i class="fas fa-check-circle"></i>
                         <span class="detail-label-modal">Trạng thái:</span>
                         <span class="detail-value-modal">
-                            <span class="status-badge status-pending">${order.trang_thai}</span>
+                            <span class="status-badge status-completed">${order.trang_thai}</span>
                         </span>
                     </div>
                 </div>
@@ -1193,48 +1290,11 @@ function send_json($payload, $code = 200) {
             }
         });
         
-        // Accept order function
-        async function acceptOrder(orderId) {
-            if (confirm('Bạn có chắc chắn muốn nhận đơn hàng này?')) {
-                try {
-                    const response = await fetch('accept_order.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            order_id: orderId
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        alert('Nhận đơn hàng thành công! Đơn hàng đã được chuyển sang danh sách đã nhận.');
-                        // Redirect to accepted orders page
-                        window.location.href = 'donhangdanhan.php';
-                    } else {
-                        alert('Lỗi: ' + data.message);
-                    }
-                } catch (error) {
-                    alert('Lỗi kết nối: ' + error.message);
-                }
-            }
-        }
-        
-        // Open chat function
-        function openChat(orderId) {
-            // Find order data to get customer info
-            const order = currentOrders.find(o => o.id_don_hang == orderId);
-            if (!order) {
-                alert('Không tìm thấy thông tin đơn hàng');
-                return;
-            }
-            
-            // Redirect to chat page with order context
-            window.location.href = `Chatnguoichamsoc.php?order_id=${orderId}&customer_name=${encodeURIComponent(order.ten_khach_hang)}`;
+        // Edit order
+        function editOrder(orderId) {
+            alert(`Chỉnh sửa đơn hàng #${orderId}`);
+            // Có thể mở modal hoặc redirect đến trang chỉnh sửa
         }
     </script>
 </body>
 </html>
-
