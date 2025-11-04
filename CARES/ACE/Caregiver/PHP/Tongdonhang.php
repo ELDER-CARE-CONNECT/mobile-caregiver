@@ -3,51 +3,23 @@ session_start();
 include_once('../../model/get_products.php');
 $conn = connectdb();
 
-// Kiểm tra nếu chưa đăng nhập
-if (!isset($_SESSION['ten_tai_khoan'])) {
+// 🔒 Kiểm tra nếu chưa đăng nhập thì chuyển hướng
+if (!isset($_SESSION['so_dien_thoai'])) {
     header("Location: ../../Admin/login.php");
     exit();
 }
 
-$ten_tai_khoan = $_SESSION['ten_tai_khoan'];
+// 📱 Lấy thông tin người dùng đang đăng nhập
+$so_dien_thoai = $_SESSION['so_dien_thoai'];
 
-// 1️⃣ Lấy thông tin người chăm sóc
-$sql_chamsoc = "SELECT id_cham_soc, ho_ten FROM nguoi_cham_soc WHERE ten_tai_khoan = ?";
-$stmt_cs = $conn->prepare($sql_chamsoc);
-$stmt_cs->bind_param("s", $ten_tai_khoan);
-$stmt_cs->execute();
-$result_cs = $stmt_cs->get_result();
-
-if ($result_cs->num_rows === 0) {
-    die("❌ Không tìm thấy người chăm sóc với tài khoản này!");
-}
-
-$chamsoc = $result_cs->fetch_assoc();
-$id_cham_soc = $chamsoc['id_cham_soc'];
-$ho_ten_chamsoc = $chamsoc['ho_ten'];
-
-// 2️⃣ Nếu người dùng nhấn nút “Nhận đơn hàng”
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nhan_don'])) {
-    $id_don_hang = $_POST['id_don_hang'];
-
-    $update_sql = "UPDATE don_hang SET trang_thai = 'đang hoàn thành' WHERE id_don_hang = ? AND id_cham_soc = ?";
-    $stmt_update = $conn->prepare($update_sql);
-    $stmt_update->bind_param("ii", $id_don_hang, $id_cham_soc);
-    $stmt_update->execute();
-
-    // Sau khi cập nhật, tải lại trang để cập nhật giao diện
-    header("Location: Donhangchuanhan.php");
-    exit();
-}
-
-// 3️⃣ Lấy danh sách đơn hàng
-$sql_donhang = "SELECT id_don_hang, id_khach_hang, ngay_dat, tong_tien, trang_thai 
-                FROM don_hang 
-                WHERE id_cham_soc = ?";
-$stmt_dh = $conn->prepare($sql_donhang);
-$stmt_dh->bind_param("i", $id_cham_soc);
-$stmt_dh->execute();
-$result_dh = $stmt_dh->get_result();
+// 📦 Truy vấn các đơn hàng của người dùng đó (có id_cham_soc)
+$sql = "SELECT id_don_hang, ten_khach_hang, id_cham_soc, ngay_dat, tong_tien, trang_thai 
+        FROM don_hang 
+        WHERE so_dien_thoai = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $so_dien_thoai);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -55,7 +27,7 @@ $result_dh = $stmt_dh->get_result();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đơn hàng được giao</title>
+    <title>Lịch sử đặt hàng</title>
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -82,6 +54,7 @@ $result_dh = $stmt_dh->get_result();
             gap: 10px;
         }
 
+        /* ===== KHUNG LỚN ===== */
         .orders-wrapper {
             background: #fff;
             border-radius: 18px;
@@ -99,6 +72,7 @@ $result_dh = $stmt_dh->get_result();
             padding-bottom: 10px;
         }
 
+        /* ===== GRID ===== */
         .order-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, max-content));
@@ -107,13 +81,14 @@ $result_dh = $stmt_dh->get_result();
             justify-items: flex-start;
         }
 
+        /* ===== CARD ===== */
         .order-card {
             background: #ffffff;
             border-radius: 16px;
             border: 1px solid #e5e7eb;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             width: 340px;
-            height: 190px;
+            height: 180px; /* tăng nhẹ để đủ hiển thị người chăm sóc */
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -128,7 +103,7 @@ $result_dh = $stmt_dh->get_result();
         }
 
         .order-card h3 {
-            margin: 0 0 10px;
+            margin: 0 0 12px;
             font-size: 17px;
             font-weight: 700;
             color: #2563eb;
@@ -159,12 +134,7 @@ $result_dh = $stmt_dh->get_result();
             color: #92400e;
         }
 
-        .btn-container {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
+        /* ===== Nút Xem ===== */
         .view-btn {
             background: linear-gradient(135deg, #2563eb, #3b82f6);
             color: white;
@@ -175,6 +145,7 @@ $result_dh = $stmt_dh->get_result();
             font-size: 14px;
             cursor: pointer;
             transition: all 0.25s ease;
+            align-self: flex-end;
         }
 
         .view-btn:hover {
@@ -183,22 +154,9 @@ $result_dh = $stmt_dh->get_result();
             transform: translateY(-2px);
         }
 
-        .accept-btn {
-            background: #dc2626; /* đỏ */
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .accept-btn:hover {
-            background: #b91c1c;
-            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-            transform: translateY(-2px);
+        /* Khi chỉ có 1 đơn hàng — căn giữa */
+        .order-cards:has(.order-card:only-child) {
+            justify-content: center;
         }
 
         @media (max-width: 768px) {
@@ -212,61 +170,56 @@ $result_dh = $stmt_dh->get_result();
 <body>
 <div class="accepted-orders-container">
     <div class="hero">
-        <h1><i class="fas fa-list"></i> Đơn hàng được giao cho bạn</h1>
+        <h1><i class="fas fa-check-circle"></i> Lịch sử đặt hàng của bạn</h1>
     </div>
 
     <div class="orders-wrapper">
-        <h2>Xin chào, <?php echo htmlspecialchars($ho_ten_chamsoc); ?>!</h2>
+        <h2>Xin chào, <?php echo htmlspecialchars($_SESSION['ten_khach_hang']); ?>!</h2>
 
         <div class="order-cards">
             <?php
-            if ($result_dh->num_rows > 0) {
-                while ($row = $result_dh->fetch_assoc()) {
-                    // Lấy tên khách hàng từ id_khach_hang
-                    $id_khach_hang = $row['id_khach_hang'];
-                    $sql_khach = "SELECT ten_khach_hang FROM khach_hang WHERE id_khach_hang = ?";
-                    $stmt_kh = $conn->prepare($sql_khach);
-                    $stmt_kh->bind_param("i", $id_khach_hang);
-                    $stmt_kh->execute();
-                    $result_kh = $stmt_kh->get_result();
-                    $ten_khach_hang = $result_kh->fetch_assoc()['ten_khach_hang'] ?? 'Không xác định';
-                    $stmt_kh->close();
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
 
+                    // 🔍 Tìm tên người chăm sóc dựa trên id_cham_soc
+                    $ten_cham_soc = "Chưa có";
+                    if (!empty($row['id_cham_soc'])) {
+                        $sql2 = "SELECT ho_ten FROM nguoi_cham_soc WHERE id_cham_soc = ?";
+                        $stmt2 = $conn->prepare($sql2);
+                        $stmt2->bind_param("i", $row['id_cham_soc']);
+                        $stmt2->execute();
+                        $res2 = $stmt2->get_result();
+                        if ($res2->num_rows > 0) {
+                            $ten_cham_soc = $res2->fetch_assoc()['ho_ten'];
+                        }
+                        $stmt2->close();
+                    }
+
+                    // 💬 Hiển thị từng đơn hàng
                     echo "
                     <div class='order-card'>
                         <div>
                             <h3>Mã đơn: #{$row['id_don_hang']}</h3>
                             <div class='order-info'>
-                                <p><strong>Khách hàng:</strong> {$ten_khach_hang}</p>
+                                <p><strong>Người chăm sóc:</strong> {$ten_cham_soc}</p>
                                 <p><strong>Ngày đặt:</strong> {$row['ngay_dat']}</p>
                                 <p><strong>Trạng thái:</strong> 
                                     <span class='status " . 
-                                        ($row['trang_thai'] == 'đang hoàn thành' ? 'completed' : 'pending') . "'>
+                                        ($row['trang_thai'] == 'hoàn thành' ? 'completed' : 'pending') . "'>
                                         {$row['trang_thai']}
                                     </span>
                                 </p>
                                 <p><strong>Tổng tiền:</strong> " . number_format($row['tong_tien'], 0, ',', '.') . "₫</p>
                             </div>
                         </div>
-                        <div class='btn-container'>";
-                    
-                    if ($row['trang_thai'] == 'chờ xác nhận') {
-                        echo "
-                        <form method='POST' style='display:inline;'>
-                            <input type='hidden' name='id_don_hang' value='{$row['id_don_hang']}'>
-                            <button type='submit' name='nhan_don' class='accept-btn'>Nhận đơn</button>
-                        </form>";
-                    }
-
-                    echo "<button class='view-btn'>Xem</button>
-                        </div>
+                        <button class='view-btn'>Xem</button>
                     </div>";
                 }
             } else {
-                echo "<p>❌ Hiện tại bạn chưa có đơn hàng nào được giao.</p>";
+                echo "<p>❌ Bạn chưa có đơn hàng nào.</p>";
             }
 
-            $stmt_dh->close();
+            $stmt->close();
             $conn->close();
             ?>
         </div>
