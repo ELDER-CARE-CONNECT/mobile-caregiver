@@ -6,7 +6,6 @@
 // 1️⃣ Khởi tạo session thống nhất cho toàn hệ thống
 session_name("CARES_SESSION");
 if (session_status() === PHP_SESSION_NONE) session_start();
-
 // 2️⃣ Kết nối tới CSDL
 include_once("../model/sanpham.php");
 include_once("../model/get_products.php");
@@ -42,25 +41,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // ===== KIỂM TRA TRONG BẢNG KHÁCH HÀNG =====
-        $sql_kh = "SELECT * FROM khach_hang WHERE so_dien_thoai = ? AND mat_khau = ?";
-        $stmt = $conn->prepare($sql_kh);
-        $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
-        $stmt->execute();
-        $result_kh = $stmt->get_result();
+$sql_kh = "SELECT * FROM khach_hang WHERE so_dien_thoai = ? AND mat_khau = ?";
+$stmt = $conn->prepare($sql_kh);
+$stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
+$stmt->execute();
+$result_kh = $stmt->get_result();
 
-        if ($result_kh && $result_kh->num_rows > 0) {
-            $user = $result_kh->fetch_assoc();
-            $_SESSION['role'] = 'khach_hang';
-            $_SESSION['so_dien_thoai'] = $so_dien_thoai;
-            $_SESSION['ten_khach_hang'] = $user['ten_khach_hang'];
+if ($result_kh && $result_kh->num_rows > 0) {
+    $user = $result_kh->fetch_assoc();
 
-            if (empty($user['ten_khach_hang'])) {
-                header("Location: ../CareSeeker/PHP/Hoso.php");
-            } else {
-                header("Location: ../CareSeeker/PHP/Dichvu.php");
-            }
-            exit();
-        }
+    // ✅ Lưu session đầy đủ để Canhan.php sử dụng
+    $_SESSION['role'] = 'khach_hang';
+    $_SESSION['id_khach_hang'] = $user['id_khach_hang'];
+    $_SESSION['profile'] = $user; // toàn bộ thông tin khách hàng
+    $_SESSION['so_dien_thoai'] = $user['so_dien_thoai'];
+    $_SESSION['ten_khach_hang'] = $user['ten_khach_hang'];
+
+    // ✅ Nếu hồ sơ chưa có thông tin -> chuyển đến trang Hồ sơ để bổ sung
+    if (empty($user['ten_khach_hang']) || empty($user['dia_chi'])) {
+        header("Location: ../CareSeeker/PHP/Hoso.php");
+    } else {
+        header("Location: ../CareSeeker/PHP/Canhan.php"); // <-- chuyển về trang cá nhân
+    }
+    exit();
+}
 
         // Nếu không khớp ở bảng nào
         $error_message = "Sai tài khoản hoặc mật khẩu!";

@@ -29,6 +29,28 @@ if (!$user) {
 <meta charset="UTF-8">
 <title>Thông tin cá nhân</title>
 <style>
+  /* ===== NÚT ĐĂNG XUẤT GÓC PHẢI ===== */
+.logout-top {
+  position: fixed;
+  top: 20px;
+  right: 30px;
+  background-color: #ff6b81;
+  color: white;
+  padding: 12px 24px;
+  font-size: 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.logout-top:hover {
+  background-color: #e05268;
+  transform: translateY(-2px);
+}
+
   body {
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
@@ -164,5 +186,6 @@ if (!$user) {
 </div>
 
 </body>
+<a href="logout.php" class="logout-top">Đăng xuất</a>
 </html>
 
