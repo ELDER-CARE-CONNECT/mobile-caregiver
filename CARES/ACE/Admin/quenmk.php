@@ -54,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quên mật khẩu</title>
     <style>
+<<<<<<< HEAD
      /* --- RESET --- */
 * {
     box-sizing: border-box;
@@ -253,11 +254,183 @@ form p[style*="green"] {
     from { opacity: 0; transform: translate(-50%, -60%); }
     to { opacity: 1; transform: translate(-50%, -50%); }
 }
+=======
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .auth-container {
+            display: flex;
+            gap: 50px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 940px;
+            width: 100%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+        }
+        .auth-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .auth-image img {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            object-fit: cover;
+            border-radius: 0;
+        }
+        .auth-wrapper {
+            flex: 0 0 420px;
+            background: rgba(255,255,255,0.95);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .auth-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .auth-heading {
+            font-size: 26px;
+            font-weight: bold;
+            color: #d70018;
+            margin-bottom: 25px;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: #d70018;
+            box-shadow: 0 0 5px rgba(215, 0, 24, 0.3);
+        }
+        .auth-error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .auth-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: #d70018;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .auth-submit:hover {
+            background-color: #b30013;
+        }
+        .auth-register {
+            font-size: 14px;
+            margin-top: 25px;
+        }
+        .auth-register a {
+            color: #d70018;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .auth-register a:hover {
+            text-decoration: underline;
+        }
+        .back-button {
+            position: absolute;
+            left: 0;
+            text-decoration: none;
+            font-size: 24px;
+            color: #d70018;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .back-button:hover {
+            transform: translateX(-4px);
+        }
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            color: #333;
+            animation: fadeIn 0.4s ease forwards;
+            z-index: 1000;
+        }
+        .popup.success {
+            border-left: 6px solid #28a745;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        @media (max-width: 900px) {
+            body {
+                padding: 10px;
+            }
+            .auth-container {
+                flex-direction: column;
+                padding: 20px 15px;
+                max-width: 100%;
+                box-shadow: none;
+                background: transparent;
+            }
+            .auth-image {
+                display: none;
+            }
+            .auth-wrapper {
+                width: 100%;
+                max-width: 420px;
+                padding: 30px 20px;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                background: rgba(255,255,255,0.95);
+                border-radius: 16px;
+            }
+        }
+>>>>>>> Vy
     </style>
-
-    
 </head>
 <body>
+<<<<<<< HEAD
     <div class="container">
         <div class="forgot-password-box">
             <div class="header-row">
@@ -305,5 +478,45 @@ form p[style*="green"] {
 <?php endif; ?>
 
 
+=======
+    <div class="auth-container">
+        <div class="auth-image">
+            <img src="images/nguoi-cao-tuoi-2.jpg" alt="Ảnh minh họa">
+        </div>
+        <div class="auth-wrapper">
+            <div class="header-row">
+                <a href="login.php" class="back-button">&larr;</a>
+                <h2 class="auth-heading">Quên mật khẩu</h2>
+            </div>
+            <p style="font-size: 14px; color: #444; margin-bottom: 20px;">Hãy nhập số điện thoại của bạn vào bên dưới để bắt đầu quá trình khôi phục mật khẩu.</p>
+
+            <form method="POST" action="quenmk.php">
+                <label for="phone" style="display: block; text-align: left; font-weight: 500; font-size: 14px; margin-bottom: 6px; color: #222;">Nhập vào số điện thoại của bạn</label>
+                <input type="text" id="phone" name="phone" class="auth-input" placeholder="" required>
+
+                <label for="new_password" style="display: block; text-align: left; font-weight: 500; font-size: 14px; margin-bottom: 6px; color: #222;">Nhập mật khẩu mới</label>
+                <input type="password" id="new_password" name="new_password" class="auth-input" placeholder="" required>
+
+                <label for="confirm_password" style="display: block; text-align: left; font-weight: 500; font-size: 14px; margin-bottom: 6px; color: #222;">Nhập lại mật khẩu mới</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="auth-input" placeholder="" required>
+
+                <div class="auth-error"><?php echo $phoneError; ?></div>
+                <div class="auth-error"><?php echo $passwordError; ?></div>
+                <div class="auth-error"><?php echo $confirmPasswordError; ?></div>
+
+                <button type="submit" class="auth-submit">Đổi mật khẩu</button>
+                <p class="auth-register">
+                    <a href="login.php">Quay lại trang đăng nhập</a>
+                </p>
+            </form>
+
+            <?php if (!empty($successMessage)): ?>
+                <div class="popup success">
+                    <?php echo htmlspecialchars($successMessage); ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+>>>>>>> Vy
 </body>
 </html>

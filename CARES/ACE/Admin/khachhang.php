@@ -8,6 +8,7 @@
     <title>Quản Lí Khách Hàng</title>
     <link rel="stylesheet" href="fontend/css/khachhang.css">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<<<<<<< HEAD
     <style>
        body {
     font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -145,8 +146,171 @@ img {
     background-color: #6c757d;
     color: white;
 }
+=======
+
+    <style>
+    /* ===== Tổng thể ===== */
+    body {
+        font-family: "Segoe UI", sans-serif;
+        background-color: #f0f4f8;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* ===== Bố cục ===== */
+    .container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .main-content {
+        flex-grow: 1;
+        background: #fff;
+        padding: 25px 40px;
+        border-radius: 12px;
+        margin: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    /* ===== Thanh navbar ===== */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 15px;
+        margin-bottom: 10px;
+    }
+
+    .navbar h1 {
+        color: #3498db;
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+    /* ===== Ô tìm kiếm ===== */
+    .search input {
+        padding: 7px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        width: 260px;
+    }
+
+    .search button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 7px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .search button:hover {
+        background: #2980b9;
+    }
+
+    /* ===== Tiêu đề phụ ===== */
+    h2 {
+        color: #2c3e50;
+        font-size: 20px;
+        margin-bottom: 15px;
+        border-left: 5px solid #3498db;
+        padding-left: 10px;
+    }
+
+    /* ===== Bảng dữ liệu ===== */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    th {
+        background: #3498db;
+        color: #fff;
+        padding: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+        font-size: 15px;
+        color: #2c3e50;
+    }
+
+    tr:nth-child(even) {
+        background: #f9f9f9;
+    }
+
+    tr:hover {
+        background: #eaf4ff;
+        transition: 0.2s;
+    }
+
+    /* ===== Ảnh khách hàng ===== */
+    img {
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        object-fit: cover;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    /* ===== Nút xem đơn hàng ===== */
+    .show-orders {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .show-orders:hover {
+        background-color: #2980b9;
+        transform: scale(1.05);
+    }
+
+    /* ===== Dòng chi tiết đơn hàng ===== */
+    .order-details-row {
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .order-details-row table {
+        width: 100%;
+        border: 1px solid #ddd;
+        margin-top: 8px;
+        border-radius: 6px;
+    }
+
+    .order-details-row th {
+        background-color: #5dade2;
+        color: white;
+        padding: 6px;
+    }
+
+    .order-details-row td {
+        background-color: #fff;
+    }
+>>>>>>> Vy
     </style>
 </head>
+
 <body>
 <div class="container">
     <?php 
@@ -198,9 +362,13 @@ img {
                     if ($result && $result->num_rows > 0) {
                         while($row = $result->fetch_assoc()) {
                             $id = $row['id_khach_hang'];
+<<<<<<< HEAD
 
                             $orderSummary = $conn->query("SELECT COUNT(*) AS tong_don, SUM(tong_tien) AS tong_tien 
                                                           FROM don_hang WHERE id_khach_hang = $id");
+=======
+                            $orderSummary = $conn->query("SELECT COUNT(*) AS tong_don, SUM(tong_tien) AS tong_tien FROM don_hang WHERE id_khach_hang = $id");
+>>>>>>> Vy
                             $summary = $orderSummary->fetch_assoc();
                             $tong_don = $summary['tong_don'] ?? 0;
                             $tong_tien = $summary['tong_tien'] ?? 0;
@@ -226,10 +394,16 @@ img {
                             echo "<td><button class='show-orders' data-id='{$id}'>Xem đơn hàng</button></td>";
                             echo "</tr>";
 
+<<<<<<< HEAD
                             // Chi tiết đơn hàng (ĐÃ CHỈNH)
                             echo "<tr class='order-details-row' id='orders-{$id}' style='display:none;'>
                                     <td colspan='12'>
                                     <table border='1' cellpadding='4' cellspacing='0'>
+=======
+                            echo "<tr class='order-details-row' id='orders-{$id}' style='display:none;'>
+                                    <td colspan='12'>
+                                    <table>
+>>>>>>> Vy
                                         <tr>
                                             <th>Mã đơn hàng</th>
                                             <th>Ngày đặt</th>
@@ -275,7 +449,11 @@ img {
 $(document).ready(function(){
     $(".show-orders").click(function(){
         const id = $(this).data("id");
+<<<<<<< HEAD
         $("#orders-" + id).toggle(300);
+=======
+        $("#orders-" + id).slideToggle(300);
+>>>>>>> Vy
     });
 });
 </script>
