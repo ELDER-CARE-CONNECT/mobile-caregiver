@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php
 
 session_start(); // Khởi tạo session
@@ -508,3 +509,6 @@ if (isset($_GET['status']) && $_GET['status'] === 'cancelled') {
     </div>
 </body>
 </html>
+=======
+
+>>>>>>> Thư
