@@ -1,7 +1,10 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
+=======
+>>>>>>> origin/Thanh
 <?php
 session_start();
 
@@ -12,7 +15,11 @@ $dbname = "sanpham";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
+<<<<<<< HEAD
     die("Ket noi that bai: " . $conn->connect_error);
+=======
+    die("Kết nối thất bại: " . $conn->connect_error);
+>>>>>>> origin/Thanh
 }
 
 $errors = [];
@@ -28,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $chieu_cao = floatval($_POST['chieu_cao'] ?? 0);
     $can_nang = floatval($_POST['can_nang'] ?? 0);
 
+<<<<<<< HEAD
     if ($ho_ten === '') $errors[] = 'Vui lòng nhập họ và tên.';
     if ($so_dt === '') $errors[] = 'Vui lòng nhập số điện thoại.';
     if ($tuoi <= 0) $errors[] = 'Vui lòng nhập tuổi hợp lệ.';
@@ -35,6 +43,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $uploadedFile = null;
 
+=======
+    // ✅ Kiểm tra dữ liệu nhập
+    if ($ho_ten === '') $errors[] = 'Vui lòng nhập họ và tên.';
+    if ($so_dt === '') $errors[] = 'Vui lòng nhập số điện thoại.';
+    if ($tuoi <= 0) $errors[] = 'Vui lòng nhập tuổi hợp lệ.';
+    if (!in_array($gioi_tinh, ['Nam','Nữ','Khác'])) $errors[] = 'Vui lòng chọn giới tính.';
+
+    $uploadedFile = null;
+
+    // ✅ Xử lý upload ảnh
+>>>>>>> origin/Thanh
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] !== UPLOAD_ERR_NO_FILE) {
         $file = $_FILES['avatar'];
         if ($file['error'] === UPLOAD_ERR_OK) {
@@ -63,6 +82,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+<<<<<<< HEAD
+=======
+    // ✅ Nếu không có lỗi, lưu vào CSDL
+>>>>>>> origin/Thanh
     if (empty($errors)) {
         $check = $conn->prepare("SELECT id_khach_hang FROM khach_hang WHERE so_dien_thoai = ?");
         $check->bind_param("s", $so_dt);
@@ -70,6 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $check->store_result();
 
         if ($check->num_rows > 0) {
+<<<<<<< HEAD
+=======
+            // Cập nhật hồ sơ
+>>>>>>> origin/Thanh
             $stmt = $conn->prepare("UPDATE khach_hang 
                 SET ten_khach_hang=?, dia_chi=?, tuoi=?, gioi_tinh=?, chieu_cao=?, can_nang=?, hinh_anh=? 
                 WHERE so_dien_thoai=?");
@@ -80,6 +107,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = "Lỗi khi cập nhật: " . $stmt->error;
             }
         } else {
+<<<<<<< HEAD
+=======
+            // Tạo mới hồ sơ
+>>>>>>> origin/Thanh
             $stmt = $conn->prepare("INSERT INTO khach_hang 
                 (ten_khach_hang, so_dien_thoai, dia_chi, tuoi, gioi_tinh, chieu_cao, can_nang, hinh_anh, mat_khau, role) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', 0)");
@@ -93,6 +124,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $stmt->close();
         $check->close();
+<<<<<<< HEAD
+=======
+
+        // Lưu vào session
+>>>>>>> origin/Thanh
         $profile = [
             'ho_ten' => $ho_ten,
             'dia_chi' => $dia_chi,
@@ -105,6 +141,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'created_at' => date('Y-m-d H:i:s')
         ];
         $_SESSION['profile'] = $profile;
+<<<<<<< HEAD
+=======
+
+        // ✅ Sau khi lưu xong, chuyển sang trang cá nhân
+        header("Location: Canhan.php");
+        exit;
+>>>>>>> origin/Thanh
     }
 }
 
@@ -116,6 +159,7 @@ $conn->close();
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<<<<<<< HEAD
 <title>Tao ho so - Demo</title>
 <style>
 :root{--accent:#ff6b81;--muted:#666}
@@ -144,12 +188,38 @@ input[type="text"], input[type="number"], input[type="file"], select, textarea{w
 </style>
 </head>
 <body>
+=======
+<title>Tạo hồ sơ cá nhân</title>
+<style>
+:root{--accent:#ff6b81;--muted:#666}
+*{box-sizing:border-box}
+body{font-family:Inter, system-ui, Arial, sans-serif;background:#f9f9ff;margin:0;padding:24px;color:#222}
+.container{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr 380px;gap:20px;background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.08);padding:28px}
+.form-wrap h2{margin-top:0;color:#333}
+.field{margin-bottom:12px}
+label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+input,select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+.row{display:flex;gap:10px}
+.btn{background:var(--accent);color:#fff;padding:10px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+.btn:active{transform:translateY(1px)}
+.errors{background:#ffecec;border:1px solid #ffb3b3;padding:10px;border-radius:8px;margin-bottom:12px;color:#a33}
+.success{background:#e6ffed;border:1px solid #a2f3b4;padding:10px;border-radius:8px;margin-bottom:12px;color:#196b3b}
+.avatar-preview{width:160px;height:160px;border:1px dashed #ccc;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafafa}
+.avatar-preview img{width:100%;height:100%;object-fit:cover}
+.small{font-size:13px;color:#777}
+@media(max-width:820px){.container{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+>>>>>>> origin/Thanh
 <div class="container">
   <div class="form-wrap">
     <h2>Tạo hồ sơ cá nhân</h2>
 
     <?php if (!empty($errors)): ?>
       <div class="errors">
+<<<<<<< HEAD
         <ul>
         <?php foreach($errors as $e): ?>
           <li><?php echo htmlspecialchars($e); ?></li>
@@ -166,15 +236,30 @@ input[type="text"], input[type="number"], input[type="file"], select, textarea{w
       <div class="field">
         <label for="avatar">Hình ảnh cá nhân</label>
         <input type="file" id="avatar" name="avatar" accept="image/*">
+=======
+        <ul><?php foreach($errors as $e): ?><li><?php echo htmlspecialchars($e); ?></li><?php endforeach; ?></ul>
+      </div>
+    <?php endif; ?>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      <div class="field">
+        <label for="avatar">Hình ảnh cá nhân</label>
+        <input type="file" name="avatar" id="avatar" accept="image/*">
+>>>>>>> origin/Thanh
       </div>
 
       <div class="field">
         <label for="ho_ten">Họ và tên</label>
+<<<<<<< HEAD
         <input type="text" id="ho_ten" name="ho_ten" value="<?php echo isset($profile['ho_ten']) ? $profile['ho_ten'] : ''; ?>" required>
+=======
+        <input type="text" name="ho_ten" id="ho_ten" required>
+>>>>>>> origin/Thanh
       </div>
 
       <div class="field">
         <label for="dia_chi">Địa chỉ</label>
+<<<<<<< HEAD
         <input type="text" id="dia_chi" name="dia_chi" value="<?php echo isset($profile['dia_chi']) ? $profile['dia_chi'] : ''; ?>">
       </div>
 
@@ -186,19 +271,41 @@ input[type="text"], input[type="number"], input[type="file"], select, textarea{w
         <div class="col field">
           <label for="tuoi">Tuổi</label>
           <input type="number" id="tuoi" name="tuoi" min="1" value="<?php echo isset($profile['tuoi']) ? $profile['tuoi'] : ''; ?>" required>
+=======
+        <input type="text" name="dia_chi" id="dia_chi">
+      </div>
+
+      <div class="row">
+        <div class="field" style="flex:1">
+          <label for="so_dt">Số điện thoại</label>
+          <input type="text" name="so_dt" id="so_dt" required>
+        </div>
+        <div class="field" style="flex:1">
+          <label for="tuoi">Tuổi</label>
+          <input type="number" name="tuoi" id="tuoi" min="1" required>
+>>>>>>> origin/Thanh
         </div>
       </div>
 
       <div class="field">
+<<<<<<< HEAD
         <label>Giói tính</label>
         <div class="field-inline">
           <label><input type="radio" name="gioi_tinh" value="Nam" <?php echo (isset($profile['gioi_tinh']) && $profile['gioi_tinh']==='Nam')? 'checked':''; ?>> Nam</label>
           <label><input type="radio" name="gioi_tinh" value="Nữ" <?php echo (isset($profile['gioi_tinh']) && $profile['gioi_tinh']==='Nu')? 'checked':''; ?>> Nữ</label>
           <label><input type="radio" name="gioi_tinh" value="Khac" <?php echo (isset($profile['gioi_tinh']) && $profile['gioi_tinh']==='Khac')? 'checked':''; ?>> Khac</label>
+=======
+        <label>Giới tính</label>
+        <div style="display:flex;gap:10px">
+          <label><input type="radio" name="gioi_tinh" value="Nam"> Nam</label>
+          <label><input type="radio" name="gioi_tinh" value="Nữ"> Nữ</label>
+          <label><input type="radio" name="gioi_tinh" value="Khác"> Khác</label>
+>>>>>>> origin/Thanh
         </div>
       </div>
 
       <div class="row">
+<<<<<<< HEAD
         <div class="col field">
           <label for="chieu_cao">Chiều cao (cm)</label>
           <input type="number" id="chieu_cao" name="chieu_cao" min="0" step="0.1" value="<?php echo isset($profile['chieu_cao']) ? $profile['chieu_cao'] : ''; ?>">
@@ -238,11 +345,34 @@ input[type="text"], input[type="number"], input[type="file"], select, textarea{w
       </div>
     </div>
    
+=======
+        <div class="field" style="flex:1">
+          <label for="chieu_cao">Chiều cao (cm)</label>
+          <input type="number" name="chieu_cao" id="chieu_cao" step="0.1">
+        </div>
+        <div class="field" style="flex:1">
+          <label for="can_nang">Cân nặng (kg)</label>
+          <input type="number" name="can_nang" id="can_nang" step="0.1">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button type="submit" class="btn">Lưu hồ sơ</button>
+        <button type="reset" class="btn" style="background:#ccc;color:#000">Đặt lại</button>
+      </div>
+    </form>
+  </div>
+
+  <div>
+    <h3>Xem trước hồ sơ</h3>
+    <div class="avatar-preview" id="avatarPreview"><div class="small">Chưa có ảnh</div></div>
+>>>>>>> origin/Thanh
   </div>
 </div>
 
 <script>
 const avatarInput = document.getElementById('avatar');
+<<<<<<< HEAD
 const avatarBox = document.getElementById('avatarBox');
 const form = document.getElementById('profileForm');
 const resetBtn = document.getElementById('resetBtn');
@@ -287,3 +417,20 @@ form.addEventListener('submit', function(e){
 =======
 
 >>>>>>> Phong
+=======
+const avatarPreview = document.getElementById('avatarPreview');
+
+avatarInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    avatarPreview.innerHTML = `<img src="${ev.target.result}">`;
+  }
+  reader.readAsDataURL(file);
+});
+</script>
+
+</body>
+</html>
+>>>>>>> origin/Thanh

@@ -8,6 +8,7 @@ ini_set('display_errors', 1);
 $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 $sql = "SELECT * FROM nguoi_cham_soc WHERE ho_ten LIKE '%$keyword%' 
         OR dia_chi LIKE '%$keyword%' OR gioi_tinh LIKE '%$keyword%' OR kinh_nghiem LIKE '%$keyword%'";
 =======
@@ -31,6 +32,10 @@ GROUP BY ncs.id_cham_soc
 $sql = "SELECT * FROM nguoi_cham_soc WHERE ho_ten LIKE '%$keyword%' 
         OR dia_chi LIKE '%$keyword%' OR gioi_tinh LIKE '%$keyword%' OR kinh_nghiem LIKE '%$keyword%'";
 >>>>>>> Phong
+=======
+$sql = "SELECT * FROM nguoi_cham_soc WHERE ho_ten LIKE '%$keyword%' 
+        OR dia_chi LIKE '%$keyword%' OR gioi_tinh LIKE '%$keyword%' OR kinh_nghiem LIKE '%$keyword%'";
+>>>>>>> origin/Thanh
 $result = $conn->query($sql);
 ?>
 
@@ -43,8 +48,11 @@ $result = $conn->query($sql);
 <style>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 body {
     font-family: "Segoe UI", sans-serif;
     background: #f4f6fa;
@@ -52,6 +60,7 @@ body {
 }
 .container {
     display: flex;
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 /* ====== GIAO DIỆN TỔNG ====== */
@@ -68,10 +77,13 @@ body {
 >>>>>>> Vy
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 }
 .main-content {
     flex-grow: 1;
     background: #fff;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     padding: 20px 40px;
@@ -89,14 +101,21 @@ body {
     padding: 20px 40px;
 }
 >>>>>>> Phong
+=======
+    padding: 20px 40px;
+}
+>>>>>>> origin/Thanh
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
     border-bottom: 3px solid #007BFF;
     padding-bottom: 10px;
 }
@@ -185,6 +204,7 @@ img {
 }
 .view-btn:hover {
     background: #e0a800;
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
     border-bottom: 3px solid #3498db;
@@ -330,6 +350,8 @@ img {
 >>>>>>> Vy
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 }
 </style>
 </head>
@@ -360,6 +382,7 @@ include 'sidebar.php';
         <tr>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             <th>Mã người chăm sóc</th>
 =======
             <th>Mã người làm</th>
@@ -367,6 +390,9 @@ include 'sidebar.php';
 =======
             <th>Mã người chăm sóc</th>
 >>>>>>> Phong
+=======
+            <th>Mã người chăm sóc</th>
+>>>>>>> origin/Thanh
             <th>Ảnh</th>
             <th>Họ và tên</th>
             <th>Địa chỉ</th>
@@ -393,12 +419,16 @@ include 'sidebar.php';
                 echo "<td>{$row['can_nang']}</td>";
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
               $rating = isset($row['danh_gia_tb']) && $row['danh_gia_tb'] !== null 
     ? number_format((float)$row['danh_gia_tb'], 1) . "⭐" 
     : "—";
 echo "<td>$rating</td>";
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 
@@ -410,6 +440,8 @@ echo "<td>$rating</td>";
 >>>>>>> Vy
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 
                 echo "<td>{$row['kinh_nghiem']}</td>";
 
@@ -422,12 +454,16 @@ echo "<td>$rating</td>";
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
                 // Dòng ẩn hiển thị đánh giá
                 echo "<tr class='order-details-row' id='reviews-{$row['id_cham_soc']}'>
                         <td colspan='13'>
                         <table width='100%' border='1' cellpadding='4' cellspacing='0'>
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
                 // 🔹 Chi tiết đánh giá từng người
@@ -437,6 +473,8 @@ echo "<td>$rating</td>";
 >>>>>>> Vy
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
                             <tr>
                                 <th>Khách hàng</th>
                                 <th>Số sao</th>
@@ -456,6 +494,7 @@ echo "<td>$rating</td>";
                                 <td>{$rev['ten_khach_hang']}</td>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 <td>{$rev['so_sao']}⭐</td>
 =======
                                 <td class='star'>{$rev['so_sao']}⭐</td>
@@ -463,11 +502,15 @@ echo "<td>$rating</td>";
 =======
                                 <td>{$rev['so_sao']}⭐</td>
 >>>>>>> Phong
+=======
+                                <td>{$rev['so_sao']}⭐</td>
+>>>>>>> origin/Thanh
                                 <td>{$rev['nhan_xet']}</td>
                                 <td>{$rev['ngay_danh_gia']}</td>
                               </tr>";
                     }
                 } else {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                     echo "<tr><td colspan='4'>Chưa có đánh giá nào.</td></tr>";
@@ -477,11 +520,15 @@ echo "<td>$rating</td>";
 =======
                     echo "<tr><td colspan='4'>Chưa có đánh giá nào.</td></tr>";
 >>>>>>> Phong
+=======
+                    echo "<tr><td colspan='4'>Chưa có đánh giá nào.</td></tr>";
+>>>>>>> origin/Thanh
                 }
 
                 echo "</table></td></tr>";
             }
         } else {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             echo "<tr><td colspan='13'>Không có người chăm sóc nào.</td></tr>";
@@ -491,6 +538,9 @@ echo "<td>$rating</td>";
 =======
             echo "<tr><td colspan='13'>Không có người chăm sóc nào.</td></tr>";
 >>>>>>> Phong
+=======
+            echo "<tr><td colspan='13'>Không có người chăm sóc nào.</td></tr>";
+>>>>>>> origin/Thanh
         }
         ?>
     </table>
@@ -504,6 +554,7 @@ $(document).ready(function(){
         const id = $(this).data("id");
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         $("#reviews-" + id).toggle(300);
 =======
         $("#reviews-" + id).slideToggle(300);
@@ -511,10 +562,17 @@ $(document).ready(function(){
 =======
         $("#reviews-" + id).toggle(300);
 >>>>>>> Phong
+=======
+        $("#reviews-" + id).toggle(300);
+>>>>>>> origin/Thanh
     });
 });
 </script>
 </body>
 </html>
 
+<<<<<<< HEAD
 <?php $conn->close(); ?>
+=======
+<?php $conn->close(); ?>
+>>>>>>> origin/Thanh

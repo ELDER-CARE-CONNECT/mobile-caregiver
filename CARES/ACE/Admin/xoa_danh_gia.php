@@ -1,8 +1,11 @@
 <?php
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 include 'check_login.php';
 include 'connect.php';
 
@@ -22,6 +25,7 @@ if (isset($_GET['id'])) {
 }
 
 $conn->close();
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 include 'connect.php';
@@ -56,4 +60,6 @@ if (isset($_GET['id'])) {
 >>>>>>> Vy
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 ?>

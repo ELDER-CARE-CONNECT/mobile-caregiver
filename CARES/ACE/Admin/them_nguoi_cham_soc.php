@@ -13,12 +13,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $can_nang = $_POST['can_nang'];
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     $danh_gia_tb = $_POST['danh_gia_tb'];
 =======
 >>>>>>> Vy
 =======
     $danh_gia_tb = $_POST['danh_gia_tb'];
 >>>>>>> Phong
+=======
+    $danh_gia_tb = $_POST['danh_gia_tb'];
+>>>>>>> origin/Thanh
     $kinh_nghiem = $_POST['kinh_nghiem'];
     $so_dien_thoai = $_POST['so_dien_thoai'];
     $mat_khau = $_POST['mat_khau']; // không mã hóa
@@ -39,12 +43,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
     // Thêm vào CSDL
     $sql = "INSERT INTO nguoi_cham_soc 
             (so_dien_thoai, mat_khau, hinh_anh, ho_ten, dia_chi, tuoi, gioi_tinh, chieu_cao, can_nang, danh_gia_tb, kinh_nghiem)
             VALUES ('$so_dien_thoai', '$mat_khau', '$hinh_anh', '$ho_ten', '$dia_chi', '$tuoi', '$gioi_tinh', '$chieu_cao', '$can_nang', '$danh_gia_tb', '$kinh_nghiem')";
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
     // Thêm vào CSDL (bỏ cột danh_gia_tb)
@@ -54,6 +62,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 >>>>>>> Vy
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 
     if ($conn->query($sql)) {
         header("Location: nguoi_cham_soc.php?success=1");
@@ -74,8 +84,11 @@ body {
     font-family: "Segoe UI", sans-serif;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
     background: #f4f6fa;
     color: #333;
 }
@@ -91,6 +104,7 @@ h1 {
     color: #007BFF;
     text-align: center;
     margin-bottom: 20px;
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
     background: linear-gradient(135deg, #e3f2fd, #bbdefb);
@@ -119,14 +133,19 @@ h1 {
 >>>>>>> Vy
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 }
 form {
     display: flex;
     flex-direction: column;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
     gap: 10px;
 }
 label { font-weight: bold; margin-top: 5px; }
@@ -145,6 +164,7 @@ button {
     margin-top: 15px;
 }
 button:hover { background: #0056b3; }
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
     gap: 12px;
@@ -181,12 +201,15 @@ button:hover {
 >>>>>>> Vy
 =======
 >>>>>>> Phong
+=======
+>>>>>>> origin/Thanh
 .message {
     text-align: center;
     font-weight: bold;
     color: green;
     margin-bottom: 15px;
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 a { color: #007BFF; text-decoration: none; margin-top: 15px; display: inline-block; }
@@ -202,6 +225,9 @@ a {
 =======
 a { color: #007BFF; text-decoration: none; margin-top: 15px; display: inline-block; }
 >>>>>>> Phong
+=======
+a { color: #007BFF; text-decoration: none; margin-top: 15px; display: inline-block; }
+>>>>>>> origin/Thanh
 a:hover { text-decoration: underline; }
 </style>
 </head>
@@ -241,6 +267,7 @@ a:hover { text-decoration: underline; }
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         <label>Đánh giá trung bình:</label>
         <input type="number" step="0.1" name="danh_gia_tb">
 
@@ -251,6 +278,11 @@ a:hover { text-decoration: underline; }
         <input type="number" step="0.1" name="danh_gia_tb">
 
 >>>>>>> Phong
+=======
+        <label>Đánh giá trung bình:</label>
+        <input type="number" step="0.1" name="danh_gia_tb">
+
+>>>>>>> origin/Thanh
         <label>Kinh nghiệm:</label>
         <input type="text" name="kinh_nghiem">
 

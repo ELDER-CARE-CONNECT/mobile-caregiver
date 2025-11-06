@@ -226,4 +226,8 @@ $result = $stmt->get_result();
     </div>
 </div>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> origin/Thanh
