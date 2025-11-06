@@ -11,10 +11,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Số điện thoại và mật khẩu không được để trống!";
     } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
         // ===== KIỂM TRA TRONG BẢNG ADMIN =====
 =======
         // === Kiểm tra bảng admin ===
 >>>>>>> Vy
+=======
+        // ===== KIỂM TRA TRONG BẢNG ADMIN =====
+>>>>>>> Phong
         $sql_admin = "SELECT * FROM admin WHERE so_dien_thoai = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_admin);
         $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
@@ -29,10 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         // ===== KIỂM TRA TRONG BẢNG KHÁCH HÀNG =====
 =======
         // === Kiểm tra bảng khách hàng ===
 >>>>>>> Vy
+=======
+        // ===== KIỂM TRA TRONG BẢNG KHÁCH HÀNG =====
+>>>>>>> Phong
         $sql_kh = "SELECT * FROM khach_hang WHERE so_dien_thoai = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_kh);
         $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
@@ -49,19 +57,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: CareSeeker/PHP/Hoso.php");
             } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 header("Location: CareSeeker/PHP/Dichvu.php");
 =======
                 header("Location: ../CareSeeker/PHP/Dichvu.php");
 >>>>>>> Vy
+=======
+                header("Location: ../CareSeeker/PHP/Chitietdonhang.php");
+>>>>>>> Phong
             }
             exit();
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         // ===== KIỂM TRA TRONG BẢNG NGƯỜI CHĂM SÓC =====
 =======
         // === Kiểm tra bảng người chăm sóc ===
 >>>>>>> Vy
+=======
+        // ===== KIỂM TRA TRONG BẢNG NGƯỜI CHĂM SÓC =====
+>>>>>>> Phong
         $sql_ncs = "SELECT * FROM nguoi_cham_soc WHERE ten_tai_khoan = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_ncs);
         $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
@@ -76,15 +92,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         // ===== NẾU KHÔNG TỒN TẠI Ở BẤT KỲ BẢNG NÀO =====
 =======
         // Không tìm thấy tài khoản
 >>>>>>> Vy
+=======
+        // ===== NẾU KHÔNG TỒN TẠI Ở BẤT KỲ BẢNG NÀO =====
+>>>>>>> Phong
         $error_message = "Sai số điện thoại hoặc mật khẩu!";
     }
 }
 ?>
 <<<<<<< HEAD
+
 
 
 <!-- Giao diện đăng nhập -->
@@ -107,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
         background-size: cover; /* Ảnh nền phủ toàn bộ màn hình */
+<<<<<<< HEAD
         display: flex;
         align-items: center;
         justify-content: flex-start; /* nếu muốn canh giữa, đổi thành center */
@@ -189,6 +211,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .auth-wrapper {
         flex: 0 0 420px;
 >>>>>>> Vy
+=======
+        display: flex;
+        align-items: center;
+        justify-content: flex-start; /* nếu muốn canh giữa, đổi thành center */
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    /* --- LỚP MỜ NỀN PHÍA SAU --- */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.25); /* lớp phủ đen mờ 25% */
+        z-index: -1;
+    }
+
+    /* --- KHUNG NGOÀI --- */
+    .auth-container {
+        margin-left: 65%; /* khoảng cách từ viền trái, có thể chỉnh tùy bạn */
+        padding: 20px;
+        border-radius: 20px;
+        backdrop-filter: blur(10px); /* làm mờ ảnh nền phía sau */
+    }
+
+    /* --- KHUNG FORM --- */
+    .auth-wrapper {
+        width: 100%;
+        max-width: 420px;
+>>>>>>> Phong
         background: rgba(255,255,255,0.95);
         padding: 40px 30px;
         border-radius: 16px;
@@ -198,31 +250,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 <<<<<<< HEAD
 
+<<<<<<< HEAD
 =======
 >>>>>>> Vy
+=======
+>>>>>>> Phong
     .auth-wrapper:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     /* --- LOGO --- */
 =======
 >>>>>>> Vy
+=======
+
+    /* --- LOGO --- */
+>>>>>>> Phong
     .auth-logo {
         width: 90px;
         margin-bottom: 20px;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     /* --- TIÊU ĐỀ --- */
 =======
 >>>>>>> Vy
+=======
+
+    /* --- TIÊU ĐỀ --- */
+>>>>>>> Phong
     .auth-heading {
         font-size: 26px;
         font-weight: bold;
         color: #d70018;
         margin-bottom: 25px;
+<<<<<<< HEAD
     }
 <<<<<<< HEAD
 
@@ -254,22 +320,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         outline: none;
         border-color: #d70018;
         box-shadow: 0 0 5px rgba(215, 0, 24, 0.3);
+=======
+>>>>>>> Phong
     }
 <<<<<<< HEAD
 
+<<<<<<< HEAD
     /* --- LỖI --- */
 =======
 >>>>>>> Vy
+=======
+    /* --- Ô NHẬP LIỆU --- */
+   .auth-input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.2s;
+    box-sizing: border-box; /* ✅ giúp tính cả padding & border trong width */
+}
+
+
+    .auth-input:focus {
+        outline: none;
+        border-color: #d70018;
+        box-shadow: 0 0 5px rgba(215, 0, 24, 0.3);
+    }
+
+    /* --- LỖI --- */
+>>>>>>> Phong
     .auth-error {
         color: red;
         font-size: 14px;
         margin-top: 5px;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     /* --- QUÊN MẬT KHẨU --- */
 =======
 >>>>>>> Vy
+=======
+
+    /* --- QUÊN MẬT KHẨU --- */
+>>>>>>> Phong
     .auth-forgot {
         text-align: right;
         font-size: 14px;
@@ -277,26 +373,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         margin-bottom: 20px;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> Vy
+=======
+
+>>>>>>> Phong
     .auth-forgot a {
         color: #d70018;
         text-decoration: none;
         font-weight: 500;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
 
     .auth-forgot a:hover {
         text-decoration: underline;
     }
 
     /* --- NÚT ĐĂNG NHẬP --- */
+<<<<<<< HEAD
 =======
     .auth-forgot a:hover {
         text-decoration: underline;
     }
 >>>>>>> Vy
+=======
+>>>>>>> Phong
     .auth-submit {
         width: 100%;
         padding: 14px;
@@ -310,31 +416,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         transition: background 0.3s ease;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
 
     .auth-submit:hover {
         background-color: #b30013;
     }
 
     /* --- LINK ĐĂNG KÝ --- */
+<<<<<<< HEAD
 =======
     .auth-submit:hover {
         background-color: #b30013;
     }
 >>>>>>> Vy
+=======
+>>>>>>> Phong
     .auth-register {
         font-size: 14px;
         margin-top: 25px;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> Vy
+=======
+
+>>>>>>> Phong
     .auth-register a {
         color: #d70018;
         font-weight: bold;
         text-decoration: none;
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
 
     .auth-register a:hover {
         text-decoration: underline;
@@ -372,6 +491,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 </html>
+<<<<<<< HEAD
 =======
     .auth-register a:hover {
         text-decoration: underline;
@@ -505,6 +625,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 </script>
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 
 </body>
 </html>

@@ -7,6 +7,7 @@ ini_set('display_errors', 1);
 
 $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
 <<<<<<< HEAD
+<<<<<<< HEAD
 $sql = "SELECT * FROM nguoi_cham_soc WHERE ho_ten LIKE '%$keyword%' 
         OR dia_chi LIKE '%$keyword%' OR gioi_tinh LIKE '%$keyword%' OR kinh_nghiem LIKE '%$keyword%'";
 =======
@@ -26,6 +27,10 @@ GROUP BY ncs.id_cham_soc
 ";
 
 >>>>>>> Vy
+=======
+$sql = "SELECT * FROM nguoi_cham_soc WHERE ho_ten LIKE '%$keyword%' 
+        OR dia_chi LIKE '%$keyword%' OR gioi_tinh LIKE '%$keyword%' OR kinh_nghiem LIKE '%$keyword%'";
+>>>>>>> Phong
 $result = $conn->query($sql);
 ?>
 
@@ -37,6 +42,9 @@ $result = $conn->query($sql);
 <link rel="stylesheet" href="fontend/css/nguoi_cham_soc.css">
 <style>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
 body {
     font-family: "Segoe UI", sans-serif;
     background: #f4f6fa;
@@ -44,6 +52,7 @@ body {
 }
 .container {
     display: flex;
+<<<<<<< HEAD
 =======
 /* ====== GIAO DIỆN TỔNG ====== */
 body {
@@ -57,10 +66,13 @@ body {
     display: flex;
     min-height: 100vh;
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 }
 .main-content {
     flex-grow: 1;
     background: #fff;
+<<<<<<< HEAD
 <<<<<<< HEAD
     padding: 20px 40px;
 }
@@ -73,11 +85,18 @@ body {
 
 /* ====== THANH NAVBAR ====== */
 >>>>>>> Vy
+=======
+    padding: 20px 40px;
+}
+>>>>>>> Phong
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
     border-bottom: 3px solid #007BFF;
     padding-bottom: 10px;
 }
@@ -166,6 +185,7 @@ img {
 }
 .view-btn:hover {
     background: #e0a800;
+<<<<<<< HEAD
 =======
     border-bottom: 3px solid #3498db;
     padding-bottom: 15px;
@@ -308,6 +328,8 @@ img {
     color: #f1c40f;
     font-weight: bold;
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 }
 </style>
 </head>
@@ -337,10 +359,14 @@ include 'sidebar.php';
     <table>
         <tr>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <th>Mã người chăm sóc</th>
 =======
             <th>Mã người làm</th>
 >>>>>>> Vy
+=======
+            <th>Mã người chăm sóc</th>
+>>>>>>> Phong
             <th>Ảnh</th>
             <th>Họ và tên</th>
             <th>Địa chỉ</th>
@@ -366,10 +392,14 @@ include 'sidebar.php';
                 echo "<td>{$row['chieu_cao']}</td>";
                 echo "<td>{$row['can_nang']}</td>";
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
               $rating = isset($row['danh_gia_tb']) && $row['danh_gia_tb'] !== null 
     ? number_format((float)$row['danh_gia_tb'], 1) . "⭐" 
     : "—";
 echo "<td>$rating</td>";
+<<<<<<< HEAD
 =======
 
                 // ⭐ Hiển thị trung bình đánh giá
@@ -378,6 +408,8 @@ echo "<td>$rating</td>";
                     : "—";
                 echo "<td>$rating</td>";
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 
                 echo "<td>{$row['kinh_nghiem']}</td>";
 
@@ -389,16 +421,22 @@ echo "<td>$rating</td>";
                 echo "</tr>";
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
                 // Dòng ẩn hiển thị đánh giá
                 echo "<tr class='order-details-row' id='reviews-{$row['id_cham_soc']}'>
                         <td colspan='13'>
                         <table width='100%' border='1' cellpadding='4' cellspacing='0'>
+<<<<<<< HEAD
 =======
                 // 🔹 Chi tiết đánh giá từng người
                 echo "<tr class='order-details-row' id='reviews-{$row['id_cham_soc']}'>
                         <td colspan='11'>
                         <table>
 >>>>>>> Vy
+=======
+>>>>>>> Phong
                             <tr>
                                 <th>Khách hàng</th>
                                 <th>Số sao</th>
@@ -417,30 +455,42 @@ echo "<td>$rating</td>";
                         echo "<tr>
                                 <td>{$rev['ten_khach_hang']}</td>
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 <td>{$rev['so_sao']}⭐</td>
 =======
                                 <td class='star'>{$rev['so_sao']}⭐</td>
 >>>>>>> Vy
+=======
+                                <td>{$rev['so_sao']}⭐</td>
+>>>>>>> Phong
                                 <td>{$rev['nhan_xet']}</td>
                                 <td>{$rev['ngay_danh_gia']}</td>
                               </tr>";
                     }
                 } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     echo "<tr><td colspan='4'>Chưa có đánh giá nào.</td></tr>";
 =======
                     echo "<tr><td colspan='4' style='text-align:center;'>Chưa có đánh giá nào.</td></tr>";
 >>>>>>> Vy
+=======
+                    echo "<tr><td colspan='4'>Chưa có đánh giá nào.</td></tr>";
+>>>>>>> Phong
                 }
 
                 echo "</table></td></tr>";
             }
         } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
             echo "<tr><td colspan='13'>Không có người chăm sóc nào.</td></tr>";
 =======
             echo "<tr><td colspan='11' style='text-align:center;'>Không có người chăm sóc nào.</td></tr>";
 >>>>>>> Vy
+=======
+            echo "<tr><td colspan='13'>Không có người chăm sóc nào.</td></tr>";
+>>>>>>> Phong
         }
         ?>
     </table>
@@ -453,10 +503,14 @@ $(document).ready(function(){
     $(".view-btn").click(function(){
         const id = $(this).data("id");
 <<<<<<< HEAD
+<<<<<<< HEAD
         $("#reviews-" + id).toggle(300);
 =======
         $("#reviews-" + id).slideToggle(300);
 >>>>>>> Vy
+=======
+        $("#reviews-" + id).toggle(300);
+>>>>>>> Phong
     });
 });
 </script>

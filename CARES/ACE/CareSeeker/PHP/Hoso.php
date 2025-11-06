@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 <?php
@@ -283,3 +284,6 @@ form.addEventListener('submit', function(e){
 </body>
 </html>
 >>>>>>> Trí
+=======
+
+>>>>>>> Phong

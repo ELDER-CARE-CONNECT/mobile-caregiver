@@ -51,6 +51,7 @@ $avg_star = 0;
 if ($avg_result && $avg_result->num_rows > 0) {
     $avg_data = $avg_result->fetch_assoc();
 <<<<<<< HEAD
+<<<<<<< HEAD
  $avg_star = $avg_data['trung_binh'] !== null ? round($avg_data['trung_binh'], 2) : 0;
 
 =======
@@ -59,6 +60,10 @@ if ($avg_result && $avg_result->num_rows > 0) {
         ? number_format(round($avg_data['trung_binh'], 1), 1) 
         : 0;
 >>>>>>> Vy
+=======
+ $avg_star = $avg_data['trung_binh'] !== null ? round($avg_data['trung_binh'], 2) : 0;
+
+>>>>>>> Phong
 }
 ?>
 
@@ -72,6 +77,9 @@ if ($avg_result && $avg_result->num_rows > 0) {
 body {
     font-family: "Segoe UI", sans-serif;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
     background-color: #f4f6fa;
     color: #333;
 }
@@ -83,6 +91,7 @@ body {
     background: #fff;
     padding: 20px 40px;
 }
+<<<<<<< HEAD
 =======
     background-color: #f0f4f8;
     color: #333;
@@ -107,11 +116,16 @@ body {
 
 /* ====== THANH NAVBAR ====== */
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
     border-bottom: 3px solid #007BFF;
     padding-bottom: 10px;
 }
@@ -134,6 +148,7 @@ body {
 .search button:hover {
     background: #0056b3;
 }
+<<<<<<< HEAD
 =======
     border-bottom: 3px solid #3498db;
     padding-bottom: 15px;
@@ -167,6 +182,8 @@ body {
 
 /* ====== BỘ LỌC ====== */
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 .filter-box {
     margin-top: 15px;
     margin-bottom: 10px;
@@ -175,6 +192,9 @@ body {
     align-items: center;
     gap: 10px;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
 }
 .filter-box select {
     padding: 6px;
@@ -240,6 +260,7 @@ tr:hover {
     color: #f39c12;
 }
 </style>
+<<<<<<< HEAD
 =======
     font-size: 15px;
 }
@@ -330,6 +351,8 @@ tr:hover {
 </style>
 
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 </head>
 
 <body>

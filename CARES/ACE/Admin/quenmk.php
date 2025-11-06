@@ -55,6 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Quên mật khẩu</title>
     <style>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
      /* --- RESET --- */
 * {
     box-sizing: border-box;
@@ -225,6 +228,39 @@ form p[style*="green"] {
     font-size: 15px;
     transition: all 0.3s ease;
 }
+<<<<<<< HEAD
+=======
+
+.forgot-password-box a:hover {
+    color: #d70018;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    text-align: center;
+    color: #333;
+    animation: fadeIn 0.4s ease forwards;
+    z-index: 1000;
+}
+
+.popup.success {
+    border-left: 6px solid #28a745;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+    </style>
+>>>>>>> Phong
 
 .forgot-password-box a:hover {
     color: #d70018;
@@ -431,6 +467,9 @@ form p[style*="green"] {
 </head>
 <body>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
     <div class="container">
         <div class="forgot-password-box">
             <div class="header-row">
@@ -478,6 +517,7 @@ form p[style*="green"] {
 <?php endif; ?>
 
 
+<<<<<<< HEAD
 =======
     <div class="auth-container">
         <div class="auth-image">
@@ -518,5 +558,7 @@ form p[style*="green"] {
         </div>
     </div>
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 </body>
 </html>

@@ -1,9 +1,13 @@
 <style>
 <<<<<<< HEAD
+<<<<<<< HEAD
   * {
 =======
 * {
 >>>>>>> Vy
+=======
+  * {
+>>>>>>> Phong
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -55,10 +59,14 @@
     font-weight: bold;
     transition: color 0.3s;
 <<<<<<< HEAD
+<<<<<<< HEAD
     font-size: 24px; /* ✅ to hơn 10px so với chữ bình thường (~14px) */
 =======
     font-size: 24px; /* chữ to hơn */
 >>>>>>> Vy
+=======
+    font-size: 24px; /* ✅ to hơn 10px so với chữ bình thường (~14px) */
+>>>>>>> Phong
     letter-spacing: 1px;
 }
 
@@ -83,12 +91,16 @@
     align-items: center;
     text-decoration: none;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
     color: #000; /* ✅ đen đậm hơn */
     font-weight: 700; /* ✅ chữ đậm hơn */
     padding: 10px 12px;
     border-radius: 8px;
     transition: background 0.3s, color 0.3s, transform 0.2s;
     letter-spacing: 1px; /* ✅ giãn khoảng cách giữa các ký tự */
+<<<<<<< HEAD
 =======
     color: #000;
     font-weight: 700;
@@ -97,6 +109,8 @@
     transition: background 0.3s, color 0.3s, transform 0.2s;
     letter-spacing: 1px;
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 }
 
 /* Icon + chữ cùng hàng */
@@ -123,12 +137,17 @@
     padding: 20px;
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 </style>
 =======
 </style>
 
 >>>>>>> Vy
+=======
+
+</style>
+>>>>>>> Phong
 <aside class="sidebar">
     <div class="navbar">
         <div class="logo">
@@ -142,9 +161,12 @@
             <a href="tongquan.php">Tổng quan</a>
         </li>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> Vy
+=======
+>>>>>>> Phong
         <li class="<?php echo ($activePage == 'nguoi_cham_soc') ? 'active' : ''; ?>">
             <a href="nguoi_cham_soc.php">Quản Lí Người Chăm Sóc</a>
         </li>
@@ -155,6 +177,7 @@
 
         <li class="<?php echo ($activePage == 'khachhang') ? 'active' : ''; ?>">
             <a href="khachhang.php">Quản Lí Khách Hàng</a>
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
         </li>
@@ -167,6 +190,9 @@
             <a href="quanli_khieunai.php">Quản Lí Khiếu Nại</a>
 >>>>>>> Vy
         </li>
+=======
+        </li>
+>>>>>>> Phong
         <li class="<?php echo ($activePage == 'danhgia') ? 'active' : ''; ?>">
     <a href="danhgia.php">Quản Lí Đánh Giá</a>
 </li>

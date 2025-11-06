@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="fontend/css/khachhang.css">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
     <style>
        body {
     font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -146,6 +149,7 @@ img {
     background-color: #6c757d;
     color: white;
 }
+<<<<<<< HEAD
 =======
 
     <style>
@@ -308,6 +312,8 @@ img {
         background-color: #fff;
     }
 >>>>>>> Vy
+=======
+>>>>>>> Phong
     </style>
 </head>
 
@@ -363,12 +369,18 @@ img {
                         while($row = $result->fetch_assoc()) {
                             $id = $row['id_khach_hang'];
 <<<<<<< HEAD
+<<<<<<< HEAD
 
                             $orderSummary = $conn->query("SELECT COUNT(*) AS tong_don, SUM(tong_tien) AS tong_tien 
                                                           FROM don_hang WHERE id_khach_hang = $id");
 =======
                             $orderSummary = $conn->query("SELECT COUNT(*) AS tong_don, SUM(tong_tien) AS tong_tien FROM don_hang WHERE id_khach_hang = $id");
 >>>>>>> Vy
+=======
+
+                            $orderSummary = $conn->query("SELECT COUNT(*) AS tong_don, SUM(tong_tien) AS tong_tien 
+                                                          FROM don_hang WHERE id_khach_hang = $id");
+>>>>>>> Phong
                             $summary = $orderSummary->fetch_assoc();
                             $tong_don = $summary['tong_don'] ?? 0;
                             $tong_tien = $summary['tong_tien'] ?? 0;
@@ -395,15 +407,21 @@ img {
                             echo "</tr>";
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
                             // Chi tiết đơn hàng (ĐÃ CHỈNH)
                             echo "<tr class='order-details-row' id='orders-{$id}' style='display:none;'>
                                     <td colspan='12'>
                                     <table border='1' cellpadding='4' cellspacing='0'>
+<<<<<<< HEAD
 =======
                             echo "<tr class='order-details-row' id='orders-{$id}' style='display:none;'>
                                     <td colspan='12'>
                                     <table>
 >>>>>>> Vy
+=======
+>>>>>>> Phong
                                         <tr>
                                             <th>Mã đơn hàng</th>
                                             <th>Ngày đặt</th>
@@ -450,10 +468,14 @@ $(document).ready(function(){
     $(".show-orders").click(function(){
         const id = $(this).data("id");
 <<<<<<< HEAD
+<<<<<<< HEAD
         $("#orders-" + id).toggle(300);
 =======
         $("#orders-" + id).slideToggle(300);
 >>>>>>> Vy
+=======
+        $("#orders-" + id).toggle(300);
+>>>>>>> Phong
     });
 });
 </script>

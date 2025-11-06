@@ -1,5 +1,8 @@
 <?php
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
 include 'check_login.php';
 include 'connect.php';
 
@@ -19,6 +22,7 @@ if (isset($_GET['id'])) {
 }
 
 $conn->close();
+<<<<<<< HEAD
 =======
 include 'connect.php';
 
@@ -50,4 +54,6 @@ if (isset($_GET['id'])) {
     exit;
 }
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 ?>

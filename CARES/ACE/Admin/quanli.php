@@ -9,10 +9,14 @@ $dbname = "sanpham";
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     die("Kết nối thất bại: " . $conn->connect_error);
 =======
     die("<div style='color:red; text-align:center; font-weight:bold;'>❌ Kết nối thất bại: " . $conn->connect_error . "</div>");
 >>>>>>> Vy
+=======
+    die("Kết nối thất bại: " . $conn->connect_error);
+>>>>>>> Phong
 }
 ?>
 
@@ -23,6 +27,7 @@ if ($conn->connect_error) {
     <title>Quản Lí Đơn Hàng</title>
     <link rel="stylesheet" href="fontend/css/sanpham.css">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 
@@ -149,6 +154,8 @@ if ($conn->connect_error) {
         }
     </style>
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 </head>
 
 <body>
@@ -181,6 +188,9 @@ if ($conn->connect_error) {
             </div>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
             <table border="1" cellpadding="6" cellspacing="0" width="100%">
                 <tr class="hang">
 =======
@@ -192,10 +202,14 @@ if ($conn->connect_error) {
                     <th>Tên khách hàng</th>
                     <th>Số điện thoại</th>
 <<<<<<< HEAD
+<<<<<<< HEAD
                     <th>Tên người chăm sóc</th>
 =======
                     <th>Người chăm sóc</th>
 >>>>>>> Vy
+=======
+                    <th>Tên người chăm sóc</th>
+>>>>>>> Phong
                     <th>Trạng thái</th>
                     <th>Đánh giá</th>
                     <th>Nhận xét</th>
@@ -205,6 +219,9 @@ if ($conn->connect_error) {
 
                 <?php
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Phong
                 // Lấy mã đơn hàng tìm kiếm (nếu có)
                 $search_id = isset($_GET['search_id']) ? $_GET['search_id'] : '';
 
@@ -226,6 +243,7 @@ if ($conn->connect_error) {
                 WHERE 1
             ";
 
+<<<<<<< HEAD
 =======
                 $search_id = isset($_GET['search_id']) ? $_GET['search_id'] : '';
 
@@ -246,6 +264,8 @@ if ($conn->connect_error) {
                     WHERE 1
                 ";
 >>>>>>> Vy
+=======
+>>>>>>> Phong
 
                 if ($search_id) {
                     $sql .= " AND dh.id_don_hang LIKE '%$search_id%'";
@@ -296,6 +316,7 @@ if ($conn->connect_error) {
                     }
                 } else {
                     echo "<tr><td colspan='10' style='text-align:center;'>Không có đơn hàng nào</td></tr>";
+<<<<<<< HEAD
 =======
                                 <form method='post' action='capnhat_trangthai.php'>
                                     <select name='trang_thai'>
@@ -313,6 +334,8 @@ if ($conn->connect_error) {
                 } else {
                     echo "<tr><td colspan='10' class='no-order'>Không có đơn hàng nào.</td></tr>";
 >>>>>>> Vy
+=======
+>>>>>>> Phong
                 }
 
                 $conn->close();

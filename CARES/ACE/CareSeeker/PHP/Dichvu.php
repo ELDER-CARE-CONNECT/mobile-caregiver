@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
+=======
+>>>>>>> Phong
 <?php
 $conn = new mysqli("localhost", "root", "", "sanpham");
 if ($conn->connect_error) {
@@ -84,11 +87,18 @@ h1.page-title { text-align: center; font-size: 38px; color: #FF6B81; margin: 50p
 <div class="navbar">
   <h2>Elder Care Connect</h2>
   <div class="nav-links">
+<<<<<<< HEAD
   <a href="index.php">Trang chủ</a>
   <a href="dichvu.php">Dịch vụ</a>
   <a href="index.php#featured-services">Lợi ích</a> 
   <a href="index.php#about">Giới thiệu</a> 
   <a href="index.php#contact">Liên hệ</a>  
+=======
+    <a href="index.php">Trang chủ</a>
+    <a href="index.php#featured-services">Lợi ích</a>
+    <a href="index.php#about">Giới thiệu</a>
+    <a href="index.php#contact">Liên hệ</a>
+>>>>>>> Phong
   </div>
 </div>
 
@@ -149,7 +159,10 @@ h1.page-title { text-align: center; font-size: 38px; color: #FF6B81; margin: 50p
 </footer>
 
 <script>
+<<<<<<< HEAD
 // --- SCRIPT LỌC/SẮP XẾP (giữ nguyên) ---
+=======
+>>>>>>> Phong
 const searchInput = document.getElementById("searchInput");
 const caregiverGrid = document.getElementById("caregiverGrid");
 
@@ -179,6 +192,7 @@ sortSelect.addEventListener("change", () => {
   caregiverGrid.innerHTML = "";
   cards.forEach(card => caregiverGrid.appendChild(card));
 });
+<<<<<<< HEAD
 
 
 // --- SCRIPT NAVBAR (Phiên bản MỚI, an toàn hơn) ---
@@ -214,3 +228,9 @@ sortSelect.addEventListener("change", () => {
 </html>
 <?php $conn->close(); ?>
 >>>>>>> Trí
+=======
+</script>
+</body>
+</html>
+<?php $conn->close(); ?>
+>>>>>>> Phong

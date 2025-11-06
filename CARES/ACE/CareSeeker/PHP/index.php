@@ -49,6 +49,7 @@ body { background: #f8f8fa; color: #333; overflow-x: hidden; line-height: 1.6; }
   margin-top:5px; right:0; background:#FF6B81; transition:0.3s;
 }
 .nav-links a:hover::after { width:100%; left:0; }
+<<<<<<< HEAD
 .nav-links a.active {
   color: #FF6B81; /* Màu giống như khi hover */
   font-weight: 600;
@@ -57,6 +58,8 @@ body { background: #f8f8fa; color: #333; overflow-x: hidden; line-height: 1.6; }
   width: 100%; /* Hiện gạch chân giống như khi hover */
   left: 0;
 }
+=======
+>>>>>>> Phong
 
 /* SLIDESHOW */
 .slideshow-container {
@@ -275,6 +278,7 @@ function showSlides(){
   if(arguments.length!==0){ clearTimeout(autoSlideTimer); autoSlideTimer=setTimeout(showSlides,4000);}
 }
 let autoSlideTimer = setTimeout(showSlides,3000);
+<<<<<<< HEAD
 
 (function() {
     // Lấy tên file của trang hiện tại (ví dụ: "index.php" hoặc "Dichvu.php")
@@ -299,8 +303,14 @@ let autoSlideTimer = setTimeout(showSlides,3000);
       }
     });
   })();
+=======
+>>>>>>> Phong
 </script>
 
 </body>
 </html>
+<<<<<<< HEAD
 <?php $conn->close(); ?>
+=======
+<?php $conn->close(); ?>
+>>>>>>> Phong

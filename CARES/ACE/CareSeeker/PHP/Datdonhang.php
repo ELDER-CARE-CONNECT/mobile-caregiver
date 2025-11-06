@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
+=======
+>>>>>>> Phong
 <?php
 session_start();
 
@@ -38,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
     $gio_ket_thuc   = $_POST['gio_ket_thuc'] ?? null;  
     $phuong_thuc    = $_POST['phuong_thuc'] ?? 'cash';
     
+<<<<<<< HEAD
     // --- THU THẬP DỊCH VỤ TỪ INPUT DYNAMIC ---
     $raw_services = $_POST['dich_vu'] ?? [];
     $selected_services = [];
@@ -52,6 +56,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
         }
     }
     // --- KẾT THÚC THU THẬP DỊCH VỤ ---
+=======
+    // Thu thập dịch vụ từ TẤT CẢ các selects đã chọn (dùng tên chung)
+    $selected_services = [];
+    
+    // Lấy giá trị đã chọn từ mỗi select
+    $service_1 = trim($_POST['dich_vu1'] ?? '');
+    $service_2 = trim($_POST['dich_vu2'] ?? '');
+    $service_3 = trim($_POST['dich_vu3'] ?? '');
+    
+    // Chỉ thêm vào mảng nếu giá trị KHÔNG rỗng (đã chọn)
+    if (!empty($service_1)) $selected_services[] = $service_1;
+    if (!empty($service_2)) $selected_services[] = $service_2;
+    if (!empty($service_3)) $selected_services[] = $service_3;
+>>>>>>> Phong
 
     // Lấy thông tin người đặt (có thể là đặt hộ)
     $ten_khach_hang_post = trim($_POST['ten_khach_hang'] ?? '');
@@ -74,17 +92,26 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
     
     // Kiểm tra dịch vụ đã chọn 
     if (empty($selected_services)) {
+<<<<<<< HEAD
         $errors[] = "Vui lòng nhập ít nhất một dịch vụ cụ thể."; // Đã cập nhật thông báo lỗi
     }
 
     // ===================================================================
     // KHỐI LƯU DATABASE
+=======
+        $errors[] = "Vui lòng chọn ít nhất một dịch vụ cụ thể.";
+    }
+
+    // ===================================================================
+    // KHỐI LƯU DATABASE (Đã sửa lỗi cú pháp try...catch và logic lưu dịch vụ)
+>>>>>>> Phong
     // ===================================================================
     if (empty($errors)) {
         
         $conn->begin_transaction();
 
         try {
+<<<<<<< HEAD
             // Chuyển đổi giờ từ định dạng 'H:i A' sang 24h và ghép với ngày
             $datetime_start_str = $ngay_bat_dau . ' ' . date("H:i:s", strtotime($gio_bat_dau));
             $datetime_end_str = $ngay_ket_thuc . ' ' . date("H:i:s", strtotime($gio_ket_thuc));
@@ -100,15 +127,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
         }
             $stmt1->bind_param(
                 "iidssssss", 
+=======
+            // 1. TẠO ĐƠN HÀNG CHÍNH
+            $sql1 = "INSERT INTO don_hang 
+                     (id_khach_hang, id_cham_soc, id_danh_gia, ngay_dat, tong_tien, dia_chi_giao_hang, ten_khach_hang, so_dien_thoai, trang_thai)
+                     VALUES (?, ?, 0, CURDATE(), ?, ?, ?, ?, 'chờ xác nhận')";
+            
+            $stmt1 = $conn->prepare($sql1);
+            if (!$stmt1) {
+                throw new Exception("Lỗi prepare (don_hang): " . $conn->error);
+            }
+            $stmt1->bind_param(
+                "iidsss", 
+>>>>>>> Phong
                 $id_khach_hang_to_insert, 
                 $id_cham_soc, 
                 $tong_tien, 
                 $dia_chi_to_insert, 
                 $ten_to_insert, 
+<<<<<<< HEAD
                 $sdt_to_insert,
                 $datetime_start_str, 
                 $datetime_end_str,
                 $phuong_thuc  
+=======
+                $sdt_to_insert
+>>>>>>> Phong
             );
             
             if (!$stmt1->execute()) {
@@ -119,8 +163,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
             $id_don_hang = $conn->insert_id;
             
             if ($id_don_hang > 0) {
+<<<<<<< HEAD
                 // 2. LƯU CHI TIẾT DỊCH VỤ 
                 
+=======
+                // 2. LƯU CHI TIẾT DỊCH VỤ (Đã hợp nhất logic)
+                
+                // Chuyển đổi giờ từ định dạng 'H:i A' sang 24h và ghép với ngày
+                // Lưu ý: date() và strtotime() cần thiết để chuyển đổi giờ từ "H:i A" của form sang "H:i:s"
+                $datetime_start_str = $ngay_bat_dau . ' ' . date("H:i:s", strtotime($gio_bat_dau));
+                $datetime_end_str = $ngay_ket_thuc . ' ' . date("H:i:s", strtotime($gio_ket_thuc));
+
+>>>>>>> Phong
                 $sql2 = "INSERT INTO dich_vu_don_hang 
                          (id_don_hang, ten_nhiem_vu, thoi_gian_bat_dau, thoi_gian_ket_thuc)
                          VALUES (?, ?, ?, ?)";
@@ -148,7 +202,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_booking'])) {
             
             $conn->close();
             // Điều hướng về trang chi tiết đơn hàng vừa tạo (dùng ID đơn hàng vừa tạo)
+<<<<<<< HEAD
             header("Location: Chitietdonhang.php?id=" . $id_don_hang);
+=======
+            header("Location: Chitietdonhang.php"); // Quay về trang lịch sử để xem chi tiết đơn mới nhất
+>>>>>>> Phong
             exit;
 
         } catch (Exception $e) { // Cú pháp catch đúng
@@ -343,6 +401,7 @@ select:focus, input:focus {
     font-weight: 500;
 }
 /* ======================================= */
+<<<<<<< HEAD
 /* STYLE CHO INPUT DYNAMIC */
 /* ======================================= */
 .btn-remove-service {
@@ -360,6 +419,67 @@ select:focus, input:focus {
 .btn-remove-service:hover {
     background: #E55B70;
 }
+=======
+/* STYLE CHO ACCORDION (KHUNG THU GỌN) */
+/* ======================================= */
+.accordion-container {
+    margin-bottom: 20px;
+}
+.accordion-item {
+    border: 1px solid #FFD8E0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+.accordion-header {
+    background-color: #FFF0F3;
+    color: #FF6B81;
+    cursor: pointer;
+    padding: 15px 20px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.accordion-header:hover {
+    background-color: #FFE6EB;
+}
+.accordion-header .fas {
+    transition: transform 0.3s ease;
+}
+.accordion-header.active .fas {
+    transform: rotate(180deg);
+}
+.service-select-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%; /* Đổi chiều rộng thành 100% để hiển thị tốt hơn */
+}
+
+.service-select label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.service-select select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+>>>>>>> Phong
 </style>
 </head>
 <body>
@@ -415,6 +535,7 @@ select:focus, input:focus {
         <input type="hidden" name="so_dien_thoai" id="so_dien_thoai_input">
         <input type="hidden" name="dia_chi" id="dia_chi_input">
 
+<<<<<<< HEAD
         <label><i class="fas fa-list-alt"></i> Chọn dịch vụ/Nhiệm vụ cụ thể:</label>
         
         <div id="serviceInputs">
@@ -482,6 +603,83 @@ select:focus, input:focus {
         </select>
     </div>
 </div>
+=======
+        <label><i class="fas fa-list-alt"></i> Chọn dịch vụ cụ thể:</label>
+        
+        <div class="accordion-container">
+            
+            <div class="service-select-container">
+                <div class="service-select">
+                    <label>1. Chăm sóc và Y tế cơ bản:</label>
+                    <select name="dich_vu1">
+                        <option value="">Chọn dịch vụ cụ thể</option>
+                        <option value="Chăm sóc người già">Chăm sóc người già</option>
+                        <option value="Chăm sóc người bệnh">Chăm sóc người bệnh</option>
+                        <option value="Hỗ trợ uống thuốc">Hỗ trợ uống thuốc</option>
+                        <option value="Đo huyết áp/đường huyết cơ bản">Đo huyết áp/đường huyết cơ bản</option>
+                        <option value="Theo dõi sức khỏe và báo cáo">Theo dõi sức khỏe và báo cáo</option>
+                    </select>
+                </div>
+
+                <div class="service-select">
+                    <label>2. Việc nhà và Dinh dưỡng:</label>
+                    <select name="dich_vu2">
+                        <option value="">Chọn dịch vụ cụ thể</option>
+                        <option value="Nấu ăn cho người già">Nấu ăn theo chế độ</option>
+                        <option value="Dọn dẹp nhà cửa">Dọn dẹp khu vực sinh hoạt</option>
+                        <option value="Giặt giũ và ủi đồ">Giặt giũ và ủi đồ cá nhân</option>
+                        <option value="Đi chợ/Mua sắm">Đi chợ/Mua sắm thực phẩm</option>
+                        <option value="Rửa chén bát">Rửa chén bát</option>
+                    </select>
+                </div>
+
+                <div class="service-select">
+                    <label>3. Hỗ trợ Cá nhân và Tinh thần:</label>
+                    <select name="dich_vu3">
+                        <option value="">Chọn dịch vụ cụ thể</option>
+                        <option value="Hỗ trợ tắm rửa">Hỗ trợ tắm rửa/vệ sinh cá nhân</option>
+                        <option value="Hỗ trợ đi lại">Hỗ trợ đi lại/tập vật lý trị liệu</option>
+                        <option value="Đi dạo/Vận động nhẹ">Đi dạo/Vận động nhẹ</option>
+                        <option value="Xoa bóp/Massage cơ bản">Xoa bóp/Massage cơ bản</option>
+                        <option value="Trò chuyện/Giải trí">Trò chuyện/Hỗ trợ tinh thần</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+        <label><i class="fas fa-calendar-alt"></i> Chọn thời gian dịch vụ:</label>
+        
+        <div class="date-time-pair">
+            <div>
+                <label for="startDate">Ngày bắt đầu:</label>
+                <input type="date" id="startDate" required> 
+            </div>
+            
+            <div>
+                <label for="startHour">Giờ bắt đầu:</label>
+                <select id="startHour" required>
+                    <option value="">Chọn giờ</option>
+                    <?php echo generateTimeOptions(); ?>
+                </select>
+            </div>
+        </div>
+        
+        <div class="date-time-pair">
+            <div>
+                <label for="endDate">Ngày kết thúc:</label>
+                <input type="date" id="endDate" required>
+            </div>
+
+            <div>
+                <label for="endHour">Giờ kết thúc:</label>
+                <select id="endHour" required>
+                    <option value="">Chọn giờ</option>
+                    <?php echo generateTimeOptions(); ?>
+                </select>
+            </div>
+        </div>
+        
+>>>>>>> Phong
         <hr style="border:0; border-top: 1px dashed #FFD8E0; margin: 25px 0;">
 
         <label><i class="fas fa-user-circle"></i> Hồ sơ đặt</label>
@@ -600,6 +798,7 @@ document.getElementById("profileSelect").addEventListener("change", function(){
     this.value === "new" ? "block" : "none";
 });
 
+<<<<<<< HEAD
 // ===========================================
 // LOGIC XỬ LÝ INPUT DYNAMIC (MỚI)
 // ===========================================
@@ -677,10 +876,13 @@ document.getElementById("addServiceBtn").addEventListener("click", createService
 // KẾT THÚC LOGIC INPUT DYNAMIC
 // ===========================================
 
+=======
+>>>>>>> Phong
 
 document.getElementById("bookingForm").addEventListener("submit", function(e){
     const total = Math.round(calcTotal());
     
+<<<<<<< HEAD
     // --- LOGIC KIỂM TRA DỊCH VỤ MỚI ---
     const serviceInputs = document.querySelectorAll('#serviceInputs input[name="dich_vu[]"]');
     let hasValidService = false;
@@ -696,6 +898,23 @@ document.getElementById("bookingForm").addEventListener("submit", function(e){
         return;
     }
     // --- KẾT THÚC LOGIC KIỂM TRA DỊCH VỤ MỚI ---
+=======
+    // Kiểm tra đã chọn ít nhất 1 dịch vụ chưa
+    const selects = ['dich_vu1', 'dich_vu2', 'dich_vu3'];
+      let hasService = false;
+      for (let selName of selects) {
+          const sel = document.querySelector(`select[name="${selName}"]`);
+          if (sel && sel.value.trim() !== '') {
+              hasService = true;
+              break;
+          }
+      }
+    if (!hasService) {
+        alert("Vui lòng chọn ít nhất một dịch vụ cụ thể.");
+        e.preventDefault();
+        return;
+    }
+>>>>>>> Phong
 
 
     if (total <= 0) {
@@ -708,26 +927,43 @@ document.getElementById("bookingForm").addEventListener("submit", function(e){
     const startDateVal = document.getElementById("startDate").value;
     const endDateVal = document.getElementById("endDate").value;
     const startHourVal = document.getElementById("startHour").value; // dạng "8:30 AM"
+<<<<<<< HEAD
     const endHourVal = document.getElementById("endHour").value; // dạng "4:00 PM"
+=======
+    const endHourVal = document.getElementById("endHour").value;      // dạng "4:00 PM"
+>>>>>>> Phong
 
     // Điền vào các trường hidden
     document.getElementById("tong_tien_input").value = total;
     document.getElementById("ngay_bat_dau_input").value = startDateVal;
     document.getElementById("ngay_ket_thuc_input").value = endDateVal;
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> Phong
     // Gửi đi giờ đầy đủ (dạng "8:30 AM")
     document.getElementById("gio_bat_dau_input").value = startHourVal;
     document.getElementById("gio_ket_thuc_input").value = endHourVal;
     document.getElementById("phuong_thuc_input").value = document.getElementById("payment").value;
+<<<<<<< HEAD
     
     // Xử lý thông tin người nhận dịch vụ (Đã có logic Địa chỉ)
+=======
+
+>>>>>>> Phong
     if (document.getElementById("profileSelect").value === "new") {
         // Nếu là "Đặt hộ"
         const ten = document.getElementById("hoTen").value.trim();
         const diachi = document.getElementById("diaChi").value.trim();
         const sdt = document.getElementById("soDienThoai").value.trim();
+<<<<<<< HEAD
         if (!ten || !diachi || !sdt) {
             alert("Vui lòng nhập đầy đủ Họ tên, Địa chỉ và Số điện thoại của người được đặt hộ.");
+=======
+        if (!ten || !sdt) {
+            alert("Vui lòng nhập họ tên và số điện thoại của người được đặt hộ.");
+>>>>>>> Phong
             e.preventDefault();
             return;
         }
@@ -736,7 +972,11 @@ document.getElementById("bookingForm").addEventListener("submit", function(e){
         document.getElementById("so_dien_thoai_input").value = sdt;
     } else {
         // Nếu là "Sử dụng hồ sơ của tôi"
+<<<<<<< HEAD
         // Gửi các trường rỗng để PHP dùng thông tin session
+=======
+        // Gửi SĐT rỗng để PHP biết và dùng thông tin session
+>>>>>>> Phong
         document.getElementById("ten_khach_hang_input").value = "";
         document.getElementById("dia_chi_input").value = "";
         document.getElementById("so_dien_thoai_input").value = "";
@@ -769,5 +1009,9 @@ document.getElementById("bookingForm").addEventListener("submit", function(e){
 if (isset($conn) && $conn) {
     $conn->close();
 }
+<<<<<<< HEAD
 ?>
 >>>>>>> Trí
+=======
+?>
+>>>>>>> Phong
