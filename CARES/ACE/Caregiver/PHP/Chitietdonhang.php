@@ -118,12 +118,7 @@
       align-items: center;
     }
 
-    .modal-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: #1f2937;
-      margin: 0;
-    }
+    
 
     .modal-close {
       background: none;
@@ -396,3 +391,4 @@
   </script>
 </body>
 </html>
+
