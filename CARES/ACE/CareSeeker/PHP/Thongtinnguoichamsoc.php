@@ -16,8 +16,8 @@ if ($result->num_rows == 0) {
 }
 
 $row = $result->fetch_assoc();
-// bổ sung thêm phần nhận xét trong trang thông tin người chăm sóc
 $id_cham_soc = intval($row['id_cham_soc']);
+
 $sql_danhgia = "SELECT dg.*, kh.ten_khach_hang 
                 FROM danh_gia dg 
                 LEFT JOIN khach_hang kh ON dg.id_khach_hang = kh.id_khach_hang 
@@ -42,12 +42,11 @@ $conn->close();
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
-/* ĐỊNH NGHĨA MÀU CHỦ ĐẠO */
 :root {
-    --primary-color: #FF6B81; /* Hồng chủ đạo */
-    --accent-color: #4A90E2; /* Xanh phụ (chỉ dùng cho giá tiền và icon nhỏ nếu cần) */
-    --text-color: #333; /* Màu chữ chính: Xám đậm */
-    --secondary-text-color: #555; /* Màu chữ phụ */
+    --primary-color: #FF6B81;
+    --accent-color: #4A90E2;
+    --text-color: #333;
+    --secondary-text-color: #555;
 }
 
 body {
@@ -56,7 +55,7 @@ body {
   margin: 0;
   color: var(--text-color);
 }
-/* CONTAINER CHÍNH */
+
 .container {
   max-width: 1100px; 
   margin: 40px auto;
@@ -66,7 +65,7 @@ body {
   padding: 40px; 
   overflow: hidden;
 }
-/* HEADER (Thông tin cơ bản) */
+
 .header {
   display: flex;
   align-items: flex-start;
@@ -85,35 +84,34 @@ body {
 }
 h1 {
   margin: 0 0 15px;
-  color: var(--primary-color); /* Tên người chăm sóc dùng màu chủ đạo */
+  color: var(--primary-color);
   font-size: 32px; 
   font-weight: 700;
 }
 .info p {
   font-size: 17px;
   margin: 8px 0;
-  color: var(--secondary-text-color); /* Thông tin cơ bản dùng màu xám */
+  color: var(--secondary-text-color);
 }
 .info strong {
-    color: var(--text-color); /* Tiêu đề thông tin dùng màu xám đậm */
+    color: var(--text-color);
     font-weight: 600;
 }
 .rating {
-  color: #F7C513; /* Màu vàng giữ nguyên cho sao */
+  color: #F7C513;
   font-weight: bold;
   font-size: 18px;
 }
 .price {
-  color: var(--primary-color); /* Giá chuyển sang màu hồng chủ đạo */
+  color: var(--primary-color);
   font-weight: 700;
   font-size: 22px;
   display: block;
   margin-top: 10px;
 }
-/* NÚT QUAY LẠI/ĐẶT DỊCH VỤ - Cả hai đều màu Hồng chủ đạo */
 .back-btn {
   display: inline-block;
-  background: var(--primary-color); /* Màu hồng chủ đạo */
+  background: var(--primary-color);
   color: white;
   padding: 12px 20px;
   border-radius: 10px;
@@ -126,15 +124,7 @@ h1 {
 .back-btn:hover {
   background: #E55B70;
 }
-/* Loại bỏ style riêng cho nút Quay lại */
-.back-btn[style*="background: var(--accent-color)"] { 
-    background: var(--primary-color) !important;
-}
-.back-btn[style*="background: var(--accent-color)"]:hover {
-    background: #E55B70 !important;
-}
 
-/* PHẦN NHẬN XÉT (REVIEWS) */
 .reviews {
   margin-top: 50px;
   background: #fff;
@@ -144,19 +134,19 @@ h1 {
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 .reviews h3 {
-  color: var(--text-color); /* Tiêu đề Nhận xét dùng màu xám đậm */
+  color: var(--text-color);
   margin-bottom: 20px;
   font-size: 24px;
   border-bottom: 2px solid #eee;
   padding-bottom: 10px;
 }
 .reviews h3 i {
-    color: var(--primary-color); /* Icon dùng màu chủ đạo */
+    color: var(--primary-color);
     margin-right: 10px;
 }
 .review-box {
   background: #fcfcfc;
-  border-left: 5px solid var(--primary-color); /* Viền trái chuyển sang màu hồng */
+  border-left: 5px solid var(--primary-color);
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 20px;
@@ -169,7 +159,7 @@ h1 {
 .review-box .name {
     font-size: 16px;
     font-weight: 700;
-    color: var(--primary-color); /* Tên khách hàng dùng màu chủ đạo */
+    color: var(--primary-color);
 }
 .review-box .star {
     color: #F7C513;
@@ -177,7 +167,7 @@ h1 {
 }
 .review-box .comment {
   font-style: italic;
-  color: var(--secondary-text-color); /* Nhận xét dùng màu xám */
+  color: var(--secondary-text-color);
   margin-top: 10px;
   line-height: 1.6;
 }
@@ -188,14 +178,13 @@ h1 {
   margin-top: 10px;
 }
 
-/* PHẦN ĐỀ XUẤT (SUGGEST) */
 .suggest-section {
   margin-top: 50px;
 }
 .suggest-title {
   font-size: 26px;
   font-weight: 700;
-  color: var(--text-color); /* Tiêu đề dùng màu xám đậm */
+  color: var(--text-color);
   border-left: 5px solid var(--primary-color);
   padding-left: 15px;
   margin-bottom: 25px;
@@ -211,7 +200,7 @@ h1 {
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   overflow: hidden;
   transition: all 0.3s;
-  border-top: 4px solid var(--primary-color); /* Viền trên thẻ đề xuất chuyển sang màu hồng */
+  border-top: 4px solid var(--primary-color);
 }
 .card:hover {
   transform: translateY(-5px);
@@ -227,19 +216,19 @@ h1 {
 }
 .card-content h3 {
   margin: 0 0 5px;
-  color: var(--primary-color); /* Tên người chăm sóc dùng màu chủ đạo */
+  color: var(--primary-color);
   font-size: 18px;
 }
 .card-content p {
   margin: 5px 0;
   font-size: 15px;
-  color: var(--secondary-text-color); /* Thông tin phụ dùng màu xám */
+  color: var(--secondary-text-color);
 }
 .card-content strong {
-    color: #F7C513; /* Đánh giá dùng màu vàng */
+    color: #F7C513;
 }
 .card-content .money {
-    color: var(--primary-color); /* Giá chuyển sang màu hồng chủ đạo */
+    color: var(--primary-color);
     font-weight: 700;
     margin-top: 5px;
     display: block;
@@ -247,7 +236,7 @@ h1 {
 .detail-btn {
   display: inline-block;
   margin-top: 10px;
-  background: var(--primary-color); /* Nút dùng màu chủ đạo */
+  background: var(--primary-color);
   color: white;
   padding: 9px 15px;
   border-radius: 8px;
@@ -259,7 +248,7 @@ h1 {
 .detail-btn:hover {
   background: #E55B70;
 }
-/* Media Query */
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
@@ -293,27 +282,37 @@ h1 {
       <p><strong>Giới tính:</strong> <?php echo $row['gioi_tinh']; ?></p>
       <p><strong>Chiều cao:</strong> <?php echo $row['chieu_cao']; ?> cm</p>
       <p><strong>Cân nặng:</strong> <?php echo $row['can_nang']; ?> kg</p>
-      <p><strong>Trung bình đánh giá:</strong> 
-         <span class="rating">⭐ <?php echo $row['danh_gia_tb']; ?>/5</span></p>
+      <p><strong>Trung bình đánh giá:</strong> <span class="rating">⭐ <?php echo $row['danh_gia_tb']; ?>/5</span></p>
       <p><strong>Kinh nghiệm:</strong> <?php echo htmlspecialchars($row['kinh_nghiem']); ?></p>
       <p><strong>Số lượng đơn đã nhận:</strong> <?php echo $row['don_da_nhan']; ?></p>
-      <p><strong>Giá tiền/giờ:</strong> 
-         <span class="price"><?php echo number_format($row['tong_tien_kiem_duoc'], 0, ',', '.'); ?> đ/giờ</span></p>
-         <a href="Datdonhang.php?id=<?php echo $row['id_cham_soc']; ?>" class="back-btn">📝 Đặt dịch vụ ngay</a>
+      <p><strong>Giá tiền/giờ:</strong> <span class="price"><?php echo number_format($row['tong_tien_kiem_duoc'], 0, ',', '.'); ?> đ/giờ</span></p>
+      <a href="Datdonhang.php?id=<?php echo $row['id_cham_soc']; ?>" class="back-btn">📝 Đặt dịch vụ ngay</a>
       <a href="Dichvu.php" class="back-btn">← Quay lại danh sách</a>
     </div>
   </div>
+
   <div class="reviews">
   <h3><i class="fas fa-comments"></i> Nhận xét từ khách hàng</h3>
   <?php
   if ($result_danhgia && $result_danhgia->num_rows > 0) {
+      $count = 0;
+      echo "<div id='review-list'>";
       while ($dg = $result_danhgia->fetch_assoc()) {
-          echo "<div class='review-box'>";
+          $count++;
+          $hidden = $count > 5 ? "style='display:none'" : "";
+          echo "<div class='review-box' $hidden>";
           echo "<p class='name'><i class='fas fa-user'></i> " . htmlspecialchars($dg['ten_khach_hang']) . "</p>";
           echo "<p><span class='star'><i class='fas fa-star'></i> " . $dg['so_sao'] . "/5</span></p>";
           echo "<p class='comment'>" . htmlspecialchars($dg['nhan_xet']) . "</p>";
           echo "<span class='date'>📅 " . date("d/m/Y H:i", strtotime($dg['ngay_danh_gia'])) . "</span>";
           echo "</div>";
+      }
+      echo "</div>";
+      if ($count > 5) {
+          echo "<div style='text-align:center; margin-top:15px;'>
+                  <button id='loadMoreBtn' style='padding:10px 20px; background:var(--primary-color); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;'>Xem thêm</button>
+                  <button id='hideBtn' style='padding:10px 20px; background:#ccc; color:#333; border:none; border-radius:8px; cursor:pointer; font-weight:600; display:none; margin-left:10px;'>Ẩn bớt</button>
+                </div>";
       }
   } else {
       echo "<p style='color:#999; text-align:center;'>Chưa có nhận xét nào cho người chăm sóc này.</p>";
@@ -343,6 +342,34 @@ h1 {
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const loadBtn = document.getElementById("loadMoreBtn");
+    const hideBtn = document.getElementById("hideBtn");
+
+    if (loadBtn) {
+        loadBtn.addEventListener("click", function() {
+            document.querySelectorAll("#review-list .review-box").forEach(box => {
+                box.style.display = "block";
+            });
+            loadBtn.style.display = "none";
+            hideBtn.style.display = "inline-block";
+        });
+    }
+
+    if (hideBtn) {
+        hideBtn.addEventListener("click", function() {
+            const boxes = document.querySelectorAll("#review-list .review-box");
+            boxes.forEach((box, index) => {
+                box.style.display = index < 5 ? "block" : "none";
+            });
+            hideBtn.style.display = "none";
+            loadBtn.style.display = "inline-block";
+        });
+    }
+});
+</script>
 
 </body>
 </html>
