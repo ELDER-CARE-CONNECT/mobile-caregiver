@@ -19,26 +19,8 @@ $result = $conn->query($sql);
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-body { background: #f8f8fa; color: #333; overflow-x: hidden; line-height: 1.6; }
+body { background: #f8f8fa; color: #333; overflow-x: hidden; line-height: 1.6;padding-top: 90px; }
 
-.navbar {
-  background: #ffffff;
-  padding: 15px 60px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-.navbar h2 { color: #FF6B81; font-size: 26px; letter-spacing: -0.5px; font-weight: 700; }
-.nav-links a { color: #555; text-decoration: none; margin: 0 16px; font-weight: 500; transition: 0.3s; position: relative; padding-bottom: 3px; }
-.nav-links a:hover { color: #FF6B81; }
-.nav-links a::after { content: ''; position: absolute; width: 0; height: 2px; display: block; margin-top: 5px; right: 0; background: #FF6B81; transition: width 0.3s ease; }
-.nav-links a:hover::after { width: 100%; left: 0; background: #FF6B81; }
-.nav-links a.active { color: #FF6B81; font-weight: 600; }
-.nav-links a.active::after { width: 100%; left: 0; }
 
 footer { background: #1f2937; color: #ddd; text-align: center; padding: 30px; font-size: 15px; }
 footer a { color: #FF6B81; text-decoration: none; }
@@ -77,17 +59,9 @@ h1.page-title { text-align: center; font-size: 38px; color: #FF6B81; margin: 50p
 </style>
 </head>
 <body>
-
-<div class="navbar">
-  <h2>Elder Care Connect</h2>
-  <div class="nav-links">
-  <a href="index.php">Trang chủ</a>
-  <a href="dichvu.php">Dịch vụ</a>
-  <a href="index.php#featured-services">Lợi ích</a> 
-  <a href="index.php#about">Giới thiệu</a> 
-  <a href="index.php#contact">Liên hệ</a>  
-  </div>
-</div>
+   <?php 
+include 'navbar.php'; 
+?>
 
 <h1 class="page-title">Danh sách Người Chăm Sóc Tận Tâm</h1>
 
@@ -98,7 +72,7 @@ h1.page-title { text-align: center; font-size: 38px; color: #FF6B81; margin: 50p
       <option value="">-- Sắp xếp --</option>
       <option value="tong_tien_kiem_duoc">Mức giá (thấp → cao)</option>
       <option value="danh_gia_tb">Đánh giá (cao → thấp)</option>
-      <option value="don_da_nhan">Đơn đã nhận (nhiều → ít)</option>
+      <option value="don_da_nhan">Kinh nghiệm (nhiều → ít)</option>
     </select>
   </div>
 
