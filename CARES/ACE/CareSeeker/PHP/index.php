@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['so_dien_thoai'])) {
-    header("Location: ../../admin/login.php");
+    header("Location: ../../admin/login.php"); 
     exit();
 }
 $conn = new mysqli("localhost", "root", "", "sanpham");
@@ -17,55 +17,22 @@ $result = $conn->query($sql);
 <meta charset="UTF-8">
 <title>Elder Care Connect - Dịch vụ chăm sóc tận tâm</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <style>
+
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-body { background: #f8f8fa; color: #333; overflow-x: hidden; line-height: 1.6; }
+body { background: #f8f8fa; color: #333; overflow-x: hidden; line-height: 1.6;padding-top: 60px; }
 
-/* NAVBAR */
-.navbar {
-  background: #fff;
-  padding: 15px 60px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  position: sticky; top:0; z-index:1000;
-  transition: all 0.3s;
-}
-.navbar h2 {
-  color: #FF6B81;
-  font-size: 26px; font-weight:700;
-}
-.nav-links a {
-  color:#555; text-decoration:none; margin:0 16px;
-  font-weight:500; position:relative; padding-bottom:3px;
-}
-.nav-links a:hover { color:#FF6B81; }
-.nav-links a::after {
-  content: ''; position:absolute; width:0; height:2px; display:block;
-  margin-top:5px; right:0; background:#FF6B81; transition:0.3s;
-}
-.nav-links a:hover::after { width:100%; left:0; }
-.nav-links a.active {
-  color: #FF6B81; /* Màu giống như khi hover */
-  font-weight: 600;
-}
-.nav-links a.active::after {
-  width: 100%; /* Hiện gạch chân giống như khi hover */
-  left: 0;
-}
-
-/* SLIDESHOW */
 .slideshow-container {
-  position: relative; width: 90%; max-width: 1200px; margin: 40px auto; 
+  position: relative; width: 80%; max-width: 1200px; margin: 40px auto; 
   border-radius: 18px; overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  height: 600px;
 }
 .slides {
-  display: none; width:100%; height:auto; aspect-ratio:16/7; object-fit:cover;
+  display: none; width:100%; height:auto; height: 600px;; object-fit:cover;
   transition: 1s ease;
 }
 .slideshow-container::after {
@@ -75,7 +42,7 @@ body { background: #f8f8fa; color: #333; overflow-x: hidden; line-height: 1.6; }
 .dot-container { text-align:center; position:absolute; bottom:20px; width:100%; }
 .dot { height:12px; width:12px; margin:0 5px; background:rgba(255,255,255,0.7);
   border-radius:50%; display:inline-block; cursor:pointer; transition:0.3s; }
-.active { background-color:#FF6B81; }
+.dot.active { background-color:#FF6B81; }
 
 /* INTRO */
 .intro { text-align:center; padding:80px 20px; background:#fff; margin-top:-40px; }
@@ -144,16 +111,7 @@ footer a { color:#FF6B81; text-decoration:none; }
 </head>
 <body>
 
-<div class="navbar">
-  <h2>Elder Care Connect</h2>
-  <div class="nav-links">
-    <a href="index.php">Trang chủ</a>
-    <a href="dichvu.php">Dịch vụ</a>
-    <a href="#featured-services">Lợi ích</a>
-    <a href="#about">Giới thiệu</a>
-    <a href="#contact">Liên hệ</a>
-  </div>
-</div>
+<?php include_once("navbar.php"); ?>
 
 <div class="slideshow-container">
   <img class="slides fade" src="../../img/banner1.jpg" alt="Chăm sóc tại nhà">
@@ -202,7 +160,7 @@ footer a { color:#FF6B81; text-decoration:none; }
     <?php while ($row = $result->fetch_assoc()) { 
         $rating = number_format($row['danh_gia_tb'], 1);
         $experience = htmlspecialchars($row['kinh_nghiem']);
-        $price_per_hour = number_format($row['tong_tien_kiem_duoc'], 0, ',', '.');
+        $price_per_hour = number_format($row['tong_tien_kiem_duoc'], 0, ',', '.'); 
     ?>
       <div class="caregiver-card">
         <img src="<?php echo '../../' . htmlspecialchars($row['hinh_anh']); ?>" alt="<?php echo htmlspecialchars($row['ho_ten']); ?>">
@@ -257,50 +215,60 @@ footer a { color:#FF6B81; text-decoration:none; }
 
 <script>
 let slideIndex = 1;
-showSlides(slideIndex);
+let autoSlideTimer; // Khai báo timer ở phạm vi toàn cục
 
-function plusSlides(n){ showSlides(slideIndex+=n); }
-function currentSlide(n){ showSlides(slideIndex=n); }
-
-function showSlides(){
+// Hàm hiển thị slide cụ thể
+function showSlides(n) {
   const slides = document.getElementsByClassName("slides");
   const dots = document.getElementsByClassName("dot");
-  if(arguments.length===0){ slideIndex++; if(slideIndex>slides.length){slideIndex=1;} setTimeout(showSlides,4000);}
-  for(let i=0;i<slides.length;i++){slides[i].style.display="none";}
-  if(slideIndex>slides.length) slideIndex=1;
-  if(slideIndex<1) slideIndex=slides.length;
-  for(let i=0;i<dots.length;i++){dots[i].classList.remove("active");}
-  slides[slideIndex-1].style.display="block";
-  dots[slideIndex-1].classList.add("active");
-  if(arguments.length!==0){ clearTimeout(autoSlideTimer); autoSlideTimer=setTimeout(showSlides,4000);}
+  
+  if (n > slides.length) {slideIndex = 1} 
+  if (n < 1) {slideIndex = slides.length}
+  
+  for (let i = 0; i < slides.length; i++) {
+    slides[i].style.display = "none";
+  }
+  for (let i = 0; i < dots.length; i++) {
+    dots[i].classList.remove("active");
+  }
+  
+  slides[slideIndex - 1].style.display = "block";
+  dots[slideIndex - 1].classList.add("active");
 }
-let autoSlideTimer = setTimeout(showSlides,3000);
 
-(function() {
-    // Lấy tên file của trang hiện tại (ví dụ: "index.php" hoặc "Dichvu.php")
-    var currentPage = window.location.pathname.split('/').pop();
-    if (currentPage === "") {
-      currentPage = "index.php"; // Mặc định là trang chủ
-    }
+// Hàm chuyển slide thủ công (next/prev)
+function plusSlides(n) {
+  clearTimeout(autoSlideTimer); // Xóa timer cũ khi người dùng tương tác
+  showSlides(slideIndex += n);
+  startAutoSlide(); // Bắt đầu lại timer
+}
 
-    // Lấy tất cả các link trong navbar
-    var navLinks = document.querySelectorAll('.nav-links a');
+// Hàm chuyển slide khi click dot
+function currentSlide(n) {
+  clearTimeout(autoSlideTimer); // Xóa timer cũ khi người dùng tương tác
+  showSlides(slideIndex = n);
+  startAutoSlide(); // Bắt đầu lại timer
+}
 
-    navLinks.forEach(function(link) {
-      // Lấy tên file từ thuộc tính href của link
-      var linkPage = new URL(link.href).pathname.split('/').pop();
-      if (linkPage === "") {
-        linkPage = "index.php";
-      }
+// Hàm chạy slide tự động
+function autoSlide() {
+    showSlides(slideIndex += 1);
+    startAutoSlide(); // Thiết lập timer cho lần chuyển tiếp theo
+}
 
-      // So sánh nếu tên file của link trùng với tên file của trang hiện tại
-      if (linkPage === currentPage) {
-        link.classList.add('active'); // Thêm class 'active'
-      }
-    });
-  })();
+// Hàm khởi động/thiết lập lại timer tự động
+function startAutoSlide() {
+    clearTimeout(autoSlideTimer); // Đảm bảo không có timer nào đang chạy
+    autoSlideTimer = setTimeout(autoSlide, 4000); // Chuyển slide sau 4 giây
+}
+
+// Khởi tạo và Bắt đầu chạy
+showSlides(slideIndex); 
+startAutoSlide(); // Bắt đầu chu trình tự động sau khi trang được tải
+
 </script>
 
 </body>
 </html>
 <?php $conn->close(); ?>
+
