@@ -237,14 +237,7 @@ $result_dh = $stmt_dh->get_result();
                         <div>
                             <h3>Mã đơn: #{$row['id_don_hang']}</h3>
                             <div class='order-info'>
-                                <p><strong>Khách hàng:</strong> {$ten_khach_hang}</p>
-                                <p><strong>Ngày đặt:</strong> {$row['ngay_dat']}</p>
-                                <p><strong>Trạng thái:</strong> 
-                                    <span class='status " . 
-                                        ($row['trang_thai'] == 'đang hoàn thành' ? 'completed' : 'pending') . "'>
-                                        {$row['trang_thai']}
-                                    </span>
-                                </p>
+                               
                                 <p><strong>Tổng tiền:</strong> " . number_format($row['tong_tien'], 0, ',', '.') . "₫</p>
                             </div>
                         </div>
@@ -274,6 +267,7 @@ $result_dh = $stmt_dh->get_result();
 </div>
 </body>
 </html>
+
 
 
 
