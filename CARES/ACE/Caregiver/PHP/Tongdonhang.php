@@ -204,7 +204,10 @@ $result = $stmt->get_result();
                                 <p><strong>Người chăm sóc:</strong> {$ten_cham_soc}</p>
                                 <p><strong>Ngày đặt:</strong> {$row['ngay_dat']}</p>
                                 <p><strong>Trạng thái:</strong> 
-                                   
+                                    <span class='status " . 
+                                        ($row['trang_thai'] == 'hoàn thành' ? 'completed' : 'pending') . "'>
+                                        {$row['trang_thai']}
+                                    </span>
                                 </p>
                                 <p><strong>Tổng tiền:</strong> " . number_format($row['tong_tien'], 0, ',', '.') . "₫</p>
                             </div>
@@ -224,4 +227,5 @@ $result = $stmt->get_result();
 </div>
 </body>
 </html>
+
 
