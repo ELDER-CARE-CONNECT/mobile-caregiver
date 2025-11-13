@@ -12,7 +12,27 @@ if (!isset($_SESSION['so_dien_thoai'])) {
 // 📱 Lấy thông tin người dùng đang đăng nhập
 $so_dien_thoai = $_SESSION['so_dien_thoai'];
 
-// 📦 Truy vấn các đơn hàng của người dùng đó (có id_cham_soc)
+// ==========================================================
+// 1. LẤY TÊN KHÁCH HÀNG ĐỂ HIỂN THỊ LỜI CHÀO
+// ==========================================================
+$customer_name = "Khách hàng"; // Tên mặc định
+$sql_name = "SELECT ten_khach_hang FROM khach_hang WHERE so_dien_thoai = ?";
+$stmt_name = $conn->prepare($sql_name);
+
+if ($stmt_name) {
+    $stmt_name->bind_param("s", $so_dien_thoai);
+    $stmt_name->execute();
+    $result_name = $stmt_name->get_result();
+    
+    if ($result_name->num_rows > 0) {
+        $customer_name = htmlspecialchars($result_name->fetch_assoc()['ten_khach_hang']);
+    }
+    $stmt_name->close();
+}
+
+// ==========================================================
+// 2. TRUY VẤN ĐƠN HÀNG CỦA KHÁCH HÀNG
+// ==========================================================
 $sql = "SELECT id_don_hang, ten_khach_hang, id_cham_soc, ngay_dat, tong_tien, trang_thai 
         FROM don_hang 
         WHERE so_dien_thoai = ?";
@@ -31,14 +51,62 @@ $result = $stmt->get_result();
     <link rel="stylesheet" href="../CSS/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* ----------------------------------- */
+        /* CSS CHỈ DÀNH CHO NAVBAR (TỪ navbar.php) */
+        /* ----------------------------------- */
+        .navbar {
+          background: #fff;
+          padding: 15px 60px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 95%; /* Đảm bảo Navbar luôn chiếm 100% */
+          box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+          position: fixed; 
+          top: 0; 
+          left: 0; 
+          z-index: 1000;
+          transition: all 0.3s;
+        }
+        .navbar h2 {
+          color: #FF6B81;
+          font-size: 26px; font-weight:700;
+        }
+        .nav-links a {
+          color:#555; text-decoration:none; margin:0 16px;
+          font-weight:500; position:relative; padding-bottom:3px;
+        }
+        .nav-links a:hover { color:#FF6B81; }
+        .nav-links a::after {
+          content: ''; position:absolute; width:0; height:2px; display:block;
+          margin-top:5px; right:0; background:#FF6B81; transition:0.3s;
+        }
+        .nav-links a:hover::after { width:100%; left:0; }
+        .nav-links a.active {
+          color: #FF6B81;
+          font-weight: 600;
+        }
+        .nav-links a.active::after {
+          width: 100%;
+          left: 0;
+        }
+
+        /* ----------------------------------- */
+        /* CSS CỦA TRANG TỔNG ĐƠN HÀNG */
+        /* ----------------------------------- */
         body {
             font-family: 'Segoe UI', sans-serif;
             background-color: #f9fafb;
             margin: 0;
             padding: 0;
+            /* FIX NAVBAR: Điều chỉnh padding-top */
+            padding-top: 90px; 
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         .accepted-orders-container {
+            /* FIX CHIỀU NGANG: Giữ max-width là 1200px */
             max-width: 1200px;
             margin: 40px auto;
             padding: 20px;
@@ -72,23 +140,22 @@ $result = $stmt->get_result();
             padding-bottom: 10px;
         }
 
-        /* ===== GRID ===== */
+        /* ===== GRID (ĐÃ TINH CHỈNH) ===== */
         .order-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, max-content));
-            justify-content: start;
-            gap: 24px;
-            justify-items: flex-start;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            /* Xóa justify-content và justify-items vì 1fr đã lo việc căn chỉnh */
+            gap: 10px;
         }
 
-        /* ===== CARD ===== */
+        /* ===== CARD (ĐÃ TINH CHỈNH) ===== */
         .order-card {
             background: #ffffff;
             border-radius: 16px;
             border: 1px solid #e5e7eb;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            width: 340px;
-            height: 180px; /* tăng nhẹ để đủ hiển thị người chăm sóc */
+            /* ĐÃ SỬA: Giảm chiều cao cho card trông gọn gàng hơn */
+            height: 190px;
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -134,7 +201,7 @@ $result = $stmt->get_result();
             color: #92400e;
         }
 
-        /* ===== Nút Xem ===== */
+        /* ===== Nút Xem (Đã sửa cho thẻ <a>) ===== */
         .view-btn {
             background: linear-gradient(135deg, #2563eb, #3b82f6);
             color: white;
@@ -146,6 +213,8 @@ $result = $stmt->get_result();
             cursor: pointer;
             transition: all 0.25s ease;
             align-self: flex-end;
+            text-decoration: none;
+            display: inline-block; 
         }
 
         .view-btn:hover {
@@ -168,29 +237,70 @@ $result = $stmt->get_result();
     </style>
 </head>
 <body>
+
+<div class="navbar">
+  <h2>Elder Care Connect</h2>
+  <div class="nav-links">
+    <a href="index.php">Trang chủ</a>
+    <a href="dichvu.php">Dịch vụ</a>
+    <a href="tongdonhang.php" class="active">Đơn hàng</a>
+    <a href="Canhan.php">Cá nhân</a>
+  </div>
+</div>
+
+<script>
+// Logic JavaScript để đánh dấu link đang hoạt động (Active Link)
+(function() {
+    // Lấy tên file của trang hiện tại (ví dụ: "tongdonhang.php")
+    var currentPage = window.location.pathname.split('/').pop();
+    if (currentPage === "" || currentPage === "index.php") {
+      currentPage = "index.php"; // Mặc định là trang chủ
+    }
+
+    // Lấy tất cả các link trong navbar
+    var navLinks = document.querySelectorAll('.nav-links a');
+
+    navLinks.forEach(function(link) {
+      // Lấy tên file từ thuộc tính href của link
+      var linkPage = new URL(link.href).pathname.split('/').pop();
+      if (linkPage === "") {
+        linkPage = "index.php";
+      }
+
+      // So sánh nếu tên file của link trùng với tên file của trang hiện tại
+      if (linkPage === currentPage) {
+        link.classList.add('active'); // Thêm class 'active'
+      }
+    });
+})();
+</script>
+
 <div class="accepted-orders-container">
     <div class="hero">
         <h1><i class="fas fa-check-circle"></i> Lịch sử đặt hàng của bạn</h1>
     </div>
 
     <div class="orders-wrapper">
-        <h2>Xin chào, <?php echo htmlspecialchars($_SESSION['ten_khach_hang']); ?>!</h2>
+        <h2>Xin chào, <span class="highlight"><?php echo $customer_name; ?></span> 👋</h2>
 
         <div class="order-cards">
             <?php
             if ($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
 
-                    // 🔍 Tìm tên người chăm sóc dựa trên id_cham_soc
+                    // Lấy ID người chăm sóc
+                    $id_cham_soc = $row['id_cham_soc']; 
                     $ten_cham_soc = "Chưa có";
-                    if (!empty($row['id_cham_soc'])) {
+                    
+                    // 🔍 Tìm tên người chăm sóc dựa trên id_nguoi_cham_soc
+                    if (!empty($id_cham_soc)) {
                         $sql2 = "SELECT ho_ten FROM nguoi_cham_soc WHERE id_cham_soc = ?";
                         $stmt2 = $conn->prepare($sql2);
-                        $stmt2->bind_param("i", $row['id_cham_soc']);
+                        $stmt2->bind_param("i", $id_cham_soc); 
                         $stmt2->execute();
                         $res2 = $stmt2->get_result();
                         if ($res2->num_rows > 0) {
-                            $ten_cham_soc = $res2->fetch_assoc()['ho_ten'];
+                            $ten_cham_soc = htmlspecialchars($res2->fetch_assoc()['ho_ten']);
                         }
                         $stmt2->close();
                     }
@@ -212,11 +322,11 @@ $result = $stmt->get_result();
                                 <p><strong>Tổng tiền:</strong> " . number_format($row['tong_tien'], 0, ',', '.') . "₫</p>
                             </div>
                         </div>
-                        <button class='view-btn'>Xem</button>
+                        <a href='chitietlichsudonhang.php?id={$row['id_don_hang']}' class='view-btn'>Xem</a>
                     </div>";
                 }
             } else {
-                echo "<p>❌ Bạn chưa có đơn hàng nào.</p>";
+                echo "<p style='text-align: center; color: #ff6b81;'>❌ Bạn chưa có đơn hàng nào.</p>";
             }
 
             $stmt->close();

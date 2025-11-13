@@ -50,8 +50,10 @@ $avg_result = $conn->query($avg_sql);
 $avg_star = 0;
 if ($avg_result && $avg_result->num_rows > 0) {
     $avg_data = $avg_result->fetch_assoc();
- $avg_star = $avg_data['trung_binh'] !== null ? round($avg_data['trung_binh'], 2) : 0;
-
+    // ✅ Làm tròn 1 chữ số thập phân, hiển thị dạng 4.3 / 5 ⭐
+    $avg_star = $avg_data['trung_binh'] !== null 
+        ? number_format(round($avg_data['trung_binh'], 1), 1) 
+        : 0;
 }
 ?>
 
@@ -64,43 +66,63 @@ if ($avg_result && $avg_result->num_rows > 0) {
 <style>
 body {
     font-family: "Segoe UI", sans-serif;
-    background-color: #f4f6fa;
+    background-color: #f0f4f8;
     color: #333;
+    margin: 0;
+    padding: 0;
 }
+
+/* ====== BỐ CỤC ====== */
 .container {
     display: flex;
+    min-height: 100vh;
 }
+
 .main-content {
     flex-grow: 1;
     background: #fff;
-    padding: 20px 40px;
+    padding: 25px 40px;
+    border-radius: 12px;
+    margin: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
+
+/* ====== THANH NAVBAR ====== */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 3px solid #007BFF;
-    padding-bottom: 10px;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 15px;
+    margin-bottom: 10px;
 }
 .navbar h1 {
-    color: #007BFF;
+    color: #3498db;
+    font-size: 22px;
+    font-weight: 600;
 }
+
+/* ====== Ô TÌM KIẾM ====== */
 .search input {
-    padding: 6px;
+    padding: 7px 10px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 6px;
+    width: 260px;
 }
 .search button {
-    background: #007BFF;
+    background: #3498db;
     color: white;
     border: none;
-    padding: 6px 10px;
-    border-radius: 4px;
+    padding: 7px 12px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: 0.3s;
 }
 .search button:hover {
-    background: #0056b3;
+    background: #2980b9;
 }
+
+/* ====== BỘ LỌC ====== */
 .filter-box {
     margin-top: 15px;
     margin-bottom: 10px;
@@ -108,71 +130,94 @@ body {
     justify-content: flex-end;
     align-items: center;
     gap: 10px;
+    font-size: 15px;
 }
 .filter-box select {
-    padding: 6px;
-    border-radius: 4px;
+    padding: 7px;
+    border-radius: 6px;
     border: 1px solid #ccc;
+    background-color: #fff;
 }
 .filter-box .reset-btn {
-    background: #6c757d;
+    background: #95a5a6;
     color: white;
     border: none;
-    padding: 6px 10px;
-    border-radius: 4px;
+    padding: 7px 12px;
+    border-radius: 6px;
     text-decoration: none;
+    transition: 0.3s;
 }
 .filter-box .reset-btn:hover {
-    background: #5a6268;
+    background: #7f8c8d;
 }
+
+/* ====== HỘP TRUNG BÌNH SAO ====== */
+.avg-box {
+    background: #eaf4ff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    display: inline-block;
+}
+.avg-box span {
+    color: #f1c40f;
+    font-weight: bold;
+}
+
+/* ====== BẢNG ====== */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 25px;
     background: #fff;
     border-radius: 10px;
-    box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 th {
-    background: #007BFF;
-    color: #000;
-    padding: 10px;
-    font-weight: bold;
+    background: #3498db;
+    color: #fff;
+    padding: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
 }
 td {
-    padding: 8px;
+    padding: 10px;
     border-bottom: 1px solid #eee;
     text-align: center;
+    font-size: 15px;
 }
-tr:hover {
+tr:nth-child(even) {
     background: #f9f9f9;
 }
-.star {
-    color: #f39c12;
-    font-size: 16px;
+tr:hover {
+    background: #eaf4ff;
+    transition: 0.2s;
 }
+
+/* ====== NGÔI SAO ====== */
+.star {
+    color: #f1c40f;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+/* ====== LIÊN KẾT HÀNH ĐỘNG ====== */
 .action-links a {
     text-decoration: none;
-    color: #007BFF;
+    color: #2980b9;
     margin: 0 5px;
     font-weight: 500;
+    transition: 0.3s;
 }
 .action-links a:hover {
-    color: #dc3545;
-}
-.avg-box {
-    background: #e9f2ff;
-    padding: 10px 15px;
-    border-radius: 6px;
-    margin-top: 15px;
-    font-weight: 600;
-    color: #007BFF;
-    width: fit-content;
-}
-.avg-box span {
-    color: #f39c12;
+    color: #e74c3c;
 }
 </style>
+
 </head>
 
 <body>

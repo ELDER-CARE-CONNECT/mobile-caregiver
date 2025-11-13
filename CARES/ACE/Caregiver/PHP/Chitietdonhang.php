@@ -3,7 +3,7 @@ session_name("CARES_SESSION");
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 if (!isset($_SESSION['caregiver_id'])) {
-    echo "<script>alert('Vui lòng đăng nhập trước!'); window.location.href='../../login/login.php';</script>";
+    echo "<script>alert('Vui lòng đăng nhập trước!'); window.location.href='../../Admin/login.php';</script>";
     exit;
 }
 ?>

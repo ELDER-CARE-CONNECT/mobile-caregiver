@@ -1,10 +1,9 @@
 <?php
 session_name("CARES_SESSION");
-if (session_status() === PHP_SESSION_NONE) session_start();
+session_start();
 
-// Nếu chưa đăng nhập thì quay lại login
 if (!isset($_SESSION['caregiver_id'])) {
-    echo "<script>alert('Vui lòng đăng nhập trước!'); window.location.href='../../login/login.php';</script>";
+    header("Location: ../../Admin/login.php");
     exit;
 }
 
@@ -15,13 +14,15 @@ $id = $_SESSION['caregiver_id'];
 $stmt = $conn->prepare("SELECT * FROM nguoi_cham_soc WHERE id_cham_soc = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
-$result = $stmt->get_result();
+$result = $stmt->get_result();  // ✔️ FIX rồi
 $user = $result->fetch_assoc();
 
 if (!$user) {
     echo "<p style='color:white;text-align:center;'>Không tìm thấy thông tin người dùng.</p>";
     exit;
 }
+?>
+
 ?>
 <!DOCTYPE html>
 <html lang="vi">

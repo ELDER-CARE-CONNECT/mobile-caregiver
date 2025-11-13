@@ -1,53 +1,45 @@
 <?php
-include_once("../model/get_products.php"); // Kết nối CSDL
-$conn = connectdb(); // Giả sử bạn có một hàm này để kết nối DB
-session_start(); // Khởi động session
+include_once("../model/get_products.php"); 
+$conn = connectdb();
+session_start();
 
-// Biến lỗi
 $phoneError = $passwordError = $confirmPasswordError = "";
+$successMessage = "";
 
-// Kiểm tra khi form được submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $phone = $_POST['phone'];
-    $oldPassword = $_POST['old_password'];
+    $phone = trim($_POST['phone']);
     $newPassword = $_POST['new_password'];
     $confirmPassword = $_POST['confirm_password'];
 
-    // Kiểm tra số điện thoại có hợp lệ không (10-11 chữ số)
-    if (!preg_match('/^[0-9]{10,11}$/', $phone)) {
+    // Kiểm tra số điện thoại hợp lệ
+    if (!preg_match('/^[0-9]{9,11}$/', $phone)) {
         $phoneError = "Số điện thoại không hợp lệ.";
     } else {
-        // Kiểm tra số điện thoại đã đăng ký chưa trong cơ sở dữ liệu
-        $stmt = $conn->prepare("SELECT mat_khau FROM khach_hang WHERE so_dien_thoai = ?");
+        // Kiểm tra số điện thoại có tồn tại
+        $stmt = $conn->prepare("SELECT * FROM khach_hang WHERE so_dien_thoai = ?");
         $stmt->bind_param("s", $phone);
         $stmt->execute();
         $result = $stmt->get_result();
         $user = $result->fetch_assoc();
 
         if (!$user) {
-            // Nếu không tìm thấy người dùng trong DB
             $phoneError = "Số điện thoại này chưa được đăng ký.";
         } else {
-            // Kiểm tra mật khẩu cũ có đúng không
-            if ($user['mat_khau'] !== $oldPassword) {
-                $passwordError = "Mật khẩu cũ không đúng.";
-            }
-
-            // Kiểm tra mật khẩu mới và xác nhận mật khẩu có khớp không
+            // Kiểm tra mật khẩu xác nhận
             if ($newPassword !== $confirmPassword) {
-                $confirmPasswordError = "Mật khẩu mới và xác nhận mật khẩu không khớp.";
-            }
-
-            // Nếu không có lỗi, cập nhật mật khẩu
-            if (empty($phoneError) && empty($passwordError) && empty($confirmPasswordError)) {
+                $confirmPasswordError = "Mật khẩu xác nhận không khớp.";
+            } elseif (strlen($newPassword) < 6) {
+                $passwordError = "Mật khẩu phải có ít nhất 6 ký tự.";
+            } else {
                 // Cập nhật mật khẩu mới
                 $stmt = $conn->prepare("UPDATE khach_hang SET mat_khau = ? WHERE so_dien_thoai = ?");
                 $stmt->bind_param("ss", $newPassword, $phone);
-                $stmt->execute();
-
-                // Thông báo thành công
-                $successMessage = "Mật khẩu đã được thay đổi thành công.";
-                $redirect = true; // Biến này sẽ chỉ ra rằng chúng ta cần chuyển hướng sau khi đổi mật khẩu
+                if ($stmt->execute()) {
+                    $successMessage = "✅ Đổi mật khẩu thành công! Đang chuyển hướng đến trang đăng nhập...";
+                    header("refresh:2;url=login.php");
+                } else {
+                    $passwordError = "Đã có lỗi xảy ra. Vui lòng thử lại.";
+                }
             }
         }
     }
@@ -60,222 +52,218 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quên mật khẩu</title>
-    <link rel="stylesheet" href="/fontend/css/quenmk.css">
-    <link rel="stylesheet" href="/fontend/css/style.css">
     <style>
-        .no-border-iframe {
-            border: none;
-            outline: none;
-            width: 100%;
-            height: 100px; /* Tuỳ kích thước taskbar */
-        }
-
-       /* RESET CƠ BẢN */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f9f9f9;
-    }
-
-    /* CONTAINER CHÍNH */
-    .boxcenter {
-        width: 100%;
-        margin: 0 auto;
-    }
-
-    /* HEADER CHUẨN HÓA */
-    header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: rgb(187, 49, 49);
-        color: white;
-        height: 54.4px;
-        padding: 0 20px;
-        margin: 0 auto;
-        flex-wrap: wrap;
-        position: relative;
-        width: 100%;
-    }
-
-    /* LOGO */
-    .logo {
-        font-size: 20px;
-        font-weight: bold;
-        padding-top: 15px;
-    }
-
-    /* THANH TÌM KIẾM */
-    .search-box {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        
-    }
-    .search-box input {
-        width: 100%;
-        max-width: 400px;
-        padding: 8px 15px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 14px;.
-    }
-
-    /* NÚT ĐĂNG NHẬP + GIỎ HÀNG */
-    .nav-right {
-        flex: 0 0 auto;
-        display: flex;
-        gap: 10px;
-    }
-    .cart, .login-btn {
-        background: white;
-        color: #d32f2f;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        height: 34.4px;
-        font-weight: bold;
-        font-size: 13px;
-        width: 118.06px;
-    }
-    .cart:hover, .login-btn:hover {
-        background-color: #f0f0f0;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-        header {
-            flex-direction: column;
-            height: auto;
-            padding: 10px;
-        }
-
-        .search-box {
-            margin: 10px 0;
-            width: 100%;
-        }
-
-        .nav-right {
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
             justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .auth-container {
+            display: flex;
+            gap: 50px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 940px;
             width: 100%;
-            flex-wrap: wrap;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
         }
-
-        .cart, .login-btn {
-            margin: 5px;
+        .auth-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-    }
-
-    .container {
-    text-align: center;
-    width: 100%;
-    max-width: 500px;
-    margin-top: 40px;
-    }
-
+        .auth-image img {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            object-fit: cover;
+            border-radius: 0;
+        }
+        .auth-wrapper {
+            flex: 0 0 420px;
+            background: rgba(255,255,255,0.95);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .auth-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .auth-heading {
+            font-size: 26px;
+            font-weight: bold;
+            color: #d70018;
+            margin-bottom: 25px;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: #d70018;
+            box-shadow: 0 0 5px rgba(215, 0, 24, 0.3);
+        }
+        .auth-error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .auth-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: #d70018;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .auth-submit:hover {
+            background-color: #b30013;
+        }
+        .auth-register {
+            font-size: 14px;
+            margin-top: 25px;
+        }
+        .auth-register a {
+            color: #d70018;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .auth-register a:hover {
+            text-decoration: underline;
+        }
+        .back-button {
+            position: absolute;
+            left: 0;
+            text-decoration: none;
+            font-size: 24px;
+            color: #d70018;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .back-button:hover {
+            transform: translateX(-4px);
+        }
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            color: #333;
+            animation: fadeIn 0.4s ease forwards;
+            z-index: 1000;
+        }
+        .popup.success {
+            border-left: 6px solid #28a745;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        @media (max-width: 900px) {
+            body {
+                padding: 10px;
+            }
+            .auth-container {
+                flex-direction: column;
+                padding: 20px 15px;
+                max-width: 100%;
+                box-shadow: none;
+                background: transparent;
+            }
+            .auth-image {
+                display: none;
+            }
+            .auth-wrapper {
+                width: 100%;
+                max-width: 420px;
+                padding: 30px 20px;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                background: rgba(255,255,255,0.95);
+                border-radius: 16px;
+            }
+        }
     </style>
-
-    
 </head>
 <body>
-<header>
-    <div class="logo">Apple.Acsr</div>
-  
-    <div class="nav-right">
-        <button class="cart">🛒 Giỏ hàng</button>
-        <div class="dropdown">
-            <?php if (isset($_SESSION['ten_khach_hang'])): ?>
-                <button id="loginBtn" class="login-btn">
-                    👤 <?php echo htmlspecialchars($_SESSION['ten_khach_hang']); ?>
-                </button>
-                <div class="dropdown-menu" style="display: none;">
-                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
-                        <a href="http://localhost/WEB_PhuKien/Admin/tongquan.php" id="ThongTinTaiKhoan">Trang cá nhân</a>
-                    <?php endif; ?>
-                    <a href="../model/logout.php" id="logoutBtn">Đăng xuất</a>
+    <div class="auth-container">
+        <div class="auth-image">
+            <img src="images/nguoi-cao-tuoi-2.jpg" alt="Ảnh minh họa">
+        </div>
+        <div class="auth-wrapper">
+            <div class="header-row">
+                <a href="login.php" class="back-button">&larr;</a>
+                <h2 class="auth-heading">Quên mật khẩu</h2>
+            </div>
+            <p style="font-size: 14px; color: #444; margin-bottom: 20px;">Hãy nhập số điện thoại của bạn vào bên dưới để bắt đầu quá trình khôi phục mật khẩu.</p>
+
+            <form method="POST" action="quenmk.php">
+                <label for="phone" style="display: block; text-align: left; font-weight: 500; font-size: 14px; margin-bottom: 6px; color: #222;">Nhập vào số điện thoại của bạn</label>
+                <input type="text" id="phone" name="phone" class="auth-input" placeholder="" required>
+
+                <label for="new_password" style="display: block; text-align: left; font-weight: 500; font-size: 14px; margin-bottom: 6px; color: #222;">Nhập mật khẩu mới</label>
+                <input type="password" id="new_password" name="new_password" class="auth-input" placeholder="" required>
+
+                <label for="confirm_password" style="display: block; text-align: left; font-weight: 500; font-size: 14px; margin-bottom: 6px; color: #222;">Nhập lại mật khẩu mới</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="auth-input" placeholder="" required>
+
+                <div class="auth-error"><?php echo $phoneError; ?></div>
+                <div class="auth-error"><?php echo $passwordError; ?></div>
+                <div class="auth-error"><?php echo $confirmPasswordError; ?></div>
+
+                <button type="submit" class="auth-submit">Đổi mật khẩu</button>
+                <p class="auth-register">
+                    <a href="login.php">Quay lại trang đăng nhập</a>
+                </p>
+            </form>
+
+            <?php if (!empty($successMessage)): ?>
+                <div class="popup success">
+                    <?php echo htmlspecialchars($successMessage); ?>
                 </div>
-            <?php else: ?>
-                <button id="loginBtn" class="login-btn" onclick="window.location.href='../view/login.php'">👤 Đăng nhập</button>
             <?php endif; ?>
         </div>
     </div>
-</header>
-
-    <div class="container">
-        <div class="forgot-password-box">
-            <div class="header-row">
-                <a href="login.php" class="back-button">←</a> 
-                <h2>Quên mật khẩu</h2>
-            </div>
-            <p>Hãy nhập số điện thoại của bạn vào bên dưới để bắt đầu quá trình khôi phục mật khẩu.</p>
-
-            <!-- Bước 1: Nhập số điện thoại và mật khẩu -->
-            <div id="phone-step">
-                <form method="POST" action="quenmk.php">
-                    <label for="phone">Nhập vào số điện thoại của bạn</label>
-                    <input type="text" id="phone" name="phone" placeholder="" required>
-
-                    <label for="old_password">Nhập mật khẩu cũ</label>
-                    <input type="password" id="old_password" name="old_password" placeholder="" required>
-
-                    <label for="new_password">Nhập mật khẩu mới</label>
-                    <input type="password" id="new_password" name="new_password" placeholder="" required>
-
-                    <label for="confirm_password">Nhập lại mật khẩu mới</label>
-                    <input type="password" id="confirm_password" name="confirm_password" placeholder="" required>
-
-                    <p id="phone-error" style="color: red; font-size: 0.9em; margin-top: 4px;">
-                        <?php echo $phoneError; ?>
-                    </p>
-                    <p style="color: red;"><?php echo $passwordError; ?></p>
-                    <p style="color: red;"><?php echo $confirmPasswordError; ?></p>
-
-                    <button type="submit" class="continue-btn">Đổi mật khẩu</button>
-                </form>
-
-                <?php if (isset($successMessage)): ?>
-                    <p style="color: green;"><?php echo $successMessage; ?></p>
-                <?php endif; ?>
-            </div>
-
-        </div>
-    </div>
-
-    <?php if (isset($redirect) && $redirect): ?>
-        <script>
-            setTimeout(function() {
-                window.location.href = "login.php";
-            }, 2000); // Chuyển hướng sau 2 giây
-        </script>
-    <?php endif; ?>
-
-    <script src="../script/script1.js"></script>.
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const loginBtn = document.getElementById("loginBtn");
-    const dropdownMenu = document.querySelector(".dropdown-menu");
-
-    if (loginBtn && dropdownMenu) {
-        loginBtn.addEventListener("click", function (e) {
-            e.stopPropagation(); // Ngăn việc click lan ra ngoài
-            dropdownMenu.style.display = dropdownMenu.style.display === "none" ? "block" : "none";
-        });
-
-        // Ẩn dropdown khi click ra ngoài
-        document.addEventListener("click", function () {
-            dropdownMenu.style.display = "none";
-        });
-
-        dropdownMenu.addEventListener("click", function (e) {
-            e.stopPropagation(); // Click trong menu không ẩn nó
-        });
-    }
-});
-</script>
 </body>
 </html>

@@ -2,24 +2,17 @@
 include_once("../model/get_products.php");
 $conn = connectdb();
 
-session_start(); // Khởi động session
+session_start();
 
 $success_message = "";
 $error_messages = [];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $fullname = trim($_POST['fullname']);
-    $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
-    $agree = isset($_POST['agree']);
 
-    // Validate
-    if (empty($fullname)) {
-        $error_messages[] = "Vui lòng nhập họ tên.";
-    }
-
+    // Kiểm tra dữ liệu
     if (empty($phone)) {
         $error_messages[] = "Vui lòng nhập số điện thoại.";
     } else {
@@ -40,15 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error_messages[] = "Mật khẩu xác nhận không khớp.";
     }
 
-   
-
+    // Nếu hợp lệ -> thêm vào DB
     if (empty($error_messages)) {
-        $stmt = $conn->prepare("INSERT INTO khach_hang (ten_khach_hang, email, so_dien_thoai, mat_khau, role)
-                                VALUES (?, ?, ?, ?, 0)");
-        $stmt->bind_param("ssss", $fullname, $email, $phone, $password); // Không mã hoá nếu bạn yêu cầu
+        $stmt = $conn->prepare("INSERT INTO khach_hang (so_dien_thoai, mat_khau, role) VALUES (?, ?, 0)");
+        $stmt->bind_param("ss", $phone, $password);
 
         if ($stmt->execute()) {
-            $success_message = "Đăng ký thành công! Đang chuyển đến trang đăng nhập...";
+            $success_message = "🎉 Đăng ký thành công! Đang chuyển đến trang đăng nhập...";
             header("refresh:2;url=login.php");
         } else {
             $error_messages[] = "Có lỗi xảy ra khi đăng ký.";
@@ -63,205 +54,195 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng ký</title>
-    <link rel="stylesheet" href="../fontend/css/register.css">
-    <link rel="stylesheet" href="../fontend/css/style.css">
     <style>
-    
-    .form-container {
-    text-align: center;
-    width: 500px; /* Tăng kích thước form */
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    margin-top: 40px;
-    }
-
-   /* RESET CƠ BẢN */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f9f9f9;
-    }
-
-    /* CONTAINER CHÍNH */
-    .boxcenter {
-        width: 100%;
-        margin: 0 auto;
-    }
-
-    /* HEADER CHUẨN HÓA */
-    header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: rgb(187, 49, 49);
-        color: white;
-        height: 54.4px;
-        padding: 0 20px;
-        margin: 0 auto;
-        flex-wrap: wrap;
-        position: relative;
-    }
-
-    /* LOGO */
-    .logo {
-        font-size: 20px;
-        font-weight: bold;
-        padding-top: 15px;
-    }
-
-    /* THANH TÌM KIẾM */
-    .search-box {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        
-    }
-    .search-box input {
-        width: 100%;
-        max-width: 400px;
-        padding: 8px 15px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        font-size: 14px;.
-    }
-
-    /* NÚT ĐĂNG NHẬP + GIỎ HÀNG */
-    .nav-right {
-        flex: 0 0 auto;
-        display: flex;
-        gap: 10px;
-    }
-    .cart, .login-btn {
-        background: white;
-        color: #d32f2f;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        height: 34.4px;
-        font-weight: bold;
-        font-size: 13px;
-        width: 118.06px;
-    }
-    .cart:hover, .login-btn:hover {
-        background-color: #f0f0f0;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-        header {
-            flex-direction: column;
-            height: auto;
-            padding: 10px;
-        }
-
-        .search-box {
-            margin: 10px 0;
-            width: 100%;
-        }
-
-        .nav-right {
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
             justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .auth-container {
+            display: flex;
+            gap: 50px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 940px;
             width: 100%;
-            flex-wrap: wrap;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
         }
-
-        .cart, .login-btn {
-            margin: 5px;
+        .auth-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-    }
-    
-
+        .auth-image img {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            object-fit: cover;
+            border-radius: 0;
+        }
+        .auth-wrapper {
+            flex: 0 0 420px;
+            background: rgba(255,255,255,0.95);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .auth-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .auth-heading {
+            font-size: 26px;
+            font-weight: bold;
+            color: #d70018;
+            margin-bottom: 25px;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: #d70018;
+            box-shadow: 0 0 5px rgba(215, 0, 24, 0.3);
+        }
+        .auth-error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .auth-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: #d70018;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .auth-submit:hover {
+            background-color: #b30013;
+        }
+        .auth-register {
+            font-size: 14px;
+            margin-top: 25px;
+        }
+        .auth-register a {
+            color: #d70018;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .auth-register a:hover {
+            text-decoration: underline;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            color: #333;
+            animation: fadeIn 0.4s ease forwards;
+            z-index: 1000;
+        }
+        .popup.success {
+            border-left: 6px solid #28a745;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        @media (max-width: 900px) {
+            body {
+                padding: 10px;
+            }
+            .auth-container {
+                flex-direction: column;
+                padding: 20px 15px;
+                max-width: 100%;
+                box-shadow: none;
+                background: transparent;
+            }
+            .auth-image {
+                display: none;
+            }
+            .auth-wrapper {
+                width: 100%;
+                max-width: 420px;
+                padding: 30px 20px;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                background: rgba(255,255,255,0.95);
+                border-radius: 16px;
+            }
+        }
     </style>
 </head>
 <body>
-<header>
-    <div class="logo">Apple.Acsr</div>
+    <div class="auth-container">
+        <div class="auth-image">
+            <img src="images/nguoi-cao-tuoi-2.jpg" alt="Ảnh minh họa">
+        </div>
+        <div class="auth-wrapper">
+            <h2 class="auth-heading">Đăng ký</h2>
 
-    <div class="nav-right">
-        <button class="cart">🛒 Giỏ hàng</button>
-        <div class="dropdown">
-            <?php if (isset($_SESSION['ten_khach_hang'])): ?>
-                <button id="loginBtn" class="login-btn">
-                    👤 <?php echo htmlspecialchars($_SESSION['ten_khach_hang']); ?>
-                </button>
-                <div class="dropdown-menu" style="display: none;">
-                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 1): ?>
-                        <a href="http://localhost/WEB_PhuKien/Admin/tongquan.php" id="ThongTinTaiKhoan">Trang cá nhân</a>
-                    <?php endif; ?>
-                    <a href="../model/logout.php" id="logoutBtn">Đăng xuất</a>
+            <?php if (!empty($error_messages)): ?>
+                <div class="auth-error">
+                    <ul style="list-style: none; padding-left: 0;">
+                        <?php foreach ($error_messages as $msg): ?>
+                            <li><?php echo htmlspecialchars($msg); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
-            <?php else: ?>
-                <button id="loginBtn" class="login-btn" onclick="window.location.href='../view/login.php'">👤 Đăng nhập</button>
             <?php endif; ?>
+
+            <form method="POST" action="register.php">
+                <input type="text" name="phone" class="auth-input" placeholder="Nhập số điện thoại" required>
+                <input type="password" name="password" class="auth-input" placeholder="Nhập mật khẩu" required>
+                <input type="password" name="confirm_password" class="auth-input" placeholder="Nhập lại mật khẩu" required>
+
+                <button type="submit" class="auth-submit">Đăng ký</button>
+            </form>
+
+            <p class="auth-register">Bạn đã có tài khoản? <a href="login.php">Đăng nhập ngay</a></p>
         </div>
     </div>
-</header>
 
-    <div class="wrapper">
-    <div class="form-container">
-        <h2>Đăng ký</h2>
-
-        <?php if (!empty($error_messages)): ?>
-            <div class="error-messages" style="color: red;">
-                <ul>
-                    <?php foreach ($error_messages as $msg): ?>
-                        <li><?= $msg ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($success_message): ?>
-            <p id="success-message" style="color: green;"><?= $success_message ?></p>
-        <?php endif; ?>
-
-        <form method="POST" action="register.php">
-            <input type="text" name="fullname" placeholder="Nhập họ và tên" required>
-            <input type="text" name="email" placeholder="Nhập email">
-            <input type="text" name="phone" placeholder="Nhập số điện thoại" required>
-            <input type="password" name="password" placeholder="Nhập mật khẩu" required>
-            <input type="password" name="confirm_password" placeholder="Nhập lại mật khẩu" required>
-
-           
-
-            <button type="submit" class="register-btn">Đăng ký</button>
-        </form>
-
-        <p>Bạn đã có tài khoản? <a href="../view/login.php">Đăng nhập ngay</a></p>
-        <p id="success-message" style="color: red; display: none;">Đăng ký thành công!</p>
-    </div>
-</div>
-
-<script src="../script/script1.js"></script>.
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const loginBtn = document.getElementById("loginBtn");
-    const dropdownMenu = document.querySelector(".dropdown-menu");
-
-    if (loginBtn && dropdownMenu) {
-        loginBtn.addEventListener("click", function (e) {
-            e.stopPropagation(); // Ngăn việc click lan ra ngoài
-            dropdownMenu.style.display = dropdownMenu.style.display === "none" ? "block" : "none";
-        });
-
-        // Ẩn dropdown khi click ra ngoài
-        document.addEventListener("click", function () {
-            dropdownMenu.style.display = "none";
-        });
-
-        dropdownMenu.addEventListener("click", function (e) {
-            e.stopPropagation(); // Click trong menu không ẩn nó
-        });
-    }
-});
-</script>
-    
+    <?php if (!empty($success_message)): ?>
+        <div class="popup success">
+            <?php echo htmlspecialchars($success_message); ?>
+        </div>
+    <?php endif; ?>
 </body>
 </html>

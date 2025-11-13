@@ -1,15 +1,19 @@
 <?php
 session_name("CARES_SESSION");
-if (session_status() === PHP_SESSION_NONE) session_start();
+session_start();
 
 header('Content-Type: application/json; charset=utf-8');
 require_once('../../model/get_products.php');
 
 $conn = connectdb();
 
-// ✅ Kiểm tra đăng nhập
+// ✅ Debug session (bạn có thể bỏ sau khi test xong)
 if (!isset($_SESSION['caregiver_id'])) {
-    echo json_encode(["success" => false, "error" => "Chưa đăng nhập"]);
+    echo json_encode([
+        "success" => false,
+        "error" => "Chưa đăng nhập hoặc mất session",
+        "session_debug" => $_SESSION
+    ]);
     exit;
 }
 
@@ -23,9 +27,9 @@ $page      = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit     = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 $offset    = ($page - 1) * $limit;
 
-// ✅ Chỉ lấy đơn “Đã giao” hoặc “Hoàn thành” của người chăm sóc đăng nhập
+// ✅ Chỉ lấy đơn “đã hoàn thành” hoặc “đã hủy” của người chăm sóc đăng nhập
 $where = [];
-$where[] = "(trang_thai IN ('Đã giao', 'Hoàn thành'))";
+$where[] = "(LOWER(trang_thai) IN ('đã hoàn thành', 'đã hủy'))";
 $where[] = "(id_cham_soc = $caregiverId)";
 
 // 🔍 Bộ lọc tìm kiếm
