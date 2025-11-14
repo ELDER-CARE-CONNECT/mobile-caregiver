@@ -1,15 +1,6 @@
 <?php
 // Admin/login.php
 include_once("connect.php"); // kết nối DB (file connect.php nằm cùng thư mục Admin/)
-
-// ✅ THÊM LOGIC HỦY SESSION CŨ TRƯỚC KHI BẮT ĐẦU SESSION MỚI
-// 1. Kiểm tra trạng thái session và hủy
-if (session_status() === PHP_SESSION_ACTIVE) {
-    session_unset();
-    session_destroy();
-}
-
-// 2. Bắt đầu session mới
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -22,78 +13,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // === Kiểm tra bảng admin ===
         $sql_admin = "SELECT * FROM admin WHERE so_dien_thoai = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_admin);
-        // ✅ Cần kiểm tra $stmt->prepare thành công trước khi bind
-        if ($stmt) {
-            $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
-            $stmt->execute();
-            $result_admin = $stmt->get_result();
+        $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
+        $stmt->execute();
+        $result_admin = $stmt->get_result();
 
-            if ($result_admin->num_rows > 0) {
-                $_SESSION['role'] = 'admin';
-                $_SESSION['so_dien_thoai'] = $so_dien_thoai;
-                header("Location: tongquan.php");
-                exit();
-            }
+        if ($result_admin->num_rows > 0) {
+            // SỬA LỖI 1: Tái tạo session ID, hủy session cũ
+            session_regenerate_id(true); 
+            
+            $_SESSION['role'] = 'admin';
+            $_SESSION['so_dien_thoai'] = $so_dien_thoai;
+            header("Location: tongquan.php");
+            exit();
         }
 
         // === Kiểm tra bảng khách hàng ===
-        // ✅ SỬA: Lấy thêm tuổi và giới tính để kiểm tra hồ sơ đầy đủ
-        $sql_kh = "SELECT id_khach_hang, ten_khach_hang, ten_duong, phuong_xa, tinh_thanh, email, tuoi, gioi_tinh FROM khach_hang WHERE so_dien_thoai = ? AND mat_khau = ?";
+        $sql_kh = "SELECT * FROM khach_hang WHERE so_dien_thoai = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_kh);
-        
-        // ✅ Kiểm tra $stmt->prepare thành công
-        if ($stmt) {
-            $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
-            $stmt->execute();
-            $result_kh = $stmt->get_result();
+        $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
+        $stmt->execute();
+        $result_kh = $stmt->get_result();
 
-            if ($result_kh->num_rows > 0) {
-                $user = $result_kh->fetch_assoc();
-                
-                // ⭐ Lưu thông tin vào Session
-                $_SESSION['id_khach_hang'] = $user['id_khach_hang']; 
-                $_SESSION['email'] = $user['email']; 
-                
-                $_SESSION['role'] = 'khach_hang';
-                $_SESSION['so_dien_thoai'] = $so_dien_thoai;
-                $_SESSION['ten_khach_hang'] = $user['ten_khach_hang'];
-                
-                $ten_khach_hang = trim($user['ten_khach_hang'] ?? '');
-                $email = trim($user['email'] ?? '');
-                $ten_duong = trim($user['ten_duong'] ?? '');
-                $phuong_xa = trim($user['phuong_xa'] ?? '');
-                $tinh_thanh = trim($user['tinh_thanh'] ?? '');
-                $tuoi = intval($user['tuoi'] ?? 0);
-                $gioi_tinh = trim($user['gioi_tinh'] ?? '');
+        if ($result_kh->num_rows > 0) {
+            $user = $result_kh->fetch_assoc();
+            
+            // SỬA LỖI 1: Tái tạo session ID, hủy session cũ (Chống lỗi vào tài khoản cũ)
+            session_regenerate_id(true); 
 
-                // ✅ LOGIC KIỂM TRA HỒ SƠ ĐẦY ĐỦ (Đảm bảo tất cả các trường bắt buộc đã được điền)
-                if (empty($ten_khach_hang) || empty($email) || empty($ten_duong) || empty($phuong_xa) || empty($tinh_thanh) || $tuoi <= 0 || empty($gioi_tinh)) {
-                    // Nếu thiếu bất kỳ thông tin nào, chuyển đến trang Hồ sơ để điền
-                    header("Location: ../CareSeeker/PHP/Hoso.php"); 
-                } else {
-                    // Nếu đầy đủ, chuyển đến trang chủ
-                    header("Location: ../CareSeeker/PHP/index.php"); 
-                }
-                exit();
+            $_SESSION['role'] = 'khach_hang';
+            $_SESSION['so_dien_thoai'] = $so_dien_thoai;
+            $_SESSION['ten_khach_hang'] = $user['ten_khach_hang'];
+
+            // SỬA LỖI 2: Thêm ID Khách Hàng vào Session (Rất quan trọng cho API)
+            $_SESSION['id_khach_hang'] = $user['id_khach_hang'];
+            
+            // (Lưu cả profile để dùng cho api_canhan.php)
+            $_SESSION['profile'] = $user; 
+
+            if (empty($user['ten_khach_hang'])) {
+                header("Location: ../CareSeeker/PHP/Frontend/hoso.php"); // Chuyển đến file hoso.php (đã có)
+            } else {
+                header("Location: ../CareSeeker/PHP/Frontend/index.php");
             }
+            exit();
         }
 
         // === Kiểm tra bảng người chăm sóc ===
-        $sql_ncs = "SELECT * FROM nguoi_cham_soc WHERE ten_tai_khoan = ? AND mat_khau = ?";
+        // SỬA LỖI 3: Giả sử người chăm sóc cũng đăng nhập bằng SĐT (thay vì ten_tai_khoan)
+        $sql_ncs = "SELECT * FROM nguoi_cham_soc WHERE so_dien_thoai = ? AND mat_khau = ?";
         $stmt = $conn->prepare($sql_ncs);
-        
-        // ✅ Kiểm tra $stmt->prepare thành công
-        if ($stmt) {
-            $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
-            $stmt->execute();
-            $result_ncs = $stmt->get_result();
+        $stmt->bind_param("ss", $so_dien_thoai, $mat_khau);
+        $stmt->execute();
+        $result_ncs = $stmt->get_result();
 
-            if ($result_ncs->num_rows > 0) {
-                $_SESSION['role'] = 'nguoi_cham_soc';
-                $_SESSION['ten_tai_khoan'] = $so_dien_thoai;
-                header("Location: ../Caregiver/PHP/Donhangchuanhan.php"); 
-                exit();
-            }
+        if ($result_ncs->num_rows > 0) {
+            $user_ncs = $result_ncs->fetch_assoc();
+
+            // SỬA LỖI 1: Tái tạo session ID
+            session_regenerate_id(true); 
+
+            $_SESSION['role'] = 'nguoi_cham_soc';
+            $_SESSION['so_dien_thoai'] = $so_dien_thoai;
+            $_SESSION['id_cham_soc'] = $user_ncs['id_cham_soc']; // Thêm ID
+
+            header("Location: ../CareSeeker/PHP/Frontend/index.php"); // Sửa lại đường dẫn
+            exit();
         }
 
         // Không tìm thấy tài khoản
@@ -108,7 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Đăng nhập</title>
 <style>
-    /* CSS giữ nguyên */
     body { 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background: url("fontend/images/nen_dang-nhap.jpg") no-repeat center center fixed;
@@ -133,8 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        position: relative; 
-        z-index: 1; 
+        position: relative; /* Để đảm bảo z-index hoạt động */
+        z-index: 1; /* Đảm bảo container ở trên ảnh */
     }
     .auth-image {
         flex: 1;
@@ -150,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         height: 100vh;
         z-index: -1;
         object-fit: cover;
-        border-radius: 0; 
+        border-radius: 0; /* Xóa border-radius vì giờ là full màn */
     }
     .auth-wrapper {
         flex: 0 0 420px;
@@ -352,8 +335,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!res.ok) throw new Error('Network response was not ok');
         const data = await res.json();
         if (data.success) {
-          // SỬA: Chuyển hướng đến Hoso.php để khách hàng hoàn thành thông tin sau khi đăng nhập Google lần đầu
-          window.location.href = "../CareSeeker/PHP/Hoso.php";
+        window.location.href = '/ELDER-CARE-CONNECT/CareSeeker/PHP/frontend/index.php';
         } else {
           alert("Không thể lưu người dùng: " + (data.message || "Lỗi không xác định"));
         }
