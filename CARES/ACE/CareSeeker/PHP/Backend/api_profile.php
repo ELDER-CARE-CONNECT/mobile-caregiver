@@ -1,29 +1,24 @@
 <?php
-// Tệp: backend/api_profile.php
-// Microservice: Quản lý Hồ sơ Khách hàng (Tải dữ liệu GET, Cập nhật POST)
-session_start();
+// Session đã được start bởi Gateway
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json');
 
-// --- CẤU HÌNH DB VÀ UPLOAD ---
 require_once 'db_connect.php'; 
 
-// CẤU HÌNH UPLOAD (Dựa trên logic hoso.php gốc)
-$base_dir = dirname(__DIR__) . '/Frontend'; // Thư mục Frontend (ví dụ: .../PHP/Frontend)
-$upload_dir = $base_dir . '/uploads/avatars/'; // Đường dẫn vật lý .../Frontend/uploads/avatars/
-$base_url_path = 'uploads/avatars/'; // SỬA LỖI: Chỉ lưu đường dẫn tương đối này vào CSDL
+$base_dir = dirname(__DIR__) . '/Frontend'; 
+$upload_dir = $base_dir . '/uploads/avatars/'; 
+$base_url_path = 'uploads/avatars/'; 
 
 if (!is_dir($upload_dir)) {
-    // Thử tạo thư mục nếu nó không tồn tại
-    // (Hãy đảm bảo thư mục .../Frontend/uploads/ có quyền ghi)
     if (!mkdir($upload_dir, 0777, true) && !is_dir($upload_dir)) {
          http_response_code(500);
          echo json_encode(['success' => false, 'message' => "Lỗi: Không thể tạo thư mục upload tại: $upload_dir"]);
          exit;
     }
 }
-// --- END CẤU HÌNH ---
 
-// 1. KIỂM TRA ĐĂNG NHẬP
 if (!isset($_SESSION['id_khach_hang'])) { 
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Lỗi xác thực: Vui lòng đăng nhập.']);
@@ -35,9 +30,6 @@ try {
     $pdo = get_pdo_connection();
     $method = $_SERVER['REQUEST_METHOD'];
 
-    // =============================================
-    // GET: TẢI DỮ LIỆU HIỆN TẠI
-    // =============================================
     if ($method === 'GET') {
         $sql_fetch = "SELECT id_khach_hang, ten_khach_hang, so_dien_thoai, email, 
                         ten_duong, phuong_xa, tinh_thanh,
@@ -58,14 +50,9 @@ try {
         exit;
     }
 
-
-    // =============================================
-    // POST: CẬP NHẬT DỮ LIỆU
-    // =============================================
     if ($method === 'POST') {
         $errors = [];
         
-        // Tải dữ liệu hồ sơ hiện tại từ DB để so sánh và lấy ảnh cũ
         $stmt_old = $pdo->prepare("SELECT so_dien_thoai, email, hinh_anh FROM khach_hang WHERE id_khach_hang = ?");
         $stmt_old->execute([$id_khach_hang_hien_tai]);
         $profile_old = $stmt_old->fetch(PDO::FETCH_ASSOC);
@@ -74,7 +61,6 @@ try {
              $errors[] = 'Không tìm thấy hồ sơ để cập nhật.';
         }
         
-        // Lấy dữ liệu từ form (sử dụng $_POST vì enctype="multipart/form-data")
         $ho_ten = trim($_POST['ho_ten'] ?? '');
         $so_dien_thoai_moi = trim($_POST['so_dt'] ?? ''); 
         $email_moi = trim($_POST['email'] ?? ''); 
@@ -85,9 +71,8 @@ try {
         $gioi_tinh = $_POST['gioi_tinh'] ?? '';
         $chieu_cao = floatval($_POST['chieu_cao'] ?? 0); 
         $can_nang = floatval($_POST['can_nang'] ?? 0);
-        $hinh_anh_path = $profile_old['hinh_anh'] ?? ''; // Mặc định là ảnh cũ
+        $hinh_anh_path = $profile_old['hinh_anh'] ?? ''; 
 
-        // --- VALIDATION (Dựa trên code gốc của bạn) ---
         if ($ho_ten === '') $errors[] = 'Vui lòng nhập **Họ và tên**.';
         if ($so_dien_thoai_moi === '') $errors[] = 'Vui lòng nhập **Số điện thoại**.';
         if ($email_moi === '') $errors[] = 'Vui lòng nhập **Email**.';
@@ -98,29 +83,23 @@ try {
         if ($gioi_tinh === '') $errors[] = 'Vui lòng chọn **Giới tính**.';
 
         if (empty($errors)) {
-            // 1. Kiểm tra SĐT hợp lệ
             if (!preg_match('/^[0-9]{10}$/', $so_dien_thoai_moi)) {
                 $errors[] = 'Số điện thoại phải **đúng 10 chữ số** (ví dụ: 0912345678).';
             }
-            // 2. Kiểm tra Email hợp lệ
             if (!filter_var($email_moi, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = 'Email không hợp lệ. Vui lòng kiểm tra lại.';
             }
-            // 3. Kiểm tra trùng lặp SĐT
             if ($so_dien_thoai_moi !== $profile_old['so_dien_thoai']) {
                 $stmt_check_sdt = $pdo->prepare("SELECT 1 FROM khach_hang WHERE so_dien_thoai = ? AND id_khach_hang <> ?");
                 $stmt_check_sdt->execute([$so_dien_thoai_moi, $id_khach_hang_hien_tai]);
                 if ($stmt_check_sdt->fetch()) { $errors[] = 'Số điện thoại này đã được đăng ký cho tài khoản khác.'; }
             }
-            // 4. Kiểm tra trùng lặp Email
             if ($email_moi !== $profile_old['email']) {
                 $stmt_check_email = $pdo->prepare("SELECT 1 FROM khach_hang WHERE email = ? AND id_khach_hang <> ?");
                 $stmt_check_email->execute([$email_moi, $id_khach_hang_hien_tai]);
                 if ($stmt_check_email->fetch()) { $errors[] = 'Email này đã được đăng ký cho tài khoản khác.'; }
             }
         }
-        
-        // --- XỬ LÝ UPLOAD ẢNH (Dựa trên logic gốc) ---
         if (empty($errors) && isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['avatar'];
             $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -135,13 +114,11 @@ try {
                 $new_image_file_target = $upload_dir . $new_file_name;
                 
                 if (move_uploaded_file($file['tmp_name'], $new_image_file_target)) {
-                    // SỬA LỖI: Chỉ lưu đường dẫn tương đối từ /Frontend
                     $new_hinh_anh_path = $base_url_path . $new_file_name; 
                     
-                    // Xóa ảnh cũ nếu tồn tại
                     $old_path_on_disk = $base_dir . '/' . $profile_old['hinh_anh'];
                     if (!empty($profile_old['hinh_anh']) && file_exists($old_path_on_disk)) {
-                         @unlink($old_path_on_disk); // @ để tránh lỗi nếu không xóa được
+                         @unlink($old_path_on_disk); 
                     }
                     $hinh_anh_path = $new_hinh_anh_path;
                 } else {
@@ -151,12 +128,10 @@ try {
         }
 
         if (!empty($errors)) {
-            http_response_code(400); // Bad Request
+            http_response_code(400); 
             echo json_encode(['success' => false, 'message' => 'Vui lòng kiểm tra lại thông tin.', 'errors' => $errors]);
             exit;
         }
-
-        // --- BƯỚC 4: CẬP NHẬT DỮ LIỆU VÀO DB ---
         $sql_update = "UPDATE khach_hang SET 
             ten_khach_hang = ?, so_dien_thoai = ?, email = ?,
             ten_duong = ?, phuong_xa = ?, tinh_thanh = ?, 
@@ -170,12 +145,11 @@ try {
             $ho_ten, $so_dien_thoai_moi, $email_moi, 
             $ten_duong, $phuong_xa, $tinh_thanh, 
             $tuoi, $gioi_tinh, $chieu_cao, $can_nang, 
-            $hinh_anh_path, // Đường dẫn đã sửa
+            $hinh_anh_path, 
             $id_khach_hang_hien_tai
         ];
 
         if ($stmt_update->execute($update_params)) {
-            // Cập nhật lại Session sau khi update thành công 
             $_SESSION['ten_khach_hang'] = $ho_ten; 
             $_SESSION['so_dien_thoai'] = $so_dien_thoai_moi; 
 
