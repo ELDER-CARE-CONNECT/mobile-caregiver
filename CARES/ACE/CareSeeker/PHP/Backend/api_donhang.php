@@ -1,5 +1,9 @@
 <?php
-session_start();
+// Session đã được start bởi Gateway
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+header('Content-Type: application/json');
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'khach_hang' || !isset($_SESSION['so_dien_thoai'])) {
 
@@ -19,7 +23,6 @@ try {
 } catch (PDOException $e) {
     die("Kết nối DB thất bại: " . $e->getMessage());
 }
-n
 $order = [];
 $services = []; 
 $id_khach_hang = 0;
