@@ -1,6 +1,9 @@
 <?php
 // Tệp: Backend/api_canhan.php
-session_start();
+// Session đã được start bởi Gateway
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 header('Content-Type: application/json');
 if (!isset($_SESSION['id_khach_hang'])) {
     http_response_code(401);
