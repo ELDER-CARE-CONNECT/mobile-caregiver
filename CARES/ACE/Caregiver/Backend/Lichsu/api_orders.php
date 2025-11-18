@@ -9,7 +9,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'nguoi_cham_soc') {
     exit;
 }
 
-require_once('../../../Admin/connect.php'); // Kết nối DB
+include_once('../../../model/get_products.php');
+$conn = connectdb(); // gọi hàm để tạo kết nối
+
 $caregiverId = (int)$_SESSION['id_cham_soc'];
 
 // Nhận filter từ GET

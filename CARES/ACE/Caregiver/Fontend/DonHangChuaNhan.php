@@ -1,66 +1,84 @@
 <?php
 session_start();
+
+// 1. Kiểm tra đăng nhập
 if (!isset($_SESSION['so_dien_thoai'])) {
-    header("Location: ../Admin/login.php");
+    header("Location: ../../Admin/frontend/auth/login.php");
     exit();
 }
+
 $so_dien_thoai = $_SESSION['so_dien_thoai'];
 
-// --- Lấy thông tin người chăm sóc ---
-$ch = curl_init("http://localhost/CARES/ACE/Caregiver/Api_getway/API.php?dichvu=donhang&hanhdong=lay-nguoichamsoc");
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(["so_dien_thoai"=>$so_dien_thoai]));
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/x-www-form-urlencoded"]);
-$response = curl_exec($ch);
-if($response===false) die("❌ Lỗi cURL: ".curl_error($ch));
-$nguoiCS = json_decode($response,true);
-curl_close($ch);
+// 2. KẾT NỐI DATABASE TRỰC TIẾP (Thay vì gọi API)
+require_once 'connect.php'; // File này nằm cùng thư mục Fontend
+if (!function_exists('connectdb')) {
+    die("Lỗi: File connect.php không đúng chuẩn.");
+}
+$conn = connectdb();
 
-if(!is_array($nguoiCS) || $nguoiCS['status']!='success') die("❌ Không tìm thấy người chăm sóc!");
-$id_cham_soc = $nguoiCS['data']['id_cham_soc'];
-$ho_ten = $nguoiCS['data']['ho_ten'];
+// 3. Lấy thông tin người chăm sóc từ SĐT
+$sql_user = "SELECT id_cham_soc, ho_ten FROM nguoi_cham_soc WHERE so_dien_thoai = ?";
+$stmt = $conn->prepare($sql_user);
+$stmt->bind_param("s", $so_dien_thoai);
+$stmt->execute();
+$result_user = $stmt->get_result();
+$nguoiCS = $result_user->fetch_assoc();
 
-// --- Xử lý POST nhận / hủy đơn ---
+if (!$nguoiCS) {
+    // Nếu không tìm thấy trong bảng người chăm sóc -> Có thể đăng nhập nhầm tài khoản Khách hàng
+    die("<div style='padding:20px; color:red; text-align:center;'>
+            <h2>❌ Lỗi tài khoản</h2>
+            <p>Số điện thoại <b>$so_dien_thoai</b> không tồn tại trong danh sách Người chăm sóc.</p>
+            <a href='../../Admin/logout.php'>Đăng xuất và thử lại</a>
+         </div>");
+}
+
+$id_cham_soc = $nguoiCS['id_cham_soc'];
+$ho_ten = $nguoiCS['ho_ten'];
+
+// Lưu ID vào session để dùng cho các trang khác (như api_profile)
+$_SESSION['id_cham_soc'] = $id_cham_soc;
+
+// 4. Xử lý nhận đơn / hủy đơn
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_don_hang = $_POST['id_don_hang'] ?? null;
-    if(isset($_POST['nhan_don']) || isset($_POST['huy_don'])) {
-        $trang_thai = isset($_POST['nhan_don']) ? 'nhan_don' : 'huy_don';
-        $ch = curl_init("http://localhost/CARES/ACE/Caregiver/Api_getway/API.php?dichvu=donhang&hanhdong=capnhat");
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-            "id_don_hang"=>$id_don_hang,
-            "hanhdong"=>$trang_thai,
-            "id_cham_soc"=>$id_cham_soc
-        ]));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        if($response===false) die("❌ Lỗi cURL: ".curl_error($ch));
-        $result = json_decode($response,true);
-        curl_close($ch);
-        if($result['status']==='success'){
+    $trang_thai_moi = '';
+
+    if (isset($_POST['nhan_don'])) {
+        $trang_thai_moi = 'đang hoàn thành';
+    } elseif (isset($_POST['huy_don'])) {
+        $trang_thai_moi = 'đã hủy';
+    }
+
+    if ($id_don_hang && $trang_thai_moi) {
+        $sql_update = "UPDATE don_hang SET trang_thai = ? WHERE id_don_hang = ? AND id_nguoi_cham_soc = ?";
+        $stmt_update = $conn->prepare($sql_update);
+        $stmt_update->bind_param("sii", $trang_thai_moi, $id_don_hang, $id_cham_soc);
+        
+        if ($stmt_update->execute()) {
+            // Reload trang để cập nhật giao diện
             header("Location: DonHangChuaNhan.php");
             exit();
-        }else{
-            die("❌ Cập nhật đơn thất bại: ".$result['message']);
+        } else {
+            echo "<script>alert('Lỗi cập nhật đơn hàng: " . $conn->error . "');</script>";
         }
     }
 }
 
-// --- Lấy danh sách đơn hàng ---
-$ch = curl_init("http://localhost/CARES/ACE/Caregiver/Api_getway/API.php?dichvu=donhang&hanhdong=lay-danhsach");
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(["id_cham_soc"=>$id_cham_soc]));
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-if($response===false) die("❌ Lỗi cURL: ".curl_error($ch));
-$donhang = json_decode($response,true);
-curl_close($ch);
-$orders = $donhang['data'] ?? [];
-if(!empty($orders)){
-    usort($orders, function($a, $b){
-        return $b['id_don_hang'] - $a['id_don_hang'];
-    });
+// 5. Lấy danh sách đơn hàng (Chờ xác nhận & Đang hoàn thành)
+$sql_orders = "SELECT id_don_hang, ten_khach_hang, ngay_dat, tong_tien, trang_thai 
+               FROM don_hang 
+               WHERE id_nguoi_cham_soc = ? 
+               AND trang_thai IN ('chờ xác nhận', 'đang hoàn thành')
+               ORDER BY id_don_hang DESC";
+
+$stmt_orders = $conn->prepare($sql_orders);
+$stmt_orders->bind_param("i", $id_cham_soc);
+$stmt_orders->execute();
+$result_orders = $stmt_orders->get_result();
+$orders = [];
+while ($row = $result_orders->fetch_assoc()) {
+    $orders[] = $row;
 }
 ?>
 
@@ -73,7 +91,7 @@ if(!empty($orders)){
 <link rel="stylesheet" href="../CSS/style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
-/* CSS giống như trước, không thay đổi */
+/* CSS Cũ giữ nguyên */
 body{font-family:'Segoe UI',sans-serif;background:#f9fafb;margin:0;padding:0}
 .accepted-orders-container{max-width:1200px;margin:40px auto;padding:20px}
 .hero h1{font-size:28px;font-weight:700;margin-bottom:20px;color:#111827;display:flex;align-items:center;gap:10px}
@@ -95,50 +113,54 @@ body{font-family:'Segoe UI',sans-serif;background:#f9fafb;margin:0;padding:0}
 @media(max-width:768px){.order-card{width:100%;height:auto}}
 </style>
 </head>
- <?php
-  include 'Dieuhuong.php'; 
-  ?>
+
+<?php include 'Dieuhuong.php'; ?>
+
 <body>
 <div class="accepted-orders-container">
-<div class="hero"><h1><i class="fas fa-list"></i> Đơn hàng được giao cho bạn</h1></div>
-<div class="orders-wrapper"><h2>Xin chào, <?php echo htmlspecialchars($ho_ten); ?>!</h2>
-<div class="order-cards">
-<?php
-if(!empty($orders)){
-    foreach($orders as $row){
-        echo "<a href='Chitietdonhang.php?id_don_hang={$row['id_don_hang']}' class='order-card'>";
-        echo "<div><h3>Mã đơn: #{$row['id_don_hang']}</h3><div class='order-info'>";
-        echo "<p><strong>Khách hàng:</strong> {$row['ten_khach_hang']}</p>";
-        echo "<p><strong>Ngày đặt:</strong> {$row['ngay_dat']}</p>";
-        echo "<p><strong>Trạng thái:</strong> <span class='status ".($row['trang_thai']=='đang hoàn thành'?'completed':'pending')."'>{$row['trang_thai']}</span></p>";
-        echo "<p><strong>Tổng tiền:</strong> ".number_format($row['tong_tien'],0,',','.')."₫</p></div></div>";
-        if($row['trang_thai']=='chờ xác nhận'){
-            echo "<div class='btn-container'>
-            <form method='POST' style='display:inline;' onClick='event.stopPropagation();'>
-            <input type='hidden' name='id_don_hang' value='{$row['id_don_hang']}'>
-            <button type='submit' name='nhan_don' class='accept-btn'>Nhận đơn</button>
-            </form>
-            <form method='POST' style='display:inline;' onClick='event.stopPropagation();'>
-            <input type='hidden' name='id_don_hang' value='{$row['id_don_hang']}'>
-            <button type='submit' name='huy_don' class='cancel-btn'>Hủy đơn</button>
-            </form></div>";
-        }
-        echo "</a>";
-    }
-}else{
-    echo "<p>❌ Hiện tại bạn chưa có đơn hàng nào được giao.</p>";
-}
-?>
-</div></div></div>
+    <div class="hero"><h1><i class="fas fa-list"></i> Đơn hàng được giao cho bạn</h1></div>
+    
+    <div class="orders-wrapper">
+        <h2>Xin chào, <?php echo htmlspecialchars($ho_ten); ?>!</h2>
+        
+        <div class="order-cards">
+            <?php if (!empty($orders)): ?>
+                <?php foreach($orders as $row): ?>
+                    <a href='Chitietdonhang.php?id_don_hang=<?php echo $row['id_don_hang']; ?>' class='order-card'>
+                        <div>
+                            <h3>Mã đơn: #<?php echo $row['id_don_hang']; ?></h3>
+                            <div class='order-info'>
+                                <p><strong>Khách hàng:</strong> <?php echo htmlspecialchars($row['ten_khach_hang']); ?></p>
+                                <p><strong>Ngày đặt:</strong> <?php echo date('d/m/Y', strtotime($row['ngay_dat'])); ?></p>
+                                <p><strong>Trạng thái:</strong> 
+                                    <span class='status <?php echo ($row['trang_thai']=='đang hoàn thành' ? 'completed' : 'pending'); ?>'>
+                                        <?php echo $row['trang_thai']; ?>
+                                    </span>
+                                </p>
+                                <p><strong>Tổng tiền:</strong> <?php echo number_format($row['tong_tien'], 0, ',', '.'); ?>₫</p>
+                            </div>
+                        </div>
+
+                        <?php if($row['trang_thai'] == 'chờ xác nhận'): ?>
+                        <div class='btn-container'>
+                            <form method='POST' style='display:inline;' onsubmit="return confirm('Bạn chắc chắn muốn nhận đơn này?');" onClick='event.stopPropagation();'>
+                                <input type='hidden' name='id_don_hang' value='<?php echo $row['id_don_hang']; ?>'>
+                                <button type='submit' name='nhan_don' class='accept-btn'>Nhận đơn</button>
+                            </form>
+
+                            <form method='POST' style='display:inline;' onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');" onClick='event.stopPropagation();'>
+                                <input type='hidden' name='id_don_hang' value='<?php echo $row['id_don_hang']; ?>'>
+                                <button type='submit' name='huy_don' class='cancel-btn'>Hủy đơn</button>
+                            </form>
+                        </div>
+                        <?php endif; ?>
+                    </a>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p style="padding: 20px; color: #666;">❌ Hiện tại bạn chưa có đơn hàng nào mới.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
 </body>
 </html>
-<script>
-window.addEventListener('pageshow', function(event) {
-    // Nếu trang được load từ cache (back/forward)
-    if (event.persisted || (window.performance && window.performance.getEntriesByType('navigation')[0].type === 'back_forward')) {
-        // reload lại trang 1 lần
-        location.reload();
-    }
-});
-</script>
-

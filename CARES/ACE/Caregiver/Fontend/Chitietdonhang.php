@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
-/* --- CSS giữ nguyên như file PHP cũ --- */
+/* --- CSS toàn bộ --- */
 body { font-family: 'Inter', sans-serif; background: #f8f8fa; color: #333; line-height: 1.6; margin: 0; padding-top: 60px;}
 .main-content { display: flex; justify-content: center; padding: 0 15px 30px; box-sizing: border-box; min-height: calc(100vh - 60px); margin-top: 5vh;}
 .container { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 100%; max-width: 700px;}
@@ -40,9 +40,7 @@ h1 { color: #FF6B81; font-size: 28px; margin-bottom: 5px; font-weight: 800; text
 @media (max-width: 768px) { .container { padding: 20px; } .main-content { padding: 140px 10px 30px; } }
 </style>
 </head>
-<?php
-  include 'Dieuhuong.php'; 
-  ?>
+<?php include 'Dieuhuong.php'; ?>
 <body>
 <div class="main-content">
     <div class="container" id="orderContainer">
@@ -57,88 +55,84 @@ async function fetchOrder(){
     const res = await fetch(`../Backend/Chitietdonhang/chitietdonhang.php?id_don_hang=${id_don_hang}`);
     const data = await res.json();
     if(data.error){ alert(data.error); return; }
-    renderOrder(data.donhang);
+    renderOrder(data);
 }
 
 function renderOrder(d){
     const container = document.getElementById('orderContainer');
     container.innerHTML = `
         <h1><i class="fas fa-file-invoice"></i> Chi Tiết Đơn Hàng</h1>
-        <p class="order-id">Mã đơn hàng: <strong>#${d.id_don_hang}</strong></p>
+        <p class="order-id">Mã đơn hàng: <strong>#${d.donhang.id_don_hang}</strong></p>
 
-        <!-- Thông tin đơn hàng -->
         <div class="section-box">
             <div class="detail-row">
                 <span class="detail-label"><i class="icon fas fa-info-circle"></i> Trạng Thái:</span>
-                <span class="status-tag ${statusClass(d.trang_thai)}">${d.trang_thai}</span>
+                <span class="status-tag ${statusClass(d.donhang.trang_thai)}">${d.donhang.trang_thai}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label"><i class="icon fas fa-calendar-alt"></i> Ngày Đặt:</span>
-                <span class="detail-value">${new Date(d.ngay_dat).toLocaleString('vi-VN')}</span>
+                <span class="detail-value">${new Date(d.donhang.ngay_dat).toLocaleString('vi-VN')}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label"><i class="icon fas fa-credit-card"></i> Thanh toán:</span>
-                <span class="detail-value">${d.hinh_thuc_thanh_toan}</span>
+                <span class="detail-value">${d.donhang.hinh_thuc_thanh_toan}</span>
             </div>
         </div>
 
-        <!-- Dịch vụ & nhiệm vụ -->
         <div class="section-box">
             <div class="section-title"><i class="icon fas fa-clipboard-list"></i> Dịch Vụ & Thời Gian</div>
             <div class="detail-row">
                 <span class="detail-label"><i class="icon fas fa-clock"></i> Bắt đầu:</span>
-                <span class="detail-value">${new Date(d.thoi_gian_bat_dau).toLocaleString('vi-VN')}</span>
+                <span class="detail-value">${new Date(d.donhang.thoi_gian_bat_dau).toLocaleString('vi-VN')}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label"><i class="icon fas fa-hourglass-end"></i> Kết thúc:</span>
-                <span class="detail-value">${new Date(d.thoi_gian_ket_thuc).toLocaleString('vi-VN')}</span>
+                <span class="detail-value">${new Date(d.donhang.thoi_gian_ket_thuc).toLocaleString('vi-VN')}</span>
             </div>
 
-            <div class="service-item" onclick="hoanThanhNhiemVu('${d.trang_thai}','${d.trang_thai_nhiem_vu}')">
-                <strong>${d.ten_nhiem_vu}</strong>
-                <span class="task-status ${d.trang_thai_nhiem_vu=='chờ xác nhận'?'task-pending':'task-done'}">
-                    ${d.trang_thai_nhiem_vu}
-                </span>
-            </div>
+            ${d.nhiem_vu.map(nv => `
+                <div class="service-item" onclick="hoanThanhNhiemVu('${d.donhang.trang_thai}', '${nv.trang_thai_nhiem_vu}', ${nv.id_nhiem_vu})">
+                    <strong>${nv.ten_nhiem_vu}</strong>
+                    <span class="task-status ${nv.trang_thai_nhiem_vu=='chờ xác nhận'?'task-pending':'task-done'}">
+                        ${nv.trang_thai_nhiem_vu}
+                    </span>
+                </div>
+            `).join('')}
         </div>
 
-        <!-- Thông tin liên hệ -->
         <div class="section-box">
             <div class="section-title"><i class="icon fas fa-map-marker-alt"></i> Thông Tin Liên Hệ/Địa Chỉ</div>
             <div class="detail-row">
                 <span class="detail-label"><i class="icon fas fa-user"></i> Người liên hệ:</span>
-                <span class="detail-value">${d.ten_khach_hang}</span>
+                <span class="detail-value">${d.donhang.ten_khach_hang}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label"><i class="icon fas fa-phone"></i> SĐT liên hệ:</span>
-                <span class="detail-value">${d.so_dien_thoai}</span>
+                <span class="detail-value">${d.donhang.so_dien_thoai}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label"><i class="icon fas fa-map-marked-alt"></i> Địa chỉ:</span>
-                <span class="detail-value">${d.dia_chi_giao_hang}</span>
+                <span class="detail-value">${d.donhang.dia_chi_giao_hang}</span>
             </div>
         </div>
 
         <div class="section-box total-section">
             <span>Tổng Cộng</span>
-            <span style="color: #FF6B81;">${Number(d.tong_tien).toLocaleString('vi-VN')} VND</span>
+            <span style="color: #FF6B81;">${Number(d.donhang.tong_tien).toLocaleString('vi-VN')} VND</span>
         </div>
 
-        <!-- Buttons -->
         <div class="buttons">
-          <a href="chat.php?id_don_hang=${d.id_don_hang}" class="button btn-chat">
+          <a href="chat.php?id_don_hang=${d.donhang.id_don_hang}" class="button btn-chat">
             <i class="fas fa-comment-dots"></i> Chat
           </a>
 
-          <button class="button btn-confirm" onclick="xacNhanDon('${d.trang_thai}','${d.trang_thai_nhiem_vu}')">
-            <i class="fas fa-check-circle"></i> ${d.trang_thai=='chờ xác nhận'?'Nhận đơn':d.trang_thai=='đang hoàn thành'?'Hoàn thành đơn':d.trang_thai}
+          <button class="button btn-confirm" onclick="xacNhanDon()">
+            <i class="fas fa-check-circle"></i> ${d.donhang.trang_thai=='chờ xác nhận'?'Nhận đơn':d.donhang.trang_thai=='đang hoàn thành'?'Hoàn thành đơn':d.donhang.trang_thai}
           </button>
 
-          ${d.trang_thai=='chờ xác nhận' ? `<button class="button btn-cancel" onclick="huyDon()"><i class="fas fa-times"></i> Hủy đơn</button>` : ''}
+          ${d.donhang.trang_thai=='chờ xác nhận' ? `<button class="button btn-cancel" onclick="huyDon()"><i class="fas fa-times"></i> Hủy đơn</button>` : ''}
 
-          <button onclick="history.back()" class="button" style="background:#667eea;">
-            <i class="fas fa-arrow-left"></i> Quay lại
-          </button>
+         
         </div>
     `;
 }
@@ -153,33 +147,47 @@ function statusClass(status){
     }
 }
 
-// Các hành động
-async function postAction(action){
+function hoanThanhNhiemVu(trangThaiDon, trangThaiNhiemVu, idNhiemVu){
+    if(trangThaiDon === 'đang hoàn thành' && trangThaiNhiemVu==='chờ xác nhận'){
+        if(confirm("Bạn có muốn hoàn thành nhiệm vụ này không?")){
+            postAction('hoan_thanh_nhiem_vu', idNhiemVu);
+        }
+    }
+}
+
+async function postAction(action, idNhiemVu=null){
+    const params = new URLSearchParams({id_don_hang, action});
+    if(idNhiemVu) params.append('id_nhiem_vu', idNhiemVu);
+
     const res = await fetch('../Backend/Chitietdonhang/chitietdonhang.php', {
         method:'POST',
-        body: new URLSearchParams({id_don_hang, action})
+        body: params
     });
     const data = await res.json();
     if(data.status==='success') fetchOrder();
     else if(data.message) alert(data.message);
 }
 
-function hoanThanhNhiemVu(trangThaiDon, trangThaiNhiemVu){
-    if(trangThaiDon === 'đang hoàn thành' && trangThaiNhiemVu==='chờ xác nhận'){
-        if(confirm("Bạn có muốn hoàn thành nhiệm vụ này không?")){
-            postAction('hoan_thanh_nhiem_vu');
+function xacNhanDon(){
+    const trangThaiDon = document.querySelector('.status-tag').textContent.trim();
+
+    if(trangThaiDon === 'chờ xác nhận'){
+        if(confirm("Bạn có chắc chắn nhận đơn hàng này không?")){
+            postAction('xac_nhan_don');
+        }
+    } else if(trangThaiDon === 'đang hoàn thành'){
+        // Kiểm tra tất cả nhiệm vụ đã hoàn thành
+        const pendingTasks = Array.from(document.querySelectorAll('.task-status.task-pending'));
+        if(pendingTasks.length > 0){
+            alert("Vui lòng hoàn thành tất cả nhiệm vụ trước khi hoàn thành đơn!");
+            return;
+        }
+        if(confirm("Bạn có chắc chắn hoàn thành đơn hàng này không?")){
+            postAction('xac_nhan_don');
         }
     }
 }
 
-function xacNhanDon(trangThaiDon, trangThaiNhiemVu){
-    if(trangThaiDon==='chờ xác nhận' && confirm("Bạn có chắc chắn nhận đơn hàng này không?")){
-        postAction('xac_nhan_don');
-    } else if(trangThaiDon==='đang hoàn thành'){
-        if(trangThaiNhiemVu!=='đã hoàn thành'){ alert("Vui lòng hoàn thành nhiệm vụ trước khi hoàn thành đơn!"); return; }
-        if(confirm("Bạn có chắc chắn hoàn thành đơn hàng này không?")) postAction('xac_nhan_don');
-    }
-}
 
 function huyDon(){
     if(confirm("Bạn có chắc chắn hủy đơn hàng này không?")) postAction('huy_don');

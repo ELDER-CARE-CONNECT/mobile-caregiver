@@ -1,12 +1,21 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "sanpham"; // đổi nếu bạn dùng tên khác
+function connectdb() {
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "sanpham";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // Tạo kết nối
+    $conn = new mysqli($servername, $username, $password, $dbname);
+    
+    // Đặt charset utf8 để không bị lỗi font tiếng Việt
+    $conn->set_charset("utf8");
 
-if ($conn->connect_error) {
-    die("Kết nối thất bại: " . $conn->connect_error);
+    // Kiểm tra kết nối
+    if ($conn->connect_error) {
+        die("Kết nối thất bại: " . $conn->connect_error);
+    }
+    
+    return $conn;
 }
 ?>
