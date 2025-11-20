@@ -20,7 +20,10 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
+<<<<<<< HEAD
         /* CSS giữ nguyên */
+=======
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
         :root {
     --accent: #FF6B81;
     --accent-light: #FFE5E8;
@@ -855,14 +858,22 @@ async function loadData() {
     showLoading(true);
     try {
 
+<<<<<<< HEAD
         // Thêm credentials: 'include'
         const response = await fetch(PROFILE_LOAD_API_URL, { credentials: 'include' });
+=======
+        const response = await fetch(PROFILE_LOAD_API_URL);
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
         
         if (!response.ok) {
             const result = await response.json();
             alert(`Lỗi tải dữ liệu: ${result.message}`);
             if(response.status === 401) {
+<<<<<<< HEAD
                 window.location.href = '../../../Admin/frontend/auth/login.php';
+=======
+                window.location.href = '../../../Admin/login.php';
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
             }
             return;
         }
@@ -903,12 +914,16 @@ backToInfo.addEventListener('click', () => {
     infoSection.classList.remove('hidden');
 });
 
+<<<<<<< HEAD
     // --- SỬA LỖI ĐĂNG XUẤT: Truyền dữ liệu POST đúng cách và thêm credentials ---
+=======
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     btnLogout.addEventListener('click', async () => {
     if (!confirm('Bạn có chắc chắn muốn đăng xuất?')) return;
     
     showLoading(true);
     try {
+<<<<<<< HEAD
         const logoutData = new URLSearchParams();
         logoutData.append('action', 'logout'); // Truyền action qua body/params
         
@@ -921,11 +936,19 @@ backToInfo.addEventListener('click', () => {
             },
             body: logoutData,
             credentials: 'include' // <--- BẮT BUỘC để gửi Session Cookie
+=======
+        // SỬA: Thêm tham số action=logout vào URL
+        const response = await fetch(`${AUTH_API_URL}&action=logout`, { 
+            method: 'POST', // Giữ nguyên POST để tránh cache
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
         });
         const result = await response.json();
 
         if (result.success) {
+<<<<<<< HEAD
             // Backend phải trả về URL có cổng 8080: http://localhost:8080/CARES/ACE/Admin/frontend/auth/login.php
+=======
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
             window.location.href = result.redirect_url; 
         } else {
              alert(`Lỗi đăng xuất: ${result.message}`);
@@ -947,8 +970,12 @@ profileEditForm.addEventListener('submit', async (e) => {
         // Gửi yêu cầu Cập nhật Profile qua Gateway
         const response = await fetch(PROFILE_UPDATE_API_URL, {
             method: 'POST',
+<<<<<<< HEAD
             body: formData,
             credentials: 'include' // <--- BẮT BUỘC để gửi Session Cookie
+=======
+            body: formData 
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
         });
         const result = await response.json();
 
@@ -992,17 +1019,24 @@ btnSubmitComplaint.addEventListener('click', async () => {
     data.append('id_don_hang', idDon);
     data.append('noi_dung', reason);
     data.append('action', 'submit_complaint');
+<<<<<<< HEAD
     
     // --- SỬA LỖI KHIẾU NẠI: Thêm Header và credentials để đảm bảo Session ---
+=======
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     try {
         // Gửi yêu cầu Khiếu nại qua Gateway
         const response = await fetch(COMPLAINT_API_URL, {
             method: 'POST',
+<<<<<<< HEAD
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: data,
             credentials: 'include' // <--- BẮT BUỘC để gửi Session Cookie
+=======
+            body: data
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
         });
         const result = await response.json();
 

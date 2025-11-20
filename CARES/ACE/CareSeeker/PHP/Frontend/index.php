@@ -585,7 +585,11 @@ async function fetchCaregivers() {
                         <span class="rating"><i class="fas fa-star"></i> ${rating}/5</span>
                         <p>Kinh nghiệm: <b>${experience}</b></p>
                         <p class="price">${price_per_hour}</p>
+<<<<<<< HEAD
                         <a href="thongtinnguoichamsoc.php?id=${caregiver.id_cham_soc}">Xem Hồ sơ chi tiết <i class="fas fa-arrow-right"></i></a>
+=======
+                        <a href="Thongtinnguoichamsoc.php?id=${caregiver.id_cham_soc}">Xem Hồ sơ chi tiết <i class="fas fa-arrow-right"></i></a>
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                       </div>
                     </div>
                 `;

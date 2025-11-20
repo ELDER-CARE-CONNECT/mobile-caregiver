@@ -5,14 +5,22 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 header('Content-Type: application/json');
 
+<<<<<<< HEAD
 // --- KHẮC PHỤC LỖI XÁC THỰC ---
 if (!isset($_SESSION['id_khach_hang'])) {
+=======
+if (!isset($_SESSION['profile']) || empty($_SESSION['profile']['id_khach_hang'])) {
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     http_response_code(401); 
     echo json_encode(['success' => false, 'message' => 'Lỗi xác thực: Bạn chưa đăng nhập.']);
     exit;
 }
+<<<<<<< HEAD
 $id_khach_hang = $_SESSION['id_khach_hang']; // Lấy từ biến Session chính xác
 // ---------------------------------
+=======
+$id_khach_hang = $_SESSION['profile']['id_khach_hang'];
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
 
 require_once 'db_connect.php'; 
 try {

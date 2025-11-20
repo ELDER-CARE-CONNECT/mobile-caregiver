@@ -155,7 +155,11 @@ function loadOrders() {
                     <td>${formatCurrency(order.tong_tien)}</td>
                     <td><span class="status-badge ${statusClass}">${order.trang_thai}</span></td>
                     <td>
+<<<<<<< HEAD
                         <a href="Chitietdonhang.php?id_don_hang=${order.id_don_hang}" class="action-btn-small primary">
+=======
+                        <a href="chitietdonhang.php?id_don_hang=${order.id_don_hang}" class="action-btn-small primary">
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                             <i class="fas fa-eye"></i> Xem
                         </a>
                     </td>

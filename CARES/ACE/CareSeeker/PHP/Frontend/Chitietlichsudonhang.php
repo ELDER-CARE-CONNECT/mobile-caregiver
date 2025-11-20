@@ -209,7 +209,11 @@ $id_don_hang_js = $id_don_hang;
 
             let payment_method = order.hinh_thuc_thanh_toan || 'Chưa xác định';
             if (payment_method.toLowerCase() === 'vnpay' && (order.thanh_toan_status || '').toLowerCase() !== 'đã thanh toán') {
+<<<<<<< HEAD
                 payment_method = 'VNPAY';
+=======
+                payment_method = 'VNPAY (Chờ)';
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
             }
             document.getElementById('orderPayment').textContent = payment_method;
 
@@ -304,7 +308,11 @@ $id_don_hang_js = $id_don_hang;
             
             // Nút Đặt Lại
             if (order.caregiver_id) {
+<<<<<<< HEAD
                 container.innerHTML += `<a href="datdonhang.php?id=${order.caregiver_id}" class="button btn-reorder"><i class="fas fa-redo"></i> Đặt Lại</a>`;
+=======
+                container.innerHTML += `<a href="Datdonhang.php?id=${order.caregiver_id}" class="button btn-reorder"><i class="fas fa-redo"></i> Đặt Lại</a>`;
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
             }
         }
 

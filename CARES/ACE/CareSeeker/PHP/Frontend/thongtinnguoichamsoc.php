@@ -377,7 +377,11 @@ if ($id === 0) {
                                 <p>⭐ Đánh giá: <strong>${r.danh_gia_tb}/5</strong></p>
                                 <p><i class="fas fa-briefcase" style="color:#555;"></i> Kinh nghiệm: ${r.kinh_nghiem}</p>
                                 <p class="money">💰 ${formatCurrency(r.tong_tien_kiem_duoc)}</p>
+<<<<<<< HEAD
                                 <a href="thongtinnguoichamsoc.php?id=${r.id_cham_soc}" class="detail-btn">Xem chi tiết <i class="fas fa-arrow-right"></i></a>
+=======
+                                <a href="Thongtinnguoichamsoc.php?id=${r.id_cham_soc}" class="detail-btn">Xem chi tiết <i class="fas fa-arrow-right"></i></a>
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                             </div>
                         </div>
                     `).join('');
@@ -398,8 +402,13 @@ if ($id === 0) {
                             <p><strong>Kinh nghiệm:</strong> ${caregiver.kinh_nghiem}</p>
                             <p><strong>Số lượng đơn đã nhận:</strong> ${caregiver.don_da_nhan}</p>
                             <p><strong>Giá tiền/giờ:</strong> <span class="price">${formatCurrency(caregiver.tong_tien_kiem_duoc)}</span></p>
+<<<<<<< HEAD
                             <a href="datdonhang.php?id=${caregiver.id_cham_soc}" class="back-btn">📝 Đặt dịch vụ ngay</a>
                             <a href="dichvu.php" class="back-btn">← Quay lại danh sách</a>
+=======
+                            <a href="Datdonhang.php?id=${caregiver.id_cham_soc}" class="back-btn">📝 Đặt dịch vụ ngay</a>
+                            <a href="Dichvu.php" class="back-btn">← Quay lại danh sách</a>
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                         </div>
                     </div>
 

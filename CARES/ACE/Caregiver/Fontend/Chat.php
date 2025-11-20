@@ -2,10 +2,17 @@
 session_start();
 
 // ===================== KẾT NỐI DATABASE =====================
+<<<<<<< HEAD
 $servername = "db";          // Tên service MySQL trong docker-compose
 $username = "user";          // user docker-compose
 $password = "userpassword";  // password docker-compose
 $dbname = "caresdb";         // database docker-compose
+=======
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "sanpham";
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
 
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 mysqli_set_charset($conn, "utf8");
@@ -163,7 +170,11 @@ html, body { margin:0; padding:0; height:100%; font-family: Arial, sans-serif; b
         <div class="chat-list" id="chatList">
             <?php foreach($chat_orders as $order): ?>
             <div class="chat-list-item <?php if($order['id_don_hang']==$id_don_hang) echo 'active'; ?>" 
+<<<<<<< HEAD
                  onclick="window.location='Chat.php?id_don_hang=<?php echo $order['id_don_hang']; ?>&origin=<?php echo $origin_don_hang; ?>'">
+=======
+                 onclick="window.location='chat.php?id_don_hang=<?php echo $order['id_don_hang']; ?>&origin=<?php echo $origin_don_hang; ?>'">
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                 <span style="font-weight:bold;"><?php echo htmlspecialchars($order['ten_khach_hang']); ?></span>
                 <?php if($order['chua_xem']>0): ?>
                 <span class="badge"><?php echo $order['chua_xem']; ?></span>
@@ -198,7 +209,11 @@ const id_khach_hang_js = <?php echo $id_khach_hang; ?>;
 const id_cham_soc_js = <?php echo $id_cham_soc; ?>;
 
 function loadMessages() {
+<<<<<<< HEAD
     fetch("Chat.php?action=get_messages&id_don_hang=" + id_don_hang_js)
+=======
+    fetch("chat.php?action=get_messages&id_don_hang=" + id_don_hang_js)
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
         .then(res => res.json())
         .then(data => {
             chat.innerHTML = "";
@@ -229,7 +244,11 @@ function sendMessage() {
     form.append("noi_dung", text);
     form.append("nguoi_gui", loai_user);
 
+<<<<<<< HEAD
     fetch("Chat.php", { method: "POST", body: form })
+=======
+    fetch("chat.php", { method: "POST", body: form })
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
         .then(res => res.text())
         .then(data => {
             if(data === "success") {

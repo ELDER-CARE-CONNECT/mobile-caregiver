@@ -31,7 +31,11 @@
 
 <div class="profile-container">
   <div class="profile-left">
+<<<<<<< HEAD
    <img id="avatar" src="" alt="Ảnh đại diện">
+=======
+    <img id="avatar" src="https://via.placeholder.com/340?text=No+Image" onerror="this.src='https://via.placeholder.com/340?text=Error'" alt="Ảnh đại diện">
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
   </div>
   <div class="profile-right">
     <h2>Xin chào, <span class="highlight" id="ho_ten">Đang tải...</span> 👋</h2>
@@ -46,7 +50,11 @@
 
     <div class="button-group">
       <a href="DonHangChuaNhan.php" class="back-btn">⬅ Trang chủ</a>
+<<<<<<< HEAD
       <a href="logout.php" class="logout-btn">Đăng xuất</a>
+=======
+      <a href="../../Admin/logout.php" class="logout-btn">Đăng xuất</a>
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     </div>
   </div>
 </div>

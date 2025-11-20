@@ -122,7 +122,11 @@ function renderOrder(d){
         </div>
 
         <div class="buttons">
+<<<<<<< HEAD
           <a href="Chat.php?id_don_hang=${d.donhang.id_don_hang}" class="button btn-chat">
+=======
+          <a href="chat.php?id_don_hang=${d.donhang.id_don_hang}" class="button btn-chat">
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
             <i class="fas fa-comment-dots"></i> Chat
           </a>
 

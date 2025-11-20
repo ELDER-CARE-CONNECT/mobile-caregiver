@@ -45,6 +45,10 @@ try {
             }
         }
     }
+<<<<<<< HEAD
+=======
+    // Vẫn lưu JSON vào bảng don_hang để backup
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     $ten_nhiem_vu_to_insert = json_encode($selected_services, JSON_UNESCAPED_UNICODE);
     
     $ten_khach_hang_post = trim($_POST['ten_khach_hang'] ?? '');
@@ -55,7 +59,10 @@ try {
     $sdt_to_insert = '';
     $dia_chi_to_insert = '';
 
+<<<<<<< HEAD
     // Xử lý thông tin người đặt
+=======
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     if (!empty($so_dien_thoai_post)) {
         $ten_to_insert = $ten_khach_hang_post;
         $sdt_to_insert = $so_dien_thoai_post;
@@ -95,6 +102,7 @@ try {
     $pdo->beginTransaction();
     
     // 1. Insert vào bảng DON_HANG
+<<<<<<< HEAD
     // 16 cột và 16 giá trị
     $sql_don_hang = "INSERT INTO don_hang (
                         id_khach_hang, id_nguoi_cham_soc, id_danh_gia, tong_tien, dia_chi_giao_hang, 
@@ -131,6 +139,26 @@ try {
     $id_don_hang = $pdo->lastInsertId();
     
     // 2. Insert chi tiết vào bảng NHIEM_VU 
+=======
+    $sql_don_hang = "INSERT INTO don_hang (
+                        id_khach_hang, id_nguoi_cham_soc, tong_tien, dia_chi_giao_hang, 
+                        ten_khach_hang, so_dien_thoai, trang_thai, 
+                        thoi_gian_bat_dau, thoi_gian_ket_thuc, hinh_thuc_thanh_toan, 
+                        ten_nhiem_vu, trang_thai_nhiem_vu
+                    ) 
+                    VALUES (?, ?, ?, ?, ?, ?, 'chờ xác nhận', ?, ?, ?, ?, 'chờ xác nhận')";
+    
+    $stmt_don_hang = $pdo->prepare($sql_don_hang);
+    $params = [
+        $id_khach_hang_session, $id_nguoi_cham_soc, $tong_tien, $dia_chi_to_insert,
+        $ten_to_insert, $sdt_to_insert, $start_datetime_full, $end_datetime_full, 
+        $phuong_thuc, $ten_nhiem_vu_to_insert
+    ];
+    $stmt_don_hang->execute($params);
+    $id_don_hang = $pdo->lastInsertId();
+    
+    // 2. Insert chi tiết vào bảng NHIEM_VU (QUAN TRỌNG: Thêm đoạn này)
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     if ($id_don_hang > 0 && !empty($selected_services)) {
         $sql_nhiem_vu = "INSERT INTO nhiem_vu (id_don_hang, ten_nhiem_vu, trang_thai_nhiem_vu) VALUES (?, ?, 'chờ xác nhận')";
         $stmt_nhiem_vu = $pdo->prepare($sql_nhiem_vu);

@@ -81,9 +81,15 @@ body {
 <body>
 
 <div class="navbar">
+<<<<<<< HEAD
     <a href="DonHangChuaNhan.php" class="logo">Elder Care Connect</a>
     <div class="nav-links">
         <a href="DonHangChuaNhan.php">Đơn hàng</a>
+=======
+    <a href="Donhangchuanhan.php" class="logo">Elder Care Connect</a>
+    <div class="nav-links">
+        <a href="Donhangchuanhan.php">Đơn hàng</a>
+>>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
         <a href="Tongdonhang.php">Lịch sử</a>
         <a href="Canhan.php">Cá nhân</a>
     </div>
