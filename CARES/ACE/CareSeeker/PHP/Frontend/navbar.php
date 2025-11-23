@@ -62,12 +62,17 @@
     width: 100%; 
     left: 0;
 }
-
+.logo {
+     color: #FF6B81;
+    font-size: 26px; 
+    font-weight:700;
+    margin: 0; 
+}
 </style>
 
 <div class="navbar">
   <div class="navbar-container">
-    <h2>Elder Care Connect</h2>
+        <a href="index.php" class="logo">Elder Care Connect</a>
     <div class="nav-links">
       <a href="index.php">Trang chủ</a>
       <a href="dichvu.php">Dịch vụ</a>

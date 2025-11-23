@@ -1,19 +1,11 @@
 <?php
 session_start();
 
-<<<<<<< HEAD
 // ===================== KẾT NỐI DATABASE (ĐÃ SỬA CHO DOCKER) =====================
 $servername = "db";             // Tên service MySQL trong docker-compose
 $username = "user";             // user docker-compose
 $password = "userpassword";     // password docker-compose
 $dbname = "caresdb";            // database docker-compose
-=======
-// ===================== KẾT NỐI DATABASE =====================
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "sanpham";
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
 
 $conn = mysqli_connect($servername, $username, $password, $dbname);
 mysqli_set_charset($conn, "utf8");
@@ -220,11 +212,7 @@ function loadMessages() {
         .then(data => {
             chat.innerHTML = "";
             data.forEach(msg => {
-<<<<<<< HEAD
                 // Nếu msg.nguoi_gui === user hiện tại → me (bên phải), ngược lại → them (bên trái)
-=======
-                // Nếu msg.nguoi_gui === user hiện tại → them (bên phải), ngược lại → me (bên trái)
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                 let type = (msg.nguoi_gui === loai_user) ? "me" : "them";
                 addMessage(type, msg.noi_dung);
             });
@@ -264,8 +252,4 @@ setInterval(loadMessages,2000);
 loadMessages();
 </script>
 </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4

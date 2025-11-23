@@ -50,22 +50,22 @@
     .auth-wrapper {
         flex: 0 0 420px;
         background: rgba(255,255,255,0.95);
-        padding: 40px 30px;
+        padding: 40px 35px;
         border-radius: 16px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         text-align: center;
         transition: all 0.3s ease;
     }
-    .auth-heading { font-size: 26px; font-weight: bold; color: #d70018; margin-bottom: 25px; }
-    .auth-input { width: 100%; padding: 14px 18px; margin-bottom: 18px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; }
-    .auth-input:focus { outline: none; border-color: #d70018; box-shadow: 0 0 5px rgba(215,0,24,0.3); }
-    .auth-error { color: red; font-size: 14px; margin-top: 5px; }
-    .auth-submit { width: 100%; padding: 14px; background-color: #d70018; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 17px; font-weight: bold; }
-    .auth-submit:hover { background-color: #b30013; }
+    .auth-heading { font-size: 26px; font-weight: bold; color: #FF6B81; margin-bottom: 25px; }
+    .auth-input { width: 100%; padding: 14px 5px; margin-bottom: 18px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; }
+    .auth-input:focus { outline: none; border-color: #FF6B81; box-shadow: 0 0 5px rgba(215,0,24,0.3); }
+    .auth-error { color: #FF6B81; font-size: 14px; margin-top: 5px; }
+    .auth-submit { width: 100%; padding: 14px; background-color: #FF6B81; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 17px; font-weight: bold; }
+    .auth-submit:hover { background-color: #FF6B81; }
     .auth-register { font-size: 14px; margin-top: 25px; }
-    .auth-register a { color: #d70018; font-weight: bold; text-decoration: none; }
+    .auth-register a { color: #FF6B81; font-weight: bold; text-decoration: none; }
     .auth-register a:hover { text-decoration: underline; }
-    .back-button { position: absolute; left: 0; text-decoration: none; font-size: 24px; color: #d70018; font-weight: bold; }
+    .back-button { position: absolute; left: 0; text-decoration: none; font-size: 24px; color: #FF6B81; font-weight: bold; }
     .header-row { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 15px; }
     .popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; padding: 25px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); text-align: center; color: #333; z-index: 1000; display: none; }
     .popup.success { border-left: 6px solid #28a745; }

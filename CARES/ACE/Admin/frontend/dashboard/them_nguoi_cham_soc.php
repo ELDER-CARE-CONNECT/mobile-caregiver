@@ -76,7 +76,6 @@ $(document).ready(function(){
         $.ajax({
             url:'../../backend/user/them_nguoi_cham_soc.php',
             type:'POST',
-<<<<<<< HEAD
             data: formData,
             contentType: false,
             processData: false,
@@ -90,16 +89,6 @@ $(document).ready(function(){
                     setTimeout(function(){
                         window.location.href = 'nguoi_cham_soc.php';
                     }, 1500);
-=======
-            data:formData,
-            contentType:false,
-            processData:false,
-            dataType:'json',
-            success:function(res){
-                if(res.status === 'success'){
-                    $('#message').css('color','green').text(res.message);
-                    $('#addForm')[0].reset();
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                 } else {
                     $('#message').css('color','red').text(res.message);
                 }
@@ -111,9 +100,6 @@ $(document).ready(function(){
     });
 });
 </script>
-<<<<<<< HEAD
 
-=======
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
 </body>
 </html>

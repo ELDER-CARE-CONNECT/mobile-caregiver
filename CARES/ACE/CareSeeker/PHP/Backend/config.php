@@ -1,18 +1,17 @@
 <?php
-<<<<<<< HEAD
-define('VNP_TMN_CODE', 'PG2M2Y3P');
-define('VNP_HASH_SECRET', 'J4OXMCGJNZ1ECXK6WGRGGN5S5V5RGZ35');
+// CẤU HÌNH VNPAY CHÍNH XÁC (Theo ảnh bạn cung cấp)
+
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+
+// 1. Mã Website (Terminal ID)
+define('VNP_TMN_CODE', 'XORMORF8'); 
+
+// 2. Chuỗi bí mật (Secret Key) - Rất quan trọng, không được thừa khoảng trắng
+define('VNP_HASH_SECRET', 'M18MN4FMEBS0GA9RFGF8CAYVD34IEVWT'); 
+
+// 3. URL thanh toán (Môi trường TEST)
 define('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
 
-// URL QUAN TRỌNG: phải trỏ ĐÚNG file api_payment.php
-define('VNP_RETURN_URL', 'http://localhost:8080/CARES/ACE/CareSeeker/PHP/Backend/api_payment.php?action=vnpay_return');
-=======
-define('VNP_TMN_CODE', 'PG2M2Y3P'); 
-
-define('VNP_HASH_SECRET', 'J4OXMCGJNZ1ECXK6WGRGGN5S5V5RGZ35'); 
-
-define('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'); 
-
-define('VNP_RETURN_URL', 'http://localhost/ELDER-CARE-CONNECT/CareSeeker/PHP/backend/api_payment.php?action=vnpay_return');
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
+// 4. URL trả về (Return URL) - Phải khớp với cấu hình trên web VNPAY
+define('VNP_RETURN_URL', 'http://localhost:8080/ACE/CareSeeker/PHP/Backend/api_gateway.php?route=payment/vnpay/return');
 ?>

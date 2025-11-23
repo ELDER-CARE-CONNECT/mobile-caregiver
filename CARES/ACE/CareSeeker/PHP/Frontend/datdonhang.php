@@ -339,13 +339,36 @@ let userInfo = null;
 
 const CAREGIVER_ID = <?php echo $id_cham_soc_get; ?>;
 
-// BẮT ĐẦU SỬA
 const GATEWAY_URL = '../Backend/api_gateway.php';
-// THÊM &action=get_details vào cuối URL
 const API_CAREGIVER_DETAIL = `${GATEWAY_URL}?route=caregiver/details&id=${CAREGIVER_ID}&action=get_details`;
 const API_PROFILE_GET = `${GATEWAY_URL}?route=profile`;
 const API_ORDER_CREATE = `${GATEWAY_URL}?route=order/create`;
-// KẾT THÚC SỬA
+
+// ==========================================
+// ĐÃ ĐỒNG BỘ LOGIC ẢNH TỪ Chitietdonhang.php
+// ==========================================
+function processCaregiverImage(path) {
+    let hinh_anh_url = 'img/default_avatar.png'; // Ảnh mặc định
+    
+    if (path && path.trim() !== '') {
+        // 1. Nếu là link online (http/https) -> Giữ nguyên
+        if (path.startsWith('http')) {
+            return path;
+        }
+
+        // 2. LOGIC MỚI: Chỉ lấy tên file và ghép vào đường dẫn chuẩn
+        // Lấy tên file cuối cùng (loại bỏ mọi đường dẫn thừa trong DB)
+        let filename = path.split(/[\\/]/).pop();
+
+        // Ghép vào đường dẫn folder upload chuẩn của hệ thống
+        // Lưu ý: Folder uploads của bạn đang có 's' hay không thì check lại trên server, 
+        // code dưới đây theo đúng Chitietdonhang.php (có 's')
+        hinh_anh_url = `../../../Admin/frontend/uploads/${filename}`;
+    }
+    return hinh_anh_url;
+}
+// ==========================================
+
 async function loadInitialData() {
     try {
         const [caregiverRes, profileRes] = await Promise.all([
@@ -361,15 +384,17 @@ async function loadInitialData() {
 
         if (caregiverResult.success) {
             const caregiver = caregiverResult.caregiver;
-            // Dùng dữ liệu giả định nếu không có, cần xác định rõ trường nào chứa giá tiền.
-            // Giả sử 'tong_tien_kiem_duoc' là trường lưu giá tiền/giờ.
             pricePerHour = parseFloat(caregiver.tong_tien_kiem_duoc) || 0; 
             
             document.getElementById('summaryHoTen').textContent = caregiver.ho_ten;
             document.getElementById('summaryKinhNghiem').textContent = caregiver.kinh_nghiem;
             document.getElementById('summaryDanhGia').textContent = `⭐ ${caregiver.danh_gia_tb}/5`;
             document.getElementById('summaryGiaTien').textContent = pricePerHour.toLocaleString('vi-VN') + " đ/giờ";
-            document.getElementById('summaryHinhAnh').src = `../../../${caregiver.hinh_anh}`;
+            
+            // SỬ DỤNG HÀM XỬ LÝ ẢNH ĐÃ ĐỒNG BỘ
+            const imageUrl = processCaregiverImage(caregiver.hinh_anh);
+            document.getElementById('summaryHinhAnh').src = imageUrl;
+
         } else {
             throw new Error(caregiverResult.message || 'Lỗi tải NCS.');
         }

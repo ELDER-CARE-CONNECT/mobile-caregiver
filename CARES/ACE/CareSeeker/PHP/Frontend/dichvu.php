@@ -145,13 +145,8 @@ if (!isset($_SESSION['so_dien_thoai']) && !isset($_SESSION['id_khach_hang'])) {
                         <div class="info"><i class="fas fa-box-open"></i> Đơn đã nhận: ${caregiver.don_da_nhan}</div>
                         <div class="price">${formatCurrency(caregiver.tong_tien_kiem_duoc)}</div>
                         <div class="btn-group"> 
-<<<<<<< HEAD
                             <a href="thongtinnguoichamsoc.php?id=${caregiver.id_cham_soc}" class="btn-detail"><i class="fas fa-info-circle"></i> Xem chi tiết</a>
                             <a href="datdonhang.php?id=${caregiver.id_cham_soc}" class="btn-detail"><i class="fas fa-calendar-check"></i> Đặt dịch vụ</a>
-=======
-                            <a href="Thongtinnguoichamsoc.php?id=${caregiver.id_cham_soc}" class="btn-detail"><i class="fas fa-info-circle"></i> Xem chi tiết</a>
-                            <a href="Datdonhang.php?id=${caregiver.id_cham_soc}" class="btn-detail"><i class="fas fa-calendar-check"></i> Đặt dịch vụ</a>
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                         </div>
                     </div>
                 </div>

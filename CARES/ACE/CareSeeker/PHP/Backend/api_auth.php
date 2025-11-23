@@ -35,11 +35,7 @@ if ($action === 'logout') {
     }
     
     // Đường dẫn về trang Login (Đã chỉnh đúng)
-<<<<<<< HEAD
     $redirectUrl = 'http://localhost:8080/ACE/Admin/frontend/auth/login.php';
-=======
-    $redirectUrl = 'http://localhost/CARES/ACE/Admin/frontend/auth/login.php';
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     
     echo json_encode([
         'success' => true, 

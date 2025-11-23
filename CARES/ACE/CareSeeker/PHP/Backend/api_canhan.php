@@ -1,65 +1,66 @@
 <?php
-// Tệp: Backend/api_canhan.php
-// Session đã được start bởi Gateway
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-header('Content-Type: application/json');
+// File: Backend/api_canhan.php
+
+// Lấy kết nối từ Gateway
+global $conn;
+
+// 1. Kiểm tra Auth
 if (!isset($_SESSION['id_khach_hang'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Lỗi xác thực: Bạn chưa đăng nhập.']);
-    exit;
+    sendResponse(401, ['success' => false, 'message' => 'Vui lòng đăng nhập.']);
 }
+
 $id_khach_hang = $_SESSION['id_khach_hang'];
-require_once 'db_connect.php'; 
-try {
-    $pdo = get_pdo_connection();
-} catch (\PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Lỗi kết nối CSDL.']);
-    exit;
-}
-$method = $_SERVER['REQUEST_METHOD'];
+$method = $GLOBALS['api_method'];
 
 if ($method === 'GET') {
-    try {
-        $stmt_profile = $pdo->prepare("SELECT * FROM khach_hang WHERE id_khach_hang = ?");
-        $stmt_profile->execute([$id_khach_hang]);
-        $profile = $stmt_profile->fetch();
+    // 2. Lấy thông tin cá nhân
+    $stmt = $conn->prepare("SELECT * FROM khach_hang WHERE id_khach_hang = ?");
+    $stmt->bind_param("i", $id_khach_hang);
+    $stmt->execute();
+    $profile = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
-        if (!$profile) {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'Không tìm thấy hồ sơ.']);
-            exit;
-        }
-        $stmt_orders = $pdo->prepare("
-            SELECT 
-                d.id_don_hang, d.ngay_dat, d.trang_thai,
-                CASE WHEN k.id_khieu_nai IS NOT NULL THEN 1 ELSE 0 END AS da_khieu_nai
-            FROM don_hang d
-            LEFT JOIN khieu_nai k ON d.id_don_hang = k.id_don_hang AND k.id_khach_hang = ?
-            WHERE d.id_khach_hang = ? 
-            AND (d.trang_thai = 'đã hoàn thành' OR d.trang_thai = 'đã hủy' OR d.trang_thai = 'Đã hủy')
-            ORDER BY d.ngay_dat DESC
-        ");
-        $stmt_orders->execute([$id_khach_hang, $id_khach_hang]);
-        $orders_for_complaint = $stmt_orders->fetchAll();
-        echo json_encode([
-            'success' => true,
-            'profile' => $profile,
-            'orders_for_complaint' => $orders_for_complaint
-        ]);
-        exit;
-
-    } catch (\PDOException $e) {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Lỗi truy vấn CSDL: ' . $e->getMessage()]);
-        exit;
+    if (!$profile) {
+        sendResponse(404, ['success' => false, 'message' => 'Không tìm thấy hồ sơ.']);
     }
 
-} elseif ($method === 'POST') {    
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Phương thức POST không được hỗ trợ trên API này. Vui lòng dùng api_profile.php để cập nhật.']);
-    exit;
+    // 3. Lấy danh sách đơn hàng VÀ thông tin phản hồi khiếu nại (NẾU CÓ)
+    // SỬA ĐỔI: Lấy thêm k.noi_dung và k.phan_hoi
+    $sql_orders = "
+        SELECT 
+            d.id_don_hang, 
+            d.ngay_dat, 
+            d.trang_thai,
+            k.noi_dung AS noi_dung_kn,        -- Lấy nội dung khách đã khiếu nại
+            k.phan_hoi AS loi_phan_hoi_admin, -- Lấy nội dung admin trả lời
+            k.trang_thai AS trang_thai_kn     -- Trạng thái khiếu nại
+        FROM don_hang d
+        LEFT JOIN khieu_nai k ON d.id_don_hang = k.id_don_hang 
+        WHERE d.id_khach_hang = ? 
+        AND (d.trang_thai = 'đã hoàn thành' OR d.trang_thai = 'đã hủy')
+        ORDER BY d.ngay_dat DESC
+    ";
+
+    $stmt_orders = $conn->prepare($sql_orders);
+    // Chỉ cần bind 1 tham số id_khach_hang vì logic JOIN đã xử lý liên kết
+    $stmt_orders->bind_param("i", $id_khach_hang); 
+    $stmt_orders->execute();
+    $result_orders = $stmt_orders->get_result();
+    
+    $orders_for_complaint = [];
+    while ($row = $result_orders->fetch_assoc()) {
+        $orders_for_complaint[] = $row;
+    }
+    $stmt_orders->close();
+
+    // 4. Trả về kết quả
+    sendResponse(200, [
+        'success' => true,
+        'profile' => $profile,
+        'orders_for_complaint' => $orders_for_complaint
+    ]);
+
+} else {
+    sendResponse(405, ['success' => false, 'message' => 'Phương thức không hỗ trợ.']);
 }
 ?>

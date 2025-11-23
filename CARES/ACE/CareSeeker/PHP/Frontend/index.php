@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <meta charset="UTF-8">
 <title>Elder Care Connect - Dịch vụ chăm sóc tận tâm</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <style>
@@ -497,12 +497,11 @@ include_once("navbar.php");
 </footer>
 
 <script>
-// BẮT ĐẦU THAY ĐỔI: Sử dụng API Gateway và Fix Action
+// CẤU HÌNH API
 const GATEWAY_URL = '../Backend/api_gateway.php';
-// THÊM action=list_featured để khắc phục lỗi 400 Bad Request
 const API_CAREGIVER_FEATURED = `${GATEWAY_URL}?route=caregiver/featured&action=list_featured`; 
-// KẾT THÚC THAY ĐỔI
 
+// --- SLIDESHOW LOGIC ---
 let slideIndex = 1;
 let autoSlideTimer; 
 
@@ -510,6 +509,8 @@ function showSlides(n) {
   const slides = document.getElementsByClassName("slides");
   const dots = document.getElementsByClassName("dot");
   
+  if (slides.length === 0) return; // Kiểm tra an toàn
+
   if (n > slides.length) {slideIndex = 1} 
   if (n < 1) {slideIndex = slides.length}
   
@@ -546,6 +547,7 @@ function startAutoSlide() {
     autoSlideTimer = setTimeout(autoSlide, 4000); 
 }
 
+// --- UTILITIES ---
 function formatCurrency(number) {
     if (typeof number !== 'number') {
         number = parseInt(number) || 0; 
@@ -553,17 +555,36 @@ function formatCurrency(number) {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' đ/giờ';
 }
 
+// ==========================================
+// HÀM XỬ LÝ ẢNH CHUẨN (ĐÃ ĐỒNG BỘ)
+// ==========================================
+function processCaregiverImage(path) {
+    // Nếu dữ liệu rỗng, trả về ảnh lỗi để kích hoạt sự kiện onerror
+    if (!path || path.trim() === '') {
+        return 'img/default_avatar.png';
+    }
+
+    if (path.startsWith('http')) {
+        return path;
+    }
+
+    // Xử lý đường dẫn file nội bộ
+    let filename = path.split(/[\\/]/).pop();
+    // Đường dẫn tương đối từ Frontend -> Admin upload folder
+    return `../../../Admin/frontend/uploads/${filename}`;
+}
+// ==========================================
+
 async function fetchCaregivers() {
     const container = document.getElementById('caregiver-list-container');
-    const apiUrl = API_CAREGIVER_FEATURED; // Sử dụng hằng số đã fix action
+    const apiUrl = API_CAREGIVER_FEATURED;
 
     try {
         const response = await fetch(apiUrl);
         
         if (!response.ok) {
-          
             const errorText = await response.text();
-            container.innerHTML = `<p style="color:red;">Lỗi kết nối API (${response.status}): Vui lòng kiểm tra đường dẫn hoặc trạng thái đăng nhập. Chi tiết: ${errorText.substring(0, 100)}...</p>`;
+            container.innerHTML = `<p style="color:red;">Lỗi kết nối API (${response.status})</p>`;
             return;
         }
 
@@ -573,40 +594,55 @@ async function fetchCaregivers() {
             container.innerHTML = ''; 
 
             result.data.forEach(caregiver => {
-                const rating = parseFloat(caregiver.danh_gia_tb).toFixed(1);
-                const experience = caregiver.kinh_nghiem;
-                const price_per_hour = formatCurrency(caregiver.tong_tien_kiem_duoc); 
+                const rating = caregiver.danh_gia_tb ? parseFloat(caregiver.danh_gia_tb).toFixed(1) : '5.0';
+                const experience = caregiver.kinh_nghiem || 'Chưa cập nhật';
+                const price_per_hour = formatCurrency(caregiver.tong_tien_kiem_duoc);
+                const name = caregiver.ho_ten || 'Người chăm sóc';
+
+                // Lấy URL ảnh chính
+                const imgUrl = processCaregiverImage(caregiver.hinh_anh);
+                
+                // URL dự phòng online (Avatar tạo từ tên)
+                const onlineFallback = `https://ui-avatars.com/api/?background=random&color=fff&name=${encodeURIComponent(name)}`;
+
+                // === SỬA LỖI VÒNG LẶP ===
+                // 1. Thêm this.onerror=null để ngắt vòng lặp.
+                // 2. Thêm logic: Nếu ảnh chính lỗi -> thử default_avatar.png -> nếu lỗi tiếp -> dùng onlineFallback
+                const imgTag = `
+                    <img src="${imgUrl}" 
+                         alt="${name}" 
+                         onerror="this.onerror=null; this.src='img/default_avatar.png'; this.addEventListener('error', function(){this.src='${onlineFallback}'});"
+                    >`;
                 
                 const cardHtml = `
                     <div class="caregiver-card">
-                      <img src="../../${caregiver.hinh_anh}" alt="${caregiver.ho_ten}">
+                      ${imgTag}
                       <div class="info">
-                        <h3>${caregiver.ho_ten}</h3>
+                        <h3>${name}</h3>
                         <span class="rating"><i class="fas fa-star"></i> ${rating}/5</span>
                         <p>Kinh nghiệm: <b>${experience}</b></p>
                         <p class="price">${price_per_hour}</p>
-<<<<<<< HEAD
                         <a href="thongtinnguoichamsoc.php?id=${caregiver.id_cham_soc}">Xem Hồ sơ chi tiết <i class="fas fa-arrow-right"></i></a>
-=======
-                        <a href="Thongtinnguoichamsoc.php?id=${caregiver.id_cham_soc}">Xem Hồ sơ chi tiết <i class="fas fa-arrow-right"></i></a>
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
                       </div>
                     </div>
                 `;
                 container.insertAdjacentHTML('beforeend', cardHtml);
             });
         } else {
-            container.innerHTML = `<p style="color:red;">Lỗi tải dữ liệu: ${result.message || 'API trả về lỗi hoặc không có dữ liệu.'}</p>`;
+            container.innerHTML = `<p style="color:red;">Lỗi tải dữ liệu: ${result.message || 'Không tìm thấy dữ liệu.'}</p>`;
         }
     } catch (error) {
         console.error('Lỗi gọi API:', error);
-        container.innerHTML = `<p style="color:red;">Lỗi kết nối Microservice. Vui lòng kiểm tra trạng thái server. (${error.message})</p>`;
+        container.innerHTML = `<p style="color:red;">Lỗi kết nối server. (${error.message})</p>`;
     }
 }
 
-showSlides(slideIndex); 
-startAutoSlide(); 
-document.addEventListener('DOMContentLoaded', fetchCaregivers);
+// KHỞI CHẠY
+document.addEventListener('DOMContentLoaded', () => {
+    showSlides(slideIndex); 
+    startAutoSlide(); 
+    fetchCaregivers();
+});
 
 </script>
 

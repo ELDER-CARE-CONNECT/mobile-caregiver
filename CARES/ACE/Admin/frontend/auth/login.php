@@ -26,19 +26,19 @@
         box-shadow: 0 8px 25px rgba(0,0,0,0.1); text-align: center; transition: all 0.3s ease; }
     .auth-wrapper:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     .auth-logo { width: 90px; margin-bottom: 20px; }
-    .auth-heading { font-size:26px; font-weight:bold; color:#d70018; margin-bottom:25px; }
+    .auth-heading { font-size:26px; font-weight:bold; color:#FF6B81; margin-bottom:25px; }
     .auth-input { width:100%; padding:14px 18px; margin-bottom:18px; border:1px solid #ddd; border-radius:10px; font-size:15px; box-sizing:border-box; }
-    .auth-input:focus { outline:none; border-color:#d70018; box-shadow:0 0 5px rgba(215,0,24,0.3); }
-    .auth-error { color:red; font-size:14px; margin-top:5px; }
+    .auth-input:focus { outline:none; border-color:#FF6B81; box-shadow:0 0 5px rgba(215,0,24,0.3); }
+    .auth-error { color:#FF6B81; font-size:14px; margin-top:5px; }
     .auth-forgot { text-align:right; font-size:14px; margin-top:5px; margin-bottom:20px; }
-    .auth-forgot a { color:#d70018; text-decoration:none; font-weight:500; }
+    .auth-forgot a { color:#FF6B81; text-decoration:none; font-weight:500; }
     .auth-forgot a:hover { text-decoration:underline; }
-    .auth-submit { width:100%; padding:14px; background-color:#d70018; color:white; border:none; border-radius:10px; cursor:pointer; font-size:17px; font-weight:bold; transition:background 0.3s ease; }
-    .auth-submit:hover { background-color:#b30013; }
+    .auth-submit { width:100%; padding:14px; background-color:#FF6B81; color:white; border:none; border-radius:10px; cursor:pointer; font-size:17px; font-weight:bold; transition:background 0.3s ease; }
+    .auth-submit:hover { background-color:#FF6B81; }
     .auth-register { font-size:14px; margin-top:25px; }
-    .auth-register a { color:#d70018; font-weight:bold; text-decoration:none; }
+    .auth-register a { color:#FF6B81; font-weight:bold; text-decoration:none; }
     .auth-register a:hover { text-decoration:underline; }
-    .google-btn { width:100%; background-color:#db4437; color:white; border:none; border-radius:10px; padding:12px; margin-top:15px; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; }
+    .google-btn { width:100%; background-color:#FF6B81; color:white; border:none; border-radius:10px; padding:12px; margin-top:15px; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; }
     .google-btn img { width:20px; height:20px; }
     @media(max-width:900px){
         body{padding:10px;}

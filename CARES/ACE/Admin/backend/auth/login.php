@@ -80,7 +80,7 @@ if ($result && $result->num_rows > 0) {
     $_SESSION['id_khach_hang'] = $user['id_khach_hang'];
 
     $redirect = empty($user['ten_khach_hang'])
-        ? "../../../CareSeeker/PHP/Frontend/Hoso.php"
+        ? "../../../CareSeeker/PHP/Frontend/hoso.php"
         : "../../../CareSeeker/PHP/Frontend/index.php";
 
     echo json_encode([

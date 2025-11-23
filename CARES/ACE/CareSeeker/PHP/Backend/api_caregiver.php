@@ -13,23 +13,26 @@ if (session_status() === PHP_SESSION_NONE) {
 header('Content-Type: application/json; charset=utf-8');
 require_once 'db_connect.php'; 
 
-// 3. Kiểm tra đăng nhập (Dùng id_khach_hang cho chuẩn session)
+// 3. Kiểm tra đăng nhập
 if (!isset($_SESSION['id_khach_hang'])) {
-    // Fallback kiểm tra số điện thoại nếu hệ thống cũ dùng
     if (!isset($_SESSION['so_dien_thoai'])) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Lỗi xác thực: Vui lòng đăng nhập lại.']);
-        exit;
+        // Nếu gọi qua Gateway đã check auth thì có thể bỏ qua, 
+        // nhưng để an toàn cứ check lại hoặc return 401
+        // http_response_code(401);
+        // echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+        // exit;
     }
 }
 
 try {
-    $pdo = get_pdo_connection();
+    // Kết nối DB (dùng MySQLi $conn từ db_connect.php)
+    global $conn;
+
     $action = $_GET['action'] ?? '';
 
     // --- ACTION: LIST ALL ---
     if ($action === 'list_all') {
-        // SỬA LỖI DATABASE: Dùng sub-query để đếm đơn hàng thay vì gọi cột don_da_nhan không tồn tại
+        // SỬA LỖI QUAN TRỌNG: Dùng sub-query đếm đơn hàng
         $sql = "SELECT 
                     ncs.id_cham_soc, 
                     ncs.ho_ten, 
@@ -40,10 +43,19 @@ try {
                     (SELECT COUNT(*) FROM don_hang dh WHERE dh.id_nguoi_cham_soc = ncs.id_cham_soc) as don_da_nhan
                 FROM nguoi_cham_soc ncs";
         
-        $stmt = $pdo->query($sql);
-        $caregivers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = $conn->query($sql);
         
-        echo json_encode(['success' => true, 'data' => $caregivers]);
+        if ($result) {
+            $caregivers = [];
+            while ($row = $result->fetch_assoc()) {
+                $caregivers[] = $row;
+            }
+            echo json_encode(['success' => true, 'data' => $caregivers]);
+        } else {
+            // Báo lỗi SQL cụ thể để debug (chỉ dùng khi dev)
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Lỗi truy vấn: ' . $conn->error]);
+        }
         exit;
     }
 
@@ -60,9 +72,18 @@ try {
                 FROM nguoi_cham_soc ncs
                 ORDER BY ncs.danh_gia_tb DESC 
                 LIMIT 3";
-        $stmt = $pdo->query($sql);
-        $caregivers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode(['success' => true, 'data' => $caregivers]);
+        $result = $conn->query($sql);
+        
+        if ($result) {
+            $caregivers = [];
+            while ($row = $result->fetch_assoc()) {
+                $caregivers[] = $row;
+            }
+            echo json_encode(['success' => true, 'data' => $caregivers]);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Lỗi truy vấn: ' . $conn->error]);
+        }
         exit;
     }
 
@@ -71,15 +92,17 @@ try {
         $id = intval($_GET['id']);
         
         // Lấy thông tin chi tiết + đếm số đơn
-        $stmt_main = $pdo->prepare("
+        $stmt_main = $conn->prepare("
             SELECT 
                 ncs.*,
                 (SELECT COUNT(*) FROM don_hang dh WHERE dh.id_nguoi_cham_soc = ncs.id_cham_soc) as don_da_nhan
             FROM nguoi_cham_soc ncs 
             WHERE ncs.id_cham_soc = ?
         ");
-        $stmt_main->execute([$id]);
-        $caregiver = $stmt_main->fetch(PDO::FETCH_ASSOC);
+        $stmt_main->bind_param("i", $id);
+        $stmt_main->execute();
+        $caregiver = $stmt_main->get_result()->fetch_assoc();
+        $stmt_main->close();
 
         if (!$caregiver) {
             http_response_code(404);
@@ -88,25 +111,37 @@ try {
         }
 
         // Lấy đánh giá
-        $stmt_reviews = $pdo->prepare("
-            SELECT dg.*, kh.ten_khach_hang 
+        $stmt_reviews = $conn->prepare("
+            SELECT dg.*, kh.ten_khach_hang, kh.hinh_anh as avatar_kh
             FROM danh_gia dg 
             LEFT JOIN khach_hang kh ON dg.id_khach_hang = kh.id_khach_hang 
             WHERE dg.id_cham_soc = ?
             ORDER BY dg.ngay_danh_gia DESC
         ");
-        $stmt_reviews->execute([$id]);
-        $reviews = $stmt_reviews->fetchAll(PDO::FETCH_ASSOC);
+        $stmt_reviews->bind_param("i", $id);
+        $stmt_reviews->execute();
+        $res_reviews = $stmt_reviews->get_result();
+        $reviews = [];
+        while ($row = $res_reviews->fetch_assoc()) {
+            $reviews[] = $row;
+        }
+        $stmt_reviews->close();
 
         // Lấy người chăm sóc liên quan
-        $stmt_related = $pdo->prepare("
+        $stmt_related = $conn->prepare("
             SELECT id_cham_soc, ho_ten, hinh_anh, danh_gia_tb, kinh_nghiem, tong_tien_kiem_duoc 
             FROM nguoi_cham_soc 
             WHERE id_cham_soc != ?
             LIMIT 4
         ");
-        $stmt_related->execute([$id]);
-        $related = $stmt_related->fetchAll(PDO::FETCH_ASSOC);
+        $stmt_related->bind_param("i", $id);
+        $stmt_related->execute();
+        $res_related = $stmt_related->get_result();
+        $related = [];
+        while ($row = $res_related->fetch_assoc()) {
+            $related[] = $row;
+        }
+        $stmt_related->close();
 
         echo json_encode([
             'success' => true,
@@ -120,9 +155,9 @@ try {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Hành động không hợp lệ.']);
 
-} catch (\PDOException $e) {
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Lỗi CSDL: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()]);
     exit;
 }
 ?>

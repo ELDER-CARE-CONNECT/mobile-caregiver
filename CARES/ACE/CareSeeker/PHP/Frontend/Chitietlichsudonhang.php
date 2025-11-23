@@ -44,9 +44,12 @@ $id_don_hang_js = $id_don_hang;
         .service-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #f0f0f0; font-size: 15px; }
         .service-item:last-child { border-bottom: none; }
         .service-item strong { color: #555; font-weight: 600; max-width: 90%; }
-        .task-status { padding: 4px 8px; border-radius: 6px; font-size: 13px; font-weight: 600; flex-shrink: 0; }
-        .status-chua_hoan_thanh { background-color: #fff3e0; color: #ff9800; }
-        .status-hoan_thanh { background-color: #e8f5e9; color: #4caf50; }
+        
+        /* CSS TRẠNG THÁI NHIỆM VỤ */
+        .task-status { padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 700; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-chua_hoan_thanh { background-color: #fff3e0; color: #ff9800; border: 1px solid #ffe0b2; }
+        .status-hoan_thanh { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
         .total-section { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #FF6B81; padding-top: 15px; margin-top: 10px; font-size: 20px; font-weight: 800; }
         .status-tag { padding: 5px 10px; border-radius: 20px; font-weight: 700; font-size: 13px; text-transform: uppercase; }
         .status-cho_xac_nhan { background: #fff3e0; color: #ff9800; }
@@ -103,7 +106,7 @@ $id_don_hang_js = $id_don_hang;
             <div id="caregiverBox" class="section-box hidden">
                 <div class="section-title"><i class="icon fas fa-user-nurse"></i> Người Chăm Sóc</div>
                 <div class="caregiver-info">
-                    <img id="caregiverAvatar" src="uploads/avatars/default.png" alt="Avatar">
+                    <img id="caregiverAvatar" src="img/default_avatar.png" alt="Avatar">
                     <div>
                         <div class="caregiver-name" id="caregiverName">...</div>
                         <div class="caregiver-id" id="caregiverId"></div>
@@ -121,7 +124,8 @@ $id_don_hang_js = $id_don_hang;
                     <span class="detail-label"><i class="icon fas fa-hourglass-end"></i> Kết thúc:</span>
                     <span class="detail-value" id="orderEndTime">...</span>
                 </div>
-                <div id="serviceListContainer" style="margin-top: 15px;">
+                
+                <div id="serviceListContainer" style="margin-top: 15px; border-top: 1px dashed #eee; padding-top: 10px;">
                 </div>
             </div>
 
@@ -154,10 +158,8 @@ $id_don_hang_js = $id_don_hang;
 
     <script>
         const ID_DON_HANG = <?php echo $id_don_hang_js; ?>; 
-        
-        // CẤU HÌNH API GATEWAY
         const GATEWAY_URL = '../Backend/api_gateway.php';
-        const API_DETAIL_URL = `${GATEWAY_URL}?route=order/details`; 
+        const API_DETAIL_URL = `${GATEWAY_URL}?route=order/details`;
 
         function showError(message) {
             document.getElementById('loadingView').classList.add('hidden');
@@ -173,11 +175,7 @@ $id_don_hang_js = $id_don_hang;
         function formatDateTime(dateTimeStr) {
             if (!dateTimeStr) return 'N/A';
             return new Date(dateTimeStr).toLocaleString('vi-VN', {
-                hour: '2-digit',
-                minute: '2-digit',
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
+                hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
             });
         }
 
@@ -191,6 +189,16 @@ $id_don_hang_js = $id_don_hang;
             return status;
         }
 
+        function processCaregiverImage(path) {
+            let hinh_anh_url = 'img/default_avatar.png'; 
+            if (path && path.trim() !== '') {
+                if (path.startsWith('http')) return path;
+                let filename = path.split(/[\\/]/).pop();
+                hinh_anh_url = `../../../Admin/frontend/uploads/${filename}`;
+            }
+            return hinh_anh_url;
+        }
+
         function renderData(data) {
             const { order, services, is_rated } = data;
 
@@ -199,77 +207,57 @@ $id_don_hang_js = $id_don_hang;
 
             // --- HEADER ---
             document.getElementById('orderId').textContent = `#${order.id_don_hang}`;
-            
             const statusClass = statusToClass(order.trang_thai);
             const statusEl = document.getElementById('orderStatus');
             statusEl.textContent = order.trang_thai;
             statusEl.className = `status-tag status-${statusClass}`;
 
             document.getElementById('orderNgayDat').textContent = formatDateTime(order.ngay_dat);
-
-            let payment_method = order.hinh_thuc_thanh_toan || 'Chưa xác định';
-            if (payment_method.toLowerCase() === 'vnpay' && (order.thanh_toan_status || '').toLowerCase() !== 'đã thanh toán') {
-<<<<<<< HEAD
-                payment_method = 'VNPAY';
-=======
-                payment_method = 'VNPAY (Chờ)';
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
-            }
-            document.getElementById('orderPayment').textContent = payment_method;
+            document.getElementById('orderPayment').textContent = order.hinh_thuc_thanh_toan || 'Chưa xác định';
 
             // --- NGƯỜI CHĂM SÓC ---
             if (order.caregiver_id) {
                 document.getElementById('caregiverBox').classList.remove('hidden');
                 document.getElementById('caregiverName').textContent = order.ten_cham_soc;
                 document.getElementById('caregiverId').textContent = `ID: #${order.caregiver_id}`;
-                // Giả định ảnh nằm ở thư mục gốc, cần lùi 3 cấp thư mục
-                document.getElementById('caregiverAvatar').src = `../../../${order.hinh_anh_cham_soc}`;
+                document.getElementById('caregiverAvatar').src = processCaregiverImage(order.hinh_anh_cham_soc);
             }
 
             // --- THỜI GIAN ---
             document.getElementById('orderStartTime').textContent = formatDateTime(order.thoi_gian_bat_dau);
             document.getElementById('orderEndTime').textContent = formatDateTime(order.thoi_gian_ket_thuc);
 
-            // --- DANH SÁCH DỊCH VỤ (Đã sửa logic trạng thái nhiệm vụ) ---
+            // --- DANH SÁCH DỊCH VỤ (ĐỒNG BỘ TRẠNG THÁI) ---
             const serviceContainer = document.getElementById('serviceListContainer');
+            
             if (services.length > 0) {
-                serviceContainer.innerHTML = '<span class="detail-label" style="font-weight: 700; color: #333;"><i class="icon fas fa-tasks"></i> Các Nhiệm Vụ Cụ Thể:</span>';
+                let servicesHtml = '<span class="detail-label" style="font-weight: 700; color: #333; margin-bottom: 10px;"><i class="icon fas fa-tasks"></i> Các Nhiệm Vụ Cụ Thể:</span>';
+                
+                servicesHtml += services.map(service => {
+                    // Chuẩn hóa trạng thái
+                    let currentStatus = (service.trang_thai_nhiem_vu || '').trim().toLowerCase();
+                    
+                    let statusText = 'Chờ thực hiện ⏳';
+                    let statusClass = 'status-chua_hoan_thanh';
 
-                // 1. Lấy trạng thái chung từ DB
-                let dbTaskStatus = (order.trang_thai_nhiem_vu || '').trim().toLowerCase();
-
-                // 2. Nếu DB chưa set trạng thái nhiệm vụ, dùng trạng thái đơn hàng để hiển thị tạm
-                if (!dbTaskStatus) {
-                    if (statusClass === 'da_hoan_thanh') {
-                        dbTaskStatus = 'đã hoàn thành';
-                    } else {
-                        dbTaskStatus = 'chờ xác nhận';
+                    if (currentStatus === 'đã hoàn thành') {
+                        statusText = 'Đã hoàn thành ✅';
+                        statusClass = 'status-hoan_thanh'; 
                     }
-                }
 
-                // 3. Xác định text hiển thị và màu sắc
-                let displayStatusStr = '';
-                let cssClass = '';
-
-                if (dbTaskStatus === 'đã hoàn thành') {
-                    displayStatusStr = 'Hoàn thành ✅';
-                    cssClass = 'status-hoan_thanh'; // Màu xanh
-                } else {
-                    displayStatusStr = 'Chờ thực hiện ⏳';
-                    cssClass = 'status-chua_hoan_thanh'; // Màu cam
-                }
-
-                // 4. Loop qua services và gán cùng 1 status
-                services.forEach((service) => {
-                    serviceContainer.innerHTML += `
+                    return `
                         <div class="service-item">
                             <strong>${service.ten_nhiem_vu}</strong>
-                            <span class="task-status ${cssClass}">
-                                ${displayStatusStr}
+                            <span class="task-status ${statusClass}">
+                                ${statusText}
                             </span>
                         </div>
                     `;
-                });
+                }).join('');
+                
+                serviceContainer.innerHTML = servicesHtml;
+            } else {
+                serviceContainer.innerHTML = '<p style="color:#999; text-align:center;">Chưa có nhiệm vụ cụ thể</p>';
             }
 
             // --- THÔNG TIN KHÁCH HÀNG ---
@@ -277,7 +265,6 @@ $id_don_hang_js = $id_don_hang;
             document.getElementById('orderTenKH').textContent = order.ten_khach_hang || 'N/A';
             document.getElementById('orderSdtKH').textContent = order.so_dien_thoai || 'N/A';
             document.getElementById('orderDiaChi').textContent = dia_chi_kh;
-
             document.getElementById('orderTongTien').textContent = formatCurrency(order.tong_tien);
 
             renderActionButtons(order, is_rated);
@@ -287,12 +274,10 @@ $id_don_hang_js = $id_don_hang;
             const container = document.getElementById('actionButtonsContainer');
             container.innerHTML = '';
 
-            // Nút Quay lại
             container.innerHTML += `<a href="tongdonhang.php" class="button btn-back"><i class="fas fa-list-alt"></i> Quay lại Đơn hàng</a>`;
 
             const status = (order.trang_thai || '').toLowerCase().trim();
 
-            // Nút Đánh giá (Chỉ hiện khi đã hoàn thành)
             if (status === 'đã hoàn thành' && order.caregiver_id) {
                 if (is_rated) {
                     container.innerHTML += `<button class="button btn-rate" style="opacity:0.6; cursor:not-allowed;" disabled><i class="fas fa-check"></i> Đã Đánh Giá</button>`;
@@ -301,25 +286,20 @@ $id_don_hang_js = $id_don_hang;
                 }
             }
             
-            // --- NÚT CHAT ĐÃ ĐƯỢC CẬP NHẬT ---
             if (order.caregiver_id) {
                 container.innerHTML += `<a href="ChatKhachHang.php?id_don_hang=${order.id_don_hang}" class="button btn-chat"><i class="fas fa-comment-dots"></i> Chat</a>`;
             }
             
-            // Nút Đặt Lại
             if (order.caregiver_id) {
-<<<<<<< HEAD
                 container.innerHTML += `<a href="datdonhang.php?id=${order.caregiver_id}" class="button btn-reorder"><i class="fas fa-redo"></i> Đặt Lại</a>`;
-=======
-                container.innerHTML += `<a href="Datdonhang.php?id=${order.caregiver_id}" class="button btn-reorder"><i class="fas fa-redo"></i> Đặt Lại</a>`;
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
             }
         }
 
         async function loadData() {
             try {
-                // Gọi API Gateway, nhớ gửi kèm credentials để nhận Session
-                const response = await fetch(`${API_DETAIL_URL}&action=get_details&id=${ID_DON_HANG}`, {
+                // THÊM TIMESTAMP ĐỂ CHỐNG CACHE
+                // `&_t=${new Date().getTime()}` giúp trình duyệt luôn gọi mới
+                const response = await fetch(`${API_DETAIL_URL}&action=get_details&id=${ID_DON_HANG}&_t=${new Date().getTime()}`, {
                     credentials: 'include' 
                 });
 

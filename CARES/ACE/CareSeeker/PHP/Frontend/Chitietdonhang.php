@@ -211,6 +211,32 @@ $id_don_hang_js = $id_don_hang;
             return status;
         }
 
+        // ============================================================
+        // === HÀM XỬ LÝ ĐƯỜNG DẪN ẢNH (PHIÊN BẢN MỚI NHẤT - RESET PATH) ===
+        // ============================================================
+        function processCaregiverImage(path) {
+            let hinh_anh_url = 'img/default_avatar.png'; 
+            
+            if (path && path.trim() !== '') {
+                if (path.startsWith('http')) {
+                    return path;
+                }
+
+                // BƯỚC 1: CHỈ LẤY TÊN FILE (Vứt bỏ mọi thư mục trước đó để tránh lỗi dư thừa)
+                // Dù database lưu là "frontend/upload/abc.png" hay "ACE/Admin/frontend/uploads/abc.png"
+                // Ta chỉ lấy phần cuối cùng: "abc.png"
+                let filename = path.split(/[\\/]/).pop();
+
+                // BƯỚC 2: GHÉP VÀO ĐƯỜNG DẪN CHUẨN
+                // Cấu trúc đúng: ../../../Admin/frontend/upload/ + Tên file
+                // LƯU Ý: Tôi để thư mục là 'frontend/upload' (không có s) vì ảnh cấu trúc thư mục bạn gửi là 'upload'.
+                // Nếu bạn chắc chắn là 'uploads' (có s), hãy thêm chữ 's' vào dòng dưới đây.
+                hinh_anh_url = `../../../Admin/frontend/uploads/${filename}`;
+            }
+            return hinh_anh_url;
+        }
+        // ============================================================
+
         function renderData(data) {
             const { order, services, is_rated } = data;
 
@@ -236,7 +262,9 @@ $id_don_hang_js = $id_don_hang;
                 document.getElementById('caregiverBox').classList.remove('hidden');
                 document.getElementById('caregiverName').textContent = order.ten_cham_soc;
                 document.getElementById('caregiverId').textContent = `ID: #${order.caregiver_id}`;
-                document.getElementById('caregiverAvatar').src = `../../../${order.hinh_anh_cham_soc}`;
+                
+                // GÁN ẢNH VỚI HÀM XỬ LÝ ĐƯỜNG DẪN MỚI
+                document.getElementById('caregiverAvatar').src = processCaregiverImage(order.hinh_anh_cham_soc);
             }
 
             document.getElementById('orderStartTime').textContent = formatDateTime(order.thoi_gian_bat_dau);
@@ -285,7 +313,7 @@ $id_don_hang_js = $id_don_hang;
                 }
             }
 
-            // --- NÚT CHAT ĐÃ ĐƯỢC CẬP NHẬT ---
+            // NÚT CHAT
             if (order.caregiver_id) {
                 container.innerHTML += `<a href="ChatKhachHang.php?id_don_hang=${order.id_don_hang}" class="button btn-chat"><i class="fas fa-comment-dots"></i> Chat</a>`;
             }

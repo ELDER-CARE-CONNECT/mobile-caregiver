@@ -43,20 +43,20 @@
     .auth-wrapper {
         flex: 0 0 420px;
         background: rgba(255,255,255,0.95);
-        padding: 40px 30px;
+        padding: 40px 35px;
         border-radius: 16px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         text-align: center;
     }
     .auth-heading {
         font-size: 26px;
         font-weight: bold;
-        color: #d70018;
+        color: #FF6B81;
         margin-bottom: 25px;
     }
     .auth-input {
         width: 100%;
-        padding: 14px 18px;
+        padding: 14px 5px;
         margin-bottom: 18px;
         border: 1px solid #ddd;
         border-radius: 10px;
@@ -65,7 +65,7 @@
     .auth-submit {
         width: 100%;
         padding: 14px;
-        background-color: #d70018;
+        background-color: #FF6B81;
         color: white;
         border: none;
         border-radius: 10px;
@@ -119,7 +119,7 @@
 
         <p class="auth-register">
             Bạn đã có tài khoản?
-            <a href="login.php" style="color:#d70018;font-weight:bold;">Đăng nhập ngay</a>
+            <a href="login.php" style="color:#FF6B81;font-weight:bold;">Đăng nhập ngay</a>
         </p>
 
     </div>

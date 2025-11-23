@@ -9,11 +9,7 @@ header('Content-Type: application/json');
 require_once 'db_connect.php'; // Sử dụng PDO chuẩn
 
 // 1. KIỂM TRA XÁC THỰC (Lấy ID Khách hàng)
-<<<<<<< HEAD
 if (!isset($_SESSION['id_khach_hang'])) { // Lỗi: Đã sửa lại để kiểm tra biến chuẩn
-=======
-if (!isset($_SESSION['id_khach_hang'])) {
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Lỗi xác thực: Vui lòng đăng nhập lại.']);
     exit;
@@ -114,15 +110,11 @@ if ($action === 'update_profile' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Cập nhật lại session
         $_SESSION['success_message'] = "Cập nhật hồ sơ thành công! 🎉";
-<<<<<<< HEAD
         
         // Sửa lỗi: Đảm bảo chỉ cập nhật các trường liên quan
         $_SESSION['id_khach_hang'] = $data['id_khach_hang']; // Đảm bảo ID vẫn là ID
         $_SESSION['ten_khach_hang'] = $data['ten_khach_hang']; // Cập nhật tên
         $_SESSION['so_dien_thoai'] = $data['so_dien_thoai']; // Cập nhật SĐT
-=======
-        $_SESSION['profile'] = array_merge($_SESSION['profile'] ?? [], $data);
->>>>>>> b818157e1da1ecb405aab9e6efd25fb21bc2f3d4
 
         echo json_encode(['success' => true, 'message' => 'Cập nhật hồ sơ thành công!']);
         exit;
