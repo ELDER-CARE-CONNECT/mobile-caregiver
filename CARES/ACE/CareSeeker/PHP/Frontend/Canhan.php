@@ -2,6 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['id_khach_hang'])) { 
+
     header("Location: ../../../Admin/frontend/auth/login.php"); 
     exit();
 }
@@ -21,551 +22,556 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
     <style>
         /* CSS giữ nguyên */
         :root {
-            --accent: #FF6B81;
-            --accent-light: #FFE5E8;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --bg-light: #f9fafb;
-            --bg-card: #ffffff;
-            --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.1);
-            --radius: 12px;
-            --border-color: #e5e7eb;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: var(--bg-light);
-            min-height: 100vh;
-            padding-top: 50px;
-        }
-
-        .profile-dashboard {
-            max-width: 1000px;
-            margin: 30px auto 50px;
-            padding: 0 15px;
-        }
-
-        .header-banner {
-            background: linear-gradient(90deg, #bbded6, #61c0bf);
-            color: #fff;
-            padding: 40px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-banner h1 {
-            font-size: 30px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .header-banner p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .profile-card {
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-card);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            margin-top: -60px;
-            position: relative;
-            z-index: 10;
-            transition: all 0.3s;
-        }
-
-        .avatar-box {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 4px solid var(--accent-light);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            margin-bottom: 15px;
-            background: #f0f0f0;
-        }
-
-        .avatar-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .profile-card h2 {
-            font-size: 28px;
-            color: var(--text-primary);
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .profile-card span {
-            color: var(--text-secondary);
-            font-size: 15px;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .details-card,
-        .health-card {
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-card);
-            transition: transform 0.2s;
-        }
-
-        .details-card h3,
-        .health-card h3 {
-            color: var(--text-primary);
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--accent-light);
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-
-        .details-card h3 i,
-        .health-card h3 i {
-            color: var(--accent);
-            margin-right: 10px;
-            font-size: 20px;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .info-item i {
-            color: var(--accent);
-            margin-right: 15px;
-            font-size: 16px;
-            margin-top: 3px;
-            min-width: 20px;
-        }
-
-        .info-item strong {
-            color: var(--text-secondary);
-            font-weight: 500;
-            min-width: 100px;
-        }
-
-        .info-item span {
-            color: var(--text-primary);
-            font-weight: 600;
-            flex-grow: 1;
-        }
-
-        .metric-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 15px;
-        }
-
-        .metric-item {
-            background: var(--accent-light);
-            padding: 15px;
-            border-radius: var(--radius);
-            text-align: center;
-        }
-
-        .metric-item i {
-            font-size: 24px;
-            color: var(--accent);
-            margin-bottom: 5px;
-        }
-
-        .metric-item .value {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .metric-item .label {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-edit {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        .btn-complaint {
-            background: #fff;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-        }
-
-        .btn-logout {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        #editSection {
-            background: var(--bg-card);
-            padding: 40px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-card);
-            margin-top: 20px;
-        }
-
-        #complaintSection {
-            background: var(--bg-light);
-            padding: 40px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-card);
-            margin-top: 20px;
-        }
-
-        #editSection h3,
-        #complaintSection h3 {
-            font-size: 28px;
-            color: var(--accent);
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        #editSection label {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        #editSection input,
-        #editSection select {
-            width: 100%;
-            font-size: 16px;
-            padding: 12px 14px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-top: 0;
-            background: #fdfdfd;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        #editSection input:focus,
-        #editSection select:focus {
-            border-color: var(--accent);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.1);
-        }
-
-        .form-group-edit {
-            margin-bottom: 22px;
-        }
-
-        .form-row-edit {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 22px;
-        }
-
-        .form-row-edit>div {
-            flex: 1;
-        }
-
-        .edit-buttons {
-            margin-top: 30px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-save {
-            background: var(--accent);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            flex: 1;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-
-        .btn-save:hover {
-            background-color: #E65A6E;
-        }
-
-        .btn-back {
-            background: #f0f0f0;
-            color: #333;
-            padding: 12px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-
-        .btn-back:hover {
-            background-color: #e0e0e0;
-        }
-
-        .edit-avatar-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .edit-avatar-preview {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 3px solid var(--accent-light);
-            overflow: hidden;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f0f0f0;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .edit-avatar-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .edit-avatar-label {
-            cursor: pointer;
-            color: var(--accent);
-            font-weight: 600;
-            font-size: 16px;
-            transition: opacity 0.2s;
-        }
-
-        .edit-avatar-label:hover {
-            opacity: 0.7;
-        }
-
-        .order-card {
-            background: #fff7f8;
-            border: 1px solid #ffe0e4;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .order-card p {
-            font-size: 15px;
-            line-height: 1.4;
-            margin: 4px 0;
-            color: #444;
-        }
-
-        .order-card strong {
-            font-weight: 600;
-            color: #000;
-        }
-
-        .send-complaint-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 14px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: opacity 0.2s;
-            flex-shrink: 0;
-        }
-
-        .send-complaint-btn.disabled-btn {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .spinner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--accent);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .flash-success {
-            background: #dff0d8;
-            color: #3c763d;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .flash-error {
-            background: #f2dede;
-            color: #a94442;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            visibility: hidden;
-            padding: 15px;
-        }
-
-        .modal-overlay:not(.hidden) {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-box {
-            background: #fff;
-            padding: 30px;
-            border-radius: var(--radius);
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay:not(.hidden) .modal-box {
-            transform: scale(1);
-        }
-
-        .complaint-modal h3 {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 10px;
-            text-align: left;
-        }
-
-        .complaint-modal p {
-            font-size: 15px;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            text-align: left;
-            line-height: 1.5;
-        }
-
-        .complaint-modal textarea {
-            width: 100%;
-            height: 150px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 16px;
-            font-family: 'Inter', sans-serif;
-            resize: vertical;
-            margin-bottom: 10px;
-        }
-
-        .complaint-modal textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.1);
-        }
-
-        .modal-error {
-            color: #a94442;
-            background: #f2dede;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .modal-buttons .btn {
-            flex: 1;
-            padding: 12px;
-        }
+    --accent: #FF6B81;
+    --accent-light: #FFE5E8;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --bg-light: #f9fafb;
+    --bg-card: #ffffff;
+    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+    --border-color: #e5e7eb;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background: var(--bg-light);
+    min-height: 100vh;
+    padding-top: 50px;
+}
+
+.profile-dashboard {
+    max-width: 1000px;
+    margin: 30px auto 50px;
+    padding: 0 15px;
+}
+
+.header-banner {
+    background: linear-gradient(90deg, #bbded6, #61c0bf);
+    color: #fff;
+    padding: 40px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.header-banner h1 {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.header-banner p {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.profile-card {
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -60px;
+    position: relative;
+    z-index: 10;
+    transition: all 0.3s;
+}
+
+.avatar-box {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--accent-light);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    margin-bottom: 15px;
+    background: #f0f0f0;
+}
+
+.avatar-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-card h2 {
+    font-size: 28px;
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.profile-card span {
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.details-card,
+.health-card {
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    transition: transform 0.2s;
+}
+
+.details-card h3,
+.health-card h3 {
+    color: var(--text-primary);
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--accent-light);
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.details-card h3 i,
+.health-card h3 i {
+    color: var(--accent);
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.info-item i {
+    color: var(--accent);
+    margin-right: 15px;
+    font-size: 16px;
+    margin-top: 3px;
+    min-width: 20px;
+}
+
+.info-item strong {
+    color: var(--text-secondary);
+    font-weight: 500;
+    min-width: 100px;
+}
+
+.info-item span {
+    color: var(--text-primary);
+    font-weight: 600;
+    flex-grow: 1;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 15px;
+}
+
+.metric-item {
+    background: var(--accent-light);
+    padding: 15px;
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.metric-item i {
+    font-size: 24px;
+    color: var(--accent);
+    margin-bottom: 5px;
+}
+
+.metric-item .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.metric-item .label {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 25px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-edit {
+    background: var(--accent);
+    color: #fff;
+}
+
+.btn-complaint {
+    background: #fff;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+
+.btn-logout {
+    background: #e9ecef;
+    color: #333;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#editSection {
+    background: var(--bg-card);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    margin-top: 20px;
+}
+
+#complaintSection {
+    background: var(--bg-light);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    margin-top: 20px;
+}
+
+#editSection h3,
+#complaintSection h3 {
+    font-size: 28px;
+    color: var(--accent);
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+#editSection label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: block;
+}
+
+#editSection input,
+#editSection select {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-top: 0;
+    background: #fdfdfd;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#editSection input:focus,
+#editSection select:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.1);
+}
+
+.form-group-edit {
+    margin-bottom: 22px;
+}
+
+.form-row-edit {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.form-row-edit>div {
+    flex: 1;
+}
+
+.edit-buttons {
+    margin-top: 30px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-save {
+    background: var(--accent);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    flex: 1;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.btn-save:hover {
+    background-color: #E65A6E;
+}
+
+.btn-back {
+    background: #f0f0f0;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.btn-back:hover {
+    background-color: #e0e0e0;
+}
+
+.edit-avatar-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.edit-avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--accent-light);
+    overflow: hidden;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.edit-avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.edit-avatar-label {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 16px;
+    transition: opacity 0.2s;
+}
+
+.edit-avatar-label:hover {
+    opacity: 0.7;
+}
+
+.order-card {
+    background: #fff7f8;
+    border: 1px solid #ffe0e4;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.order-card p {
+    font-size: 15px;
+    line-height: 1.4;
+    margin: 4px 0;
+    color: #444;
+}
+
+.order-card strong {
+    font-weight: 600;
+    color: #000;
+}
+
+.send-complaint-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.send-complaint-btn.disabled-btn {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--accent);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.flash-success {
+    background: #dff0d8;
+    color: #3c763d;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.flash-error {
+    background: #f2dede;
+    color: #a94442;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    visibility: hidden;
+    padding: 15px;
+}
+
+.modal-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay:not(.hidden) .modal-box {
+    transform: scale(1);
+}
+
+.complaint-modal h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.complaint-modal p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    text-align: left;
+    line-height: 1.5;
+}
+
+.complaint-modal textarea {
+    width: 100%;
+    height: 150px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.complaint-modal textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.1);
+}
+
+.modal-error {
+    color: #a94442;
+    background: #f2dede;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.modal-buttons .btn {
+    flex: 1;
+    padding: 12px;
+}
     </style>
 </head>
 <body>
@@ -583,28 +589,6 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
         <div class="modal-buttons">
             <button id="btnCancelComplaint" class="btn btn-back">Hủy</button>
             <button id="btnSubmitComplaint" class="btn btn-save">Gửi Khiếu Nại</button>
-        </div>
-    </div>
-</div>
-
-<div id="replyModalOverlay" class="modal-overlay hidden">
-    <div class="modal-box complaint-modal" style="border-top: 5px solid #28a745;">
-        <h3 style="color: #28a745; margin-bottom: 15px;">
-            <i class="fas fa-envelope-open-text"></i> Thông báo từ Admin
-        </h3>
-        
-        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px dashed #ccc;">
-            <p style="font-size: 12px; color: #666; font-weight: bold;">Bạn đã viết:</p>
-            <p id="userComplaintContent" style="color: #333; font-style: italic;">...</p>
-        </div>
-
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 6px; border-left: 4px solid #2196F3;">
-            <p style="font-size: 12px; color: #1976D2; font-weight: bold;">Admin trả lời:</p>
-            <p id="adminReplyContent" style="color: #0d47a1; font-weight: 500;">...</p>
-        </div>
-
-        <div class="modal-buttons" style="margin-top: 15px;">
-            <button onclick="document.getElementById('replyModalOverlay').classList.add('hidden')" class="btn btn-back" style="width: 100%;">Đóng</button>
         </div>
     </div>
 </div>
@@ -632,8 +616,8 @@ include 'navbar.php';
     <div id="infoSection">
         <div class="profile-card">
             <div class="avatar-box">
-                <img src="uploads/default.png" alt="avatar" id="profileAvatar"> 
-            </div>
+            <img src="uploads/default.png" alt="avatar" id="profileAvatar"> 
+        </div>
             <h2 id="profileHoTen">Đang tải...</h2>
             <span>Khách hàng thân thiết</span>
         </div>
@@ -837,71 +821,33 @@ function renderProfileData(profile) {
     }
 }
 
-// --- HÀM MỚI: RENDER DANH SÁCH CÓ XỬ LÝ PHẢN HỒI ---
 function renderComplaintList(orders) {
     const container = document.getElementById('complaintListContainer');
-    
-    if (!orders || orders.length === 0) {
-        container.innerHTML = '<p style="padding: 20px; text-align: center; background: #fff;">Chưa có đơn hàng nào.</p>';
+    if (orders.length === 0) {
+        container.innerHTML = '<p style="padding: 15px; background: #fff; border-radius: 8px; text-align: center;">⚠️ Không có đơn hàng nào (Đã hoàn thành/Đã hủy) để khiếu nại.</p>';
         return;
     }
 
     container.innerHTML = orders.map(order => {
-        let buttonHtml = '';
-        
-        // Lấy dữ liệu từ API mới cập nhật
-        const noiDung = order.noi_dung_kn;        // Nội dung khách gửi
-        const phanHoi = order.loi_phan_hoi_admin; // Admin trả lời
-
-        if (noiDung) {
-            // Đã gửi khiếu nại
-            if (phanHoi && phanHoi.trim() !== "") {
-                // Admin ĐÃ trả lời -> Nút Xanh "Xem phản hồi"
-                const safeNoiDung = noiDung.replace(/"/g, '&quot;');
-                const safePhanHoi = phanHoi.replace(/"/g, '&quot;');
-                
-                buttonHtml = `
-                    <button class="btn" onclick="openReplyModal('${safeNoiDung}', '${safePhanHoi}')" 
-                        style="background: #28a745; color: white; border: none; padding: 8px 14px; font-size:14px; font-weight:600; cursor:pointer;">
-                        <i class="fas fa-check-circle"></i> Xem phản hồi
-                    </button>`;
-            } else {
-                // Admin CHƯA trả lời -> Nút Vàng "Đang chờ xử lý"
-                buttonHtml = `
-                    <button class="btn disabled-btn" disabled 
-                        style="background: #f0ad4e; color: white; cursor: default; opacity: 0.8; font-weight:600;">
-                        <i class="fas fa-hourglass-half"></i> Đang chờ xử lý
-                    </button>`;
-            }
-        } else {
-            // Chưa gửi khiếu nại -> Nút Đỏ "Khiếu nại"
-            buttonHtml = `
-                <button class="send-complaint-btn" data-id="${order.id_don_hang}"
-                    style="background: #FF6B81; color: white; border: none; padding: 8px 14px; cursor:pointer; font-weight:600;">
-                    <i class="fas fa-exclamation-circle"></i> Khiếu nại
-                </button>`;
-        }
+        const hasComplaint = order.da_khieu_nai; 
+        const buttonHtml = hasComplaint
+            ? `<button class="send-complaint-btn disabled-btn" disabled><i class="fas fa-check"></i> Đã Khiếu Nại</button>`
+            : `<button class="send-complaint-btn" data-id="${order.id_don_hang}"><i class="fas fa-exclamation-circle"></i> Khiếu nại</button>`;
 
         return `
-            <div class="order-card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="order-card">
                 <div>
-                    <p><strong>Đơn hàng:</strong> #${order.id_don_hang}</p>
-                    <p><strong>Ngày:</strong> ${new Date(order.ngay_dat).toLocaleDateString('vi-VN')}</p>
+                    <p><strong>Mã đơn hàng:</strong> #${order.id_don_hang}</p>
+                    <p><strong>Ngày đặt:</strong> ${new Date(order.ngay_dat).toLocaleDateString('vi-VN')}</p>
                     <p><strong>Trạng thái:</strong> ${order.trang_thai}</p>
                 </div>
-                <div>${buttonHtml}</div>
+                ${buttonHtml}
             </div>
         `;
     }).join('');
 
-    attachComplaintListeners();
-}
 
-// Hàm mở modal Xem Phản Hồi (MỚI)
-function openReplyModal(userText, adminText) {
-    document.getElementById('userComplaintContent').innerText = userText;
-    document.getElementById('adminReplyContent').innerText = adminText;
-    document.getElementById('replyModalOverlay').classList.remove('hidden');
+    attachComplaintListeners();
 }
 
 

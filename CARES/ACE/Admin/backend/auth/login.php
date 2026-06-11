@@ -39,12 +39,15 @@ if (empty($phone) || empty($password)) {
 // --- Hàm kiểm tra người dùng ---
 function checkUser($conn, $table, $fieldUser, $fieldPass, $phone, $password) {
     $sql = "SELECT * FROM $table WHERE $fieldUser = ? AND $fieldPass = ?";
+function checkUser($conn, $table, $fieldUser, $phone) {
+    $sql = "SELECT * FROM $table WHERE $fieldUser = ?";
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
         error_log("Lỗi prepare statement: " . $conn->error);
         return false;
     }
+    $stmt->bind_param("s", $phone);
 
     $stmt->bind_param("ss", $phone, $password);
 
@@ -59,6 +62,11 @@ function checkUser($conn, $table, $fieldUser, $fieldPass, $phone, $password) {
 // --- 1. Kiểm tra Admin ---
 $result = checkUser($conn, 'admin', 'so_dien_thoai', 'mat_khau', $phone, $password);
 if ($result && $result->num_rows > 0) {
+// --- 1. Kiểm tra Admin (Ví dụ dùng password_verify) ---
+$result = checkUser($conn, 'admin', 'so_dien_thoai', $phone);
+$user = $result ? $result->fetch_assoc() : null;
+
+if ($user && password_verify($password, $user['mat_khau'])) {
     $_SESSION['role'] = 'admin';
     $_SESSION['so_dien_thoai'] = $phone;
 
@@ -80,7 +88,7 @@ if ($result && $result->num_rows > 0) {
     $_SESSION['id_khach_hang'] = $user['id_khach_hang'];
 
     $redirect = empty($user['ten_khach_hang'])
-        ? "../../../CareSeeker/PHP/Frontend/hoso.php"
+        ? "../../../CareSeeker/PHP/Frontend/Hoso.php"
         : "../../../CareSeeker/PHP/Frontend/index.php";
 
     echo json_encode([

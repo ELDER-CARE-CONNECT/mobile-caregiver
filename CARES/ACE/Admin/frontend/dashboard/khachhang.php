@@ -36,6 +36,7 @@ td { padding:10px; border-bottom:1px solid #eee; text-align:center; color:#1e3a8
 tr:nth-child(even) { background:#f9f9f9; }
 tr:hover { background:#eaf4ff; }
 
+.avatar-img { width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #e5e7eb; }
 .action-links a { text-decoration:none; margin:0 5px; color:#2980b9; }
 .action-links a:hover { color:#e74c3c; }
 .loading { color:#007bff; font-style:italic; }
@@ -47,6 +48,10 @@ tr:hover { background:#eaf4ff; }
 .order-details-row table { width:100%; border:1px solid #ddd; border-radius:6px; margin-top:8px; border-collapse:collapse; }
 .order-details-row th { background:#3498db; color:#fff; padding:6px; font-weight:600; }
 .order-details-row td { background:#fff; padding:6px; color:#1e3a8a; }
+
+/* Multi images */
+.image-container { display:flex; flex-wrap:wrap; justify-content:center; gap:4px; }
+.image-container img { width:40px; height:40px; border-radius:4px; object-fit:cover; }
 
 /* Responsive */
 @media (max-width:768px){
@@ -86,6 +91,7 @@ tr:hover { background:#eaf4ff; }
         <thead>
             <tr>
                 <th>Mã KH</th>
+                <th>Hình ảnh</th>
                 <th>Họ & Tên</th>
                 <th>Địa chỉ</th>
                 <th>SĐT</th>
@@ -99,7 +105,7 @@ tr:hover { background:#eaf4ff; }
             </tr>
         </thead>
         <tbody>
-            <tr><td colspan="11" class="loading">Đang tải dữ liệu...</td></tr>
+            <tr><td colspan="12" class="loading">Đang tải dữ liệu...</td></tr>
         </tbody>
     </table>
 </main>
@@ -107,18 +113,23 @@ tr:hover { background:#eaf4ff; }
 <script>
 const backendPath = '../../backend/customers/khachhang.php';
 
+function getAvatarUrl(path){
+    if(!path) return '../auth/images/default_user.png';
+    return path.startsWith('http') ? path : '../../../CareSeeker/PHP/Frontend/' + path.replace(/^\/+/, '');
+}
+
 function loadCustomers(search=''){
     $.getJSON(backendPath, { search: search })
     .done(function(res){
         const tbody = $('#customerTable tbody');
         tbody.empty();
         if(!res || res.status !== 'success'){
-            tbody.append('<tr><td colspan="11" class="error">Lỗi: '+(res?.message||'Không xác định')+'</td></tr>');
+            tbody.append('<tr><td colspan="12" class="error">Lỗi: '+(res?.message||'Không xác định')+'</td></tr>');
             $('#totalCustomer').text('0');
             return;
         }
         if(res.customers.length===0){
-            tbody.append('<tr><td colspan="11" class="loading">Không có khách hàng nào</td></tr>');
+            tbody.append('<tr><td colspan="12" class="loading">Không có khách hàng nào</td></tr>');
             $('#totalCustomer').text('0');
             return;
         }
@@ -126,6 +137,11 @@ function loadCustomers(search=''){
         $('#totalCustomer').text(res.customers.length);
 
         res.customers.forEach(c=>{
+            let imagesHtml = '';
+            if(c.hinh_anh && Array.isArray(c.hinh_anh)) c.hinh_anh.forEach(imgUrl=>{
+                imagesHtml+=`<img src="${imgUrl}" alt="KH" onerror="this.style.display='none'">`;
+            });
+
             let ordersHtml = '';
             if(c.orders && c.orders.length>0){
                 c.orders.forEach(o=>{
@@ -142,9 +158,10 @@ function loadCustomers(search=''){
                 });
             } else ordersHtml=`<tr><td colspan="8" style="text-align:center;">Không có đơn hàng</td></tr>`;
 
-            tbody.append(`                
-                <tr data-tongdon="${c.tong_don}">
+            tbody.append(`
+                <tr>
                     <td>${c.id_khach_hang}</td>
+                    <td><div class="image-container">${imagesHtml}</div></td>
                     <td>${c.ten_khach_hang}</td>
                     <td>${c.dia_chi}</td>
                     <td>${c.so_dien_thoai}</td>
@@ -157,7 +174,7 @@ function loadCustomers(search=''){
                     <td><button class="show-orders" data-id="${c.id_khach_hang}">Xem đơn</button></td>
                 </tr>
                 <tr class="order-details-row" id="orders-${c.id_khach_hang}">
-                    <td colspan="11">
+                    <td colspan="12">
                         <table>
                             <tr>
                                 <th>Mã đơn</th><th>Ngày đặt</th><th>KH</th><th>Người CS</th>
@@ -170,40 +187,21 @@ function loadCustomers(search=''){
             `);
         });
     })
-    .fail(function(){
+    .fail(function(xhr){
         const tbody = $('#customerTable tbody');
         tbody.empty();
-        tbody.append('<tr><td colspan="11" class="error">Lỗi kết nối server</td></tr>');
+        tbody.append('<tr><td colspan="12" class="error">Lỗi kết nối server</td></tr>');
         $('#totalCustomer').text('0');
     });
 }
 
 $(document).ready(function(){
     loadCustomers();
-
     $('#searchBtn').click(()=>loadCustomers($('#searchInput').val().trim()));
     $('#searchInput').keypress(e=>{ if(e.which===13) loadCustomers($('#searchInput').val().trim()); });
-
     $(document).on('click','.show-orders', function(){
         const id=$(this).data('id');
         $('#orders-'+id).slideToggle(300);
-    });
-
-    $('#resetBtn').click(()=>{
-        $('#searchInput').val('');
-        $('#filter').val('');
-        loadCustomers();
-    });
-
-    $('#filter').change(()=>{
-        const val = $('#filter').val();
-        const rows = $('#customerTable tbody tr').filter(':not(.order-details-row)').get();
-        rows.sort((a,b)=>{
-            const aVal = parseInt($(a).data('tongdon'))||0;
-            const bVal = parseInt($(b).data('tongdon'))||0;
-            return val==='high' ? bVal - aVal : val==='low' ? aVal - bVal : 0;
-        });
-        $('#customerTable tbody').append(rows);
     });
 });
 </script>

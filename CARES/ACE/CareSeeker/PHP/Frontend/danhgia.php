@@ -355,7 +355,6 @@ textarea[name="comment"]:focus {
         const ratingInput = document.getElementById('rating');
         let selectedRating = 0;
 
-        // Hiệu ứng sao
         stars.forEach(star => {
             star.addEventListener('click', function() {
                 selectedRating = this.dataset.value;
@@ -400,34 +399,26 @@ textarea[name="comment"]:focus {
                 submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
 
                 try {
-                    // === SỬA ĐƯỜNG DẪN API TẠI ĐÂY ===
-                    // Gọi qua Gateway route rating/submit
-                    const response = await fetch('../Backend/api_gateway.php?route=rating/submit', {
+                    const response = await fetch('../Backend/api_rating.php', {
                         method: 'POST',
-                        body: formData,
-                        credentials: 'include' // Quan trọng để gửi cookie session
+                        body: formData
                     });
                     
-                    // Kiểm tra nếu response không phải JSON (tránh lỗi Unexpected token <)
-                    const contentType = response.headers.get("content-type");
-                    if (!contentType || !contentType.includes("application/json")) {
-                        const text = await response.text();
-                        throw new Error("Server trả về lỗi HTML: " + text.substring(0, 100));
-                    }
-
                     const result = await response.json();
 
-                    if (result.success) {
+                    if (response.ok && result.success) {
                         if (formBox) formBox.classList.add('hidden');
                         if (infoBox) infoBox.classList.add('hidden');
                         messageContainer.innerHTML = '';
                         successMessage.classList.remove('hidden');
                         startCountdown();
                     } else {
-                        throw new Error(result.message || 'Lỗi không xác định.');
+                        messageContainer.innerHTML = `<p class="message error"><i class="fas fa-times-circle"></i> ${result.message || 'Lỗi không xác định.'}</p>`;
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Đánh Giá';
                     }
                 } catch (error) {
-                    messageContainer.innerHTML = `<p class="message error"><i class="fas fa-times-circle"></i> ${error.message}</p>`;
+                    messageContainer.innerHTML = `<p class="message error"><i class="fas fa-times-circle"></i> Lỗi kết nối. Vui lòng thử lại. ${error.message}</p>`;
                     submitButton.disabled = false;
                     submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Đánh Giá';
                 }
@@ -454,7 +445,6 @@ textarea[name="comment"]:focus {
             updateCountdown();
         }
     </script>
-</body>
-</html>
+
 </body>
 </html>

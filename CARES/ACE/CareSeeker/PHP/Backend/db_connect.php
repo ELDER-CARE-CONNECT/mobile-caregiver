@@ -1,34 +1,32 @@
 <?php
-// File: db_connect.php
+/**
+ * DATABASE CONNECTION TỐI ƯU
+ */
 
-$servername = "db";
-$username   = "user";
-$password   = "userpassword";
-$dbname     = "caresdb";
+// CẤU HÌNH DATABASE
+$host = 'db';
+$dbname = 'caresdb';
+$username = 'user';
+$password = 'userpassword';
+$charset = 'utf8mb4';
 
-// 1. KẾT NỐI MYSQLI (Cho Gateway và các file đơn giản)
-$conn = mysqli_connect($servername, $username, $password, $dbname);
-if (!$conn) {
-    die(json_encode(['success' => false, 'message' => 'Database Connection Failed: ' . mysqli_connect_error()]));
-}
-mysqli_set_charset($conn, "utf8");
+// DSN VÀ OPTIONS TỐI ƯU
+$dsn = "mysql:host=$host;dbname=$dbname;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
+    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
+    PDO::ATTR_PERSISTENT => false, // TẮT PERSISTENT ĐỂ TĂNG TỐC
+];
 
-// 2. HÀM HỖ TRỢ PDO (Cho api_order_create, api_profile...)
 function get_pdo_connection() {
-    global $servername, $username, $password, $dbname;
+    global $dsn, $username, $password, $options;
+    
     try {
-        $dsn = "mysql:host=$servername;dbname=$dbname;charset=utf8mb4";
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ];
         return new PDO($dsn, $username, $password, $options);
     } catch (PDOException $e) {
-        // Trả về lỗi JSON nếu kết nối thất bại
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'PDO Connection Error: ' . $e->getMessage()]);
-        exit;
+        throw new PDOException("Lỗi kết nối database");
     }
 }
 ?>

@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>Thông tin cá nhân</title>
+<link rel="stylesheet" href="../CSS/style.css">
 
 <style>
+    /* CSS bổ sung để đảm bảo hiển thị tốt nếu file style.css bị lỗi */
     body { font-family: 'Segoe UI', sans-serif; margin:0; padding:0; background: linear-gradient(135deg, #ffd1ff 0%, #ffe6f7 100%); display:flex; justify-content:center; align-items:center; min-height:100vh;}
     .profile-container { background:#fff; border-radius:25px; width:1200px; max-width:95%; display:flex; padding:60px; box-shadow:0 15px 40px rgba(0,0,0,0.15); align-items:center; margin-top: 60px; }
     .profile-left { flex:1; display:flex; justify-content:center; align-items:center; }
@@ -29,14 +31,10 @@
 
 <div class="profile-container">
   <div class="profile-left">
-  <img id="avatar" 
-     src="/ACE/Admin/frontend/upload/default.jpg" 
-     alt="Ảnh đại diện"
-     onerror="this.src='/ACE/Admin/frontend/upload/default.jpg'; this.onerror=null;">
+   <img id="avatar" src="" alt="Ảnh đại diện">
   </div>
-     
   <div class="profile-right">
-    <h2>Xin chào, <span class="highlight" id="ho_ten">Đang tải...</span></h2>
+    <h2>Xin chào, <span class="highlight" id="ho_ten">Đang tải...</span> 👋</h2>
     
     <div class="info-item"><b>Địa chỉ:</b> <span id="dia_chi">...</span></div>
     <div class="info-item"><b>Tuổi/Giới tính:</b> <span id="tuoi">...</span> / <span id="gioi_tinh">...</span></div>
@@ -47,7 +45,7 @@
     <div class="info-item"><b>Đánh giá:</b> <span id="danh_gia_tb">0</span>/5 <span id="stars"></span></div>
 
     <div class="button-group">
-      <a href="DonHangChuaNhan.php" class="back-btn">Trang chủ</a>
+      <a href="DonHangChuaNhan.php" class="back-btn">⬅ Trang chủ</a>
       <a href="logout.php" class="logout-btn">Đăng xuất</a>
     </div>
   </div>
@@ -55,7 +53,7 @@
 
 <script>
 function renderStars(avg){
-  const full = Math.floor(avg || 0);
+  const full = Math.floor(avg);
   const half = (avg - full >= 0.5)?1:0;
   const empty = 5 - full - half;
   let html = '';
@@ -84,29 +82,30 @@ fetch('../Backend/Canhan/api_profile.php')
 })
 .then(data => {
     const u = data.user;
+    
+    // --- XỬ LÝ ẢNH ĐÚNG THƯ MỤC YÊU CẦU ---
+    let src = u.hinh_anh;
+    if (src && !src.startsWith('http')) {
+        // 1. Xóa các tiền tố thừa trong DB (nếu có) để lấy phần đường dẫn sạch
+        // Ví dụ: DB lưu 'fontend/upload/anh.jpg' -> lấy 'upload/anh.jpg'
+        // Hoặc nếu DB lưu 'uploads/avatar.jpg' -> ta cần đổi 'uploads' thành 'upload' (không s) nếu máy bạn tên folder là upload
+        
+        // Chuẩn hóa đường dẫn:
+        src = src.replace('fontend/', '')
+                 .replace('frontend/', '')
+                 .replace('uploads/', 'upload/'); // Đổi uploads (có s) thành upload (không s) nếu cần
+        
+        // Nếu đường dẫn trong DB bắt đầu bằng '/', xóa đi
+        if(src.startsWith('/')) src = src.substring(1);
 
-    // === BẮT CHƯỚC 100% CÁCH LẤY ẢNH CỦA TRANG DANH SÁCH ===
-    let hinh_anh_url = '../../../Admin/frontend/upload/default.jpg'; 
-
-    if (u.hinh_anh && u.hinh_anh.trim() !== '') {
-        // 1. Nếu là link online (http/https) → Giữ nguyên
-        if (u.hinh_anh.startsWith('http')) {
-            hinh_anh_url = u.hinh_anh;
-        } 
-        // 2. Nếu là link trong máy
-        else {
-            // Sửa lỗi chính tả 'fontend' thành 'frontend' nếu có
-            let cleanPath = u.hinh_anh.replace('fontend/', 'frontend/');
-            
-            // Từ Canhan.php (Caregiver/Fontend/) → lùi 3 cấp ra ACE → vào Admin
-            hinh_anh_url = '../../Admin/' + cleanPath;
-        }
+        // 2. Gắn tiền tố để trỏ về: C:\xampp\htdocs\CARES\ACE\Admin\frontend\upload
+        // Từ file Canhan.php (Fontend) -> lùi 2 cấp ra ACE -> vào Admin/frontend/
+        src = '../../Admin/frontend/' + src;
     }
+    
+    if(src) document.getElementById('avatar').src = src;
 
-    document.getElementById('avatar').src = hinh_anh_url;
-    // =====================================================
-
-    document.getElementById('ho_ten').innerText = u.ho_ten || 'Người dùng';
+    document.getElementById('ho_ten').innerText = u.ho_ten;
     document.getElementById('dia_chi').innerText = u.dia_chi || 'Chưa cập nhật';
     document.getElementById('tuoi').innerText = u.tuoi || '--';
     document.getElementById('gioi_tinh').innerText = u.gioi_tinh || '--';
@@ -114,8 +113,8 @@ fetch('../Backend/Canhan/api_profile.php')
     document.getElementById('can_nang').innerText = u.can_nang || '--';
     document.getElementById('kinh_nghiem').innerText = u.kinh_nghiem || 'Chưa có';
     document.getElementById('tong_tien_kiem_duoc').innerText = formatMoney(u.tong_tien_kiem_duoc);
-    document.getElementById('danh_gia_tb').innerText = data.danh_gia_tb || '0';
-    document.getElementById('stars').innerHTML = renderStars(data.danh_gia_tb || 0);
+    document.getElementById('danh_gia_tb').innerText = data.danh_gia_tb;
+    document.getElementById('stars').innerHTML = renderStars(data.danh_gia_tb);
 })
 .catch(err => {
     alert(err.message);

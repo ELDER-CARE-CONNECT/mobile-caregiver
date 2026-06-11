@@ -2,8 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['id_khach_hang'])) {
-    // Nếu chưa đăng nhập, chuyển hướng về trang login
-    header("Location: ../../../Admin/frontend/auth/login.php");
+    header("Location: ../../../Admin/login.php");
     exit();
 }
 ?>
@@ -36,7 +35,6 @@ if (!isset($_SESSION['id_khach_hang'])) {
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            position: relative; /* Để định vị nút back nếu cần */
         }
         h1 {
             text-align: center;
@@ -44,24 +42,6 @@ if (!isset($_SESSION['id_khach_hang'])) {
             margin-bottom: 30px;
             font-weight: 700;
         }
-        /* CSS cho nút Quay lại */
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            text-decoration: none;
-            color: #555;
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 20px;
-            transition: color 0.3s ease;
-        }
-        .btn-back i {
-            margin-right: 8px;
-        }
-        .btn-back:hover {
-            color: #FF6B81;
-        }
-
         .form-group {
             margin-bottom: 20px;
         }
@@ -154,10 +134,6 @@ if (!isset($_SESSION['id_khach_hang'])) {
 <body>
 
     <div class="container">
-        <a href="../../../Admin/frontend/auth/login.php" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Quay lại Đăng nhập
-        </a>
-
         <h1>Cập nhật Hồ sơ Khách hàng</h1>
 
         <div id="messageContainer">

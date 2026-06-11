@@ -1,18 +1,14 @@
 <?php
 session_start();
 
-// --- SỬA LỖI LOGIC KIỂM TRA ĐĂNG NHẬP ---
-// Cho phép truy cập nếu tồn tại 'so_dien_thoai' HOẶC 'id_khach_hang'
-// (Đồng bộ với file dichvu.php)
-if (!isset($_SESSION['so_dien_thoai']) && !isset($_SESSION['id_khach_hang'])) {
-    // Đường dẫn trỏ về trang login đúng cấu trúc thư mục
-    header("Location: ../../../Admin/frontend/auth/login.php");
+if (!isset($_SESSION['so_dien_thoai'])) {
+    header("Location: ../../../Admin/login.php");
     exit();
 }
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id === 0) {
-    die("<h2 style='text-align:center;color:red;margin-top:50px;'>ID người chăm sóc không hợp lệ!</h2>");
+    die("<h2 style='text-align:center;color:red;'>ID người chăm sóc không hợp lệ!</h2>");
 }
 ?>
 <!DOCTYPE html>
@@ -25,6 +21,7 @@ if ($id === 0) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* CSS ĐÃ ĐƯỢC KHÔI PHỤC VÀ CHUẨN HÓA */
         :root {
             --primary-color: #FF6B81;
             --accent-color: #4A90E2;
@@ -310,31 +307,12 @@ if ($id === 0) {
             const caregiverId = <?php echo $id; ?>;
             const container = document.getElementById('mainContentContainer');
             
+            // BẮT ĐẦU SỬA ĐỔI: Sử dụng API Gateway và Sửa lỗi Action
             const GATEWAY_URL = '../Backend/api_gateway.php';
+            // Thêm &action=get_details để khắc phục lỗi 400 "Hành động không hợp lệ"
             const API_DETAIL_URL = `${GATEWAY_URL}?route=caregiver/details&id=${caregiverId}&action=get_details`; 
             const apiUrl = API_DETAIL_URL;
-
-            // ==========================================
-            // HÀM XỬ LÝ ẢNH (Đồng bộ, chính xác)
-            // ==========================================
-            function processCaregiverImage(path) {
-                let hinh_anh_url = 'img/default_avatar.png'; // Ảnh mặc định
-                
-                if (path && path.trim() !== '') {
-                    // 1. Nếu là link online (http/https) -> Giữ nguyên
-                    if (path.startsWith('http')) {
-                        return path;
-                    }
-
-                    // 2. Nếu là link local -> Lấy tên file và ghép vào đường dẫn chuẩn
-                    let filename = path.split(/[\\/]/).pop();
-                    
-                    // Đường dẫn tương đối từ thư mục hiện tại ra thư mục Uploads
-                    hinh_anh_url = `../../../Admin/frontend/uploads/${filename}`;
-                }
-                return hinh_anh_url;
-            }
-            // ==========================================
+            // KẾT THÚC SỬA ĐỔI
 
             function formatCurrency(num) {
                 return (parseInt(num) || 0).toLocaleString('vi-VN') + ' đ/giờ';
@@ -362,7 +340,6 @@ if ($id === 0) {
                     related
                 } = data;
 
-                // Xử lý Render Reviews (Giữ nguyên)
                 let reviewsHtml = '';
                 if (reviews.length > 0) {
                     let count = 0;
@@ -390,12 +367,11 @@ if ($id === 0) {
                     reviewsHtml = "<p style='color:#999; text-align:center;'>Chưa có nhận xét nào cho người chăm sóc này.</p>";
                 }
 
-                // Xử lý Render Related (Đã áp dụng processCaregiverImage)
                 let relatedHtml = '';
                 if (related.length > 0) {
                     relatedHtml = related.map(r => `
                         <div class="card">
-                            <img src="${processCaregiverImage(r.hinh_anh)}" alt="${r.ho_ten}">
+                            <img src="${r.hinh_anh}" alt="${r.ho_ten}">
                             <div class="card-content">
                                 <h3>${r.ho_ten}</h3>
                                 <p>⭐ Đánh giá: <strong>${r.danh_gia_tb}/5</strong></p>
@@ -409,10 +385,9 @@ if ($id === 0) {
                     relatedHtml = "<p style='text-align:center; padding: 20px; color:#999;'>Không có người chăm sóc nào khác để đề xuất.</p>";
                 }
 
-                // Render Main Content (Đã áp dụng processCaregiverImage)
                 container.innerHTML = `
                     <div class="header">
-                        <img src="${processCaregiverImage(caregiver.hinh_anh)}" alt="Ảnh người chăm sóc">
+                        <img src="${caregiver.hinh_anh}" alt="Ảnh người chăm sóc">
                         <div class="info">
                             <h1><i class="fas fa-user-nurse" style="color:var(--primary-color);"></i> ${caregiver.ho_ten}</h1>
                             <p><strong>Tuổi:</strong> ${caregiver.tuoi}</p>
@@ -448,6 +423,7 @@ if ($id === 0) {
 
             async function loadCaregiverData() {
                 try {
+                    // Sử dụng apiUrl mới (đã bao gồm Gateway và action=get_details)
                     const response = await fetch(apiUrl); 
 
                     if (!response.ok) {

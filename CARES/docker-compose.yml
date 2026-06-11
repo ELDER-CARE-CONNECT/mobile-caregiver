@@ -19,7 +19,7 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: userpassword
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./ACE/sanpham.sql:/docker-entrypoint-initdb.d/sanpham.sql
