@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y \
         && a2enmod rewrite \
         && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+RUN a2dismod mpm_worker mpm_event || true
+RUN a2enmod mpm_prefork
+
 # === THÊM CẤU HÌNH OUTPUT BUFFERING ĐỂ KHẮC PHỤC LỖI CHUYỂN HƯỚNG Headers Already Sent ===
 RUN echo "output_buffering = On" >> /usr/local/etc/php/conf.d/custom-config.ini
 # ========================================================================================
