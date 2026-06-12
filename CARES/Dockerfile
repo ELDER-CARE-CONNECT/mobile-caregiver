@@ -11,8 +11,10 @@ RUN apt-get update && apt-get install -y \
         libjpeg-dev \
         libfreetype6-dev \
         && docker-php-ext-configure gd --with-freetype --with-jpeg \
-        && docker-php-ext-install mysqli pdo pdo_mysql gd \
-        && a2enmod rewrite \
+        && docker-php-ext-install mysqli pdo pdo_mysql gd
+
+# Tắt các MPM xung đột và đảm bảo chỉ sử dụng mpm_prefork (bắt buộc cho PHP module) cùng rewrite
+RUN a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork rewrite \
         && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # === THÊM CẤU HÌNH OUTPUT BUFFERING ĐỂ KHẮC PHỤC LỖI CHUYỂN HƯỚNG Headers Already Sent ===
