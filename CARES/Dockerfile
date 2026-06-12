@@ -24,7 +24,7 @@ COPY . /var/www/html/
 
 # Chỉ định quyền nếu cần (tùy dự án)
 RUN chown -R www-data:www-data /var/www/html
-RUN apachectl -M
+
 # Expose port 80 cho Apache
 EXPOSE 80
 
